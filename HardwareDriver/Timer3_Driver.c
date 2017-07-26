@@ -60,6 +60,8 @@ void Timer3_Init(void)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x03;
 	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
+	
+	assert_param(IS_TIM_ALL_PERIPH(TIM3)); 
 }
 
 
@@ -142,7 +144,7 @@ void TIM3_IRQHandler(void)
 			}
 			
 			//如果是打开过程，检测到最大位置，则停止，记为原点
-			if(getMotorxParm1(Motor_4) == true)
+			if((getMotorxDir(Motor_4) == false) && (ON == getMotor4OriginStatus()))
 			{
 				setMotorxParm1(Motor_4, false);
 				setMotorxMoveStepNum(Motor_4, 0);

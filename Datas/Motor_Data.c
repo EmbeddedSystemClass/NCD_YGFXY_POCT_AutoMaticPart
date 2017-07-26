@@ -222,8 +222,6 @@ void plusMotorxLocation(Motorx_Def motor, unsigned short value)
 			GB_Motors[motor].motorLocation = GB_Motors[motor].motorMaxLocation;
 		else
 			GB_Motors[motor].motorLocation += value;
-		
-		GB_Motors[motor].motorLocation = value;
 	}
 	else
 	{

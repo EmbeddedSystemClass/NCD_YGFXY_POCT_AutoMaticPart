@@ -1,4 +1,4 @@
---cpu=Cortex-M4 --fpu=SoftVFP
+--cpu Cortex-M4
 ".\obj\main.o"
 ".\obj\systeminit.o"
 ".\obj\stm32f4xx_it.o"
@@ -65,6 +65,6 @@
 ".\obj\stm32f4xx_usart.o"
 ".\obj\stm32f4xx_wwdg.o"
 --library_type=microlib --strict --scatter ".\Obj\NCD_Tester.sct"
---summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
 --list ".\List\NCD_Tester.map" -o .\Obj\NCD_Tester.axf

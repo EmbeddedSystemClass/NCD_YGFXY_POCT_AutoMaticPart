@@ -67,8 +67,43 @@ static void vSystemStartTask( void *pvParameters )
 	StartvUniversalTask();
 	
 	
+//	resetToOriginLocation(true);
+	motor4ResetToOriginLocation();
+		vTaskDelay(1000 / portTICK_RATE_MS);
 	resetToOriginLocation(true);
-	testMotor4();
+	
+	motor3StartMove(true, 10000);
+	vTaskDelay(1000 / portTICK_RATE_MS);
+	
+	while(1)
+	{
+		motor4MoveTo(500);
+		motor3StartMove(true, 2000);
+		vTaskDelay(1000 / portTICK_RATE_MS);
+		
+		motor4MoveTo(960);
+		vTaskDelay(1000 / portTICK_RATE_MS);
+		
+		motor3StartMove(true, 15000);
+		vTaskDelay(1000 / portTICK_RATE_MS);
+		
+		motor4MoveTo(500);
+		vTaskDelay(1000 / portTICK_RATE_MS);
+		
+		motor3StartMove(false, 5000);
+		vTaskDelay(1000 / portTICK_RATE_MS);
+		
+		motor3StartMove(true, 5000);
+		vTaskDelay(1000 / portTICK_RATE_MS);
+		
+		motor4MoveTo(960);
+		vTaskDelay(1000 / portTICK_RATE_MS);
+		
+		motor3StartMove(false, 17000);
+		vTaskDelay(1000 / portTICK_RATE_MS);
+		
+		
+	}
 	vTaskDelete(NULL);
 }
 

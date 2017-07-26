@@ -65,9 +65,8 @@ static void vUniversalTask( void *pvParameters )
 	while(1)
 	{
 		/*ϵͳ״̬��*/
-		//LedToggle();
+		LedToggle();
 
-		//printf("xsx\r\n");
 		count++;
 		
 		vTaskDelay(1000 / portTICK_RATE_MS);

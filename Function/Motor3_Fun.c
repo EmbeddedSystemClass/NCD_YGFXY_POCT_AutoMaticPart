@@ -57,6 +57,14 @@ void motor3StartMove(bool isFront, unsigned short stepNum)
 	
 	setMotorxMoveStepNum(Motor_3, stepNum);
 	setMotorxPeriodCnt(Motor_3, 0);
+	
+	while(1)
+	{
+		if(getMotorxMoveStepNum(Motor_3) == 0)
+			break;
+		
+		vTaskDelay(1 / portTICK_RATE_MS);
+	}
 }
 
 /***************************************************************************************************
@@ -81,8 +89,7 @@ void resetToOriginLocation(bool isWait)
 		
 		vTaskDelay(1 / portTICK_RATE_MS);
 	}
-	
-	motor3StartMove(true, 15000);
+
 }
 /****************************************end of file************************************************/
 
