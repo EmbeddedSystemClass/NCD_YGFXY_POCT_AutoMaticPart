@@ -68,7 +68,7 @@ static void vSystemStartTask( void *pvParameters )
 	
 	
 //	resetToOriginLocation(true);
-	motor4ResetToOriginLocation();
+/*	motor4ResetToOriginLocation();
 		vTaskDelay(1000 / portTICK_RATE_MS);
 	resetToOriginLocation(true);
 	
@@ -103,7 +103,7 @@ static void vSystemStartTask( void *pvParameters )
 		vTaskDelay(1000 / portTICK_RATE_MS);
 		
 		
-	}
+	}*/
 	vTaskDelete(NULL);
 }
 

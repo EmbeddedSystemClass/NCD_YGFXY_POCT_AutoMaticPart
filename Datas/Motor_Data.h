@@ -13,6 +13,8 @@ typedef enum
 	Motor_None = 0xff,
 }Motorx_Def;
 
+Motor * getMotor(Motorx_Def motor);
+
 void setMotorxDir(Motorx_Def motor, bool value);
 bool getMotorxDir(Motorx_Def motor);
 void toggleMotorxDir(Motorx_Def motor);

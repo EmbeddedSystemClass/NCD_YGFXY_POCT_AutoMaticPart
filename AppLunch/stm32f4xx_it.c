@@ -30,6 +30,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_it.h"
 
+#include "stm324x7i_eval_sdio_sd.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -165,7 +167,13 @@ void SysTick_Handler(void)
 void SDIO_IRQHandler(void)
 {
 	/* Process All SDIO Interrupt Sources */
-//	SD_ProcessIRQSrc();
+	SD_ProcessIRQSrc();
+}
+
+void SD_SDIO_DMA_IRQHANDLER(void)
+{
+	/* Process DMA2 Stream3 or DMA2 Stream6 Interrupt Sources */
+	SD_ProcessDMAIRQ();
 }
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */

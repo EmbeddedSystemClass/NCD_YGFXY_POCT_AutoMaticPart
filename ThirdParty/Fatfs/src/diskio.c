@@ -9,9 +9,15 @@
 
 #include "diskio.h"		/* FatFs lower layer API */
 
-#include "SD_SPI_Driver.h"
+#include "stm324x7i_eval_sdio_sd.h"
 
+#include	<string.h>
+#include	"stdio.h"
+#include 	"stdlib.h"
 
+#define SD_BLOCKSIZE 512
+
+extern SD_CardInfo SDCardInfo;
 
 /*-----------------------------------------------------------------------*/
 /* Get Drive Status                                                      */
@@ -34,14 +40,19 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-	if (pdrv) return STA_NOINIT;		/* Supports only single drive */
+	DSTATUS status = STA_NOINIT;	
 	
-	if (SD_Init())
-		return STA_NOINIT;
-	else
+	if(SD_Init()==SD_OK)
 	{
-		return RES_OK;
+		status &= ~STA_NOINIT;
 	}
+	else 
+	{
+		status = STA_NOINIT;
+	}
+
+	return status;
+
 }
 
 
@@ -57,18 +68,19 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-		if (SD_CardInfo.Type != SD_TYPE_SDHC) // SDHC 以 BLOCK 为单位，其他的以 BYTE 为单位
-		{
-			sector *= SD_BLOCK_SIZE;
-		}
-		if (count == 1)
-		{
-			if (SD_ReadBlock(buff, sector, SD_BLOCK_SIZE)) return RES_ERROR;
-		}
-		else
-		{
-			if (SD_ReadMultiBlocks(buff, sector, SD_BLOCK_SIZE, count)) return RES_ERROR;
-		}
+	SD_Error SD_state = SD_OK;
+
+	SD_state = SD_ReadMultiBlocks(buff,sector*SD_BLOCKSIZE,SD_BLOCKSIZE,count);
+	if(SD_state == SD_OK)
+	{
+		/* Check if the Transfer is finished */
+		SD_state=SD_WaitReadOperation();
+		while(SD_GetStatus() != SD_TRANSFER_OK);
+	}
+	
+	if(SD_state != SD_OK)
+		return RES_PARERR;
+	else
 		return RES_OK;
 }
 
@@ -85,18 +97,25 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-		if (SD_CardInfo.Type != SD_TYPE_SDHC) // SDHC 以 BLOCK 为单位，其他的以 BYTE 为单位
-		{
-			sector *= SD_BLOCK_SIZE;
-		}
-		if (count == 1)
-		{
-			if (SD_WriteBlock((uint8_t *)buff, sector, SD_BLOCK_SIZE)) return RES_ERROR;
-		}
-		else
-		{
-			if (SD_WriteMultiBlocks((uint8_t *)buff, sector, SD_BLOCK_SIZE, count)) return RES_ERROR;
-		}
+	SD_Error SD_state = SD_OK;
+	
+	if (!count) {
+		return RES_PARERR;		/* Check parameter */
+	}
+
+	SD_state = SD_WriteMultiBlocks((uint8_t *)buff,sector*SD_BLOCKSIZE,SD_BLOCKSIZE,count);
+	if(SD_state==SD_OK)
+	{
+		/* Check if the Transfer is finished */
+		SD_state=SD_WaitWriteOperation();
+
+		/* Wait until end of DMA transfer */
+		while(SD_GetStatus() != SD_TRANSFER_OK);			
+	}
+
+	if(SD_state != SD_OK)
+		return RES_PARERR;
+	else
 		return RES_OK;
 }
 
@@ -112,42 +131,25 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-		DRESULT res = RES_OK;
-		switch (cmd)
-		{
-			#if !_FS_READONLY
-			case CTRL_SYNC:
-				if (SD_Assert())
-				{
-					res = RES_ERROR;
-				}
-				else
-				{
-					res = RES_OK;
-					SD_DeAssert();
-				}
+	switch (cmd) 
+			{
+				// Get R/W sector size (WORD) 
+				case GET_SECTOR_SIZE :    
+					*(WORD * )buff = SD_BLOCKSIZE;
 				break;
-			#endif
-			#if _USE_MKFS && !_FS_READONLY
-			case GET_SECTOR_COUNT:
-				*(DWORD*)buff = (DWORD)((SD_CardInfo.Capacity) >> 9);
-				//SD_TYPE_MMC3 / SD_TYPE_SDV1 算法不一样
-				res = RES_OK;
+				// Get erase block size in unit of sector (DWORD)
+				case GET_BLOCK_SIZE :      
+					*(DWORD * )buff = SDCardInfo.CardBlockSize;
 				break;
-			case GET_BLOCK_SIZE:
-				*(DWORD*)buff = SD_CardInfo.BlockSize;
-				res = RES_OK;
+
+				case GET_SECTOR_COUNT:
+					*(DWORD * )buff = SDCardInfo.CardCapacity/SDCardInfo.CardBlockSize;
+					break;
+				case CTRL_SYNC :
 				break;
-			#endif
-			#if _MAX_SS != _MIN_SS
-			case GET_SECTOR_SIZE:
-				res = RES_OK;
-				break;
-			#endif
-			default:
-				res = RES_PARERR;
-		}
-		return res;
+			}
+			return RES_OK;	
+
 }
 
 DWORD get_fattime (void)

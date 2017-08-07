@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_projx.xsd">
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_proj.xsd">
 
-  <SchemaVersion>2.1</SchemaVersion>
+  <SchemaVersion>1.1</SchemaVersion>
 
   <Header>### uVision Project, (C) Keil Software</Header>
 
   <Targets>
     <Target>
-      <TargetName>Target 1</TargetName>
+      <TargetName>NCD_YGFXY_AutoMatic</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32F407ZG</Device>
+          <Device>STM32F407VG</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <Cpu>IRAM(0x20000000,0x20000) IRAM2(0x10000000,0x10000) IROM(0x08000000,0x100000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
+          <Cpu>IROM(0x08000000,0x100000) IRAM(0x20000000,0x20000) IRAM2(0x10000000,0x10000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
-          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F4xx_1024 -FS08000000 -FL0100000 -FP0($$Device:STM32F407ZG$Flash\STM32F4xx_1024.FLM))</FlashDriverDll>
-          <DeviceId>0</DeviceId>
-          <RegisterFile>$$Device:STM32F407ZG$Device\Include\stm32f4xx.h</RegisterFile>
+          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F4xx_1024 -FS08000000 -FL0100000 -FP0($$Device:STM32F407VG$Flash\STM32F4xx_1024.FLM))</FlashDriverDll>
+          <DeviceId>6103</DeviceId>
+          <RegisterFile>$$Device:STM32F407VG$Device\Include\stm32f4xx.h</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
           <Asm></Asm>
           <Linker></Linker>
           <OHString></OHString>
           <InfinionOptionDll></InfinionOptionDll>
-          <SLE66CMisc></SLE66CMisc>
+          <SLE66CMisc>-DSTM32F40_41xxx</SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32F407ZG$SVD\STM32F40x.svd</SFDFile>
+          <SFDFile>$$Device:STM32F407VG$SVD\STM32F40x.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -45,10 +45,10 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\Obj\</OutputDirectory>
-          <OutputName>NCD_Tester</OutputName>
+          <OutputName>NCD_YGFXY_AutoMatic</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>1</CreateHexFile>
+          <CreateHexFile>0</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\List\</ListingPath>
@@ -104,11 +104,11 @@
         </CommonProperty>
         <DllOption>
           <SimDllName>SARMCM3.DLL</SimDllName>
-          <SimDllArguments> -REMAP -MPU</SimDllArguments>
+          <SimDllArguments>-MPU -REMAP</SimDllArguments>
           <SimDlgDll>DCM.DLL</SimDlgDll>
           <SimDlgDllArguments>-pCM4</SimDlgDllArguments>
           <TargetDllName>SARMCM3.DLL</TargetDllName>
-          <TargetDllArguments> -MPU</TargetDllArguments>
+          <TargetDllArguments>-MPU</TargetDllArguments>
           <TargetDlgDll>TCM.DLL</TargetDlgDll>
           <TargetDlgDllArguments>-pCM4</TargetDlgDllArguments>
         </DllOption>
@@ -169,12 +169,12 @@
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
-            <Capability>1</Capability>
-            <DriverSelection>4096</DriverSelection>
+            <Capability>0</Capability>
+            <DriverSelection>-1</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3>"" ()</Flash3>
+          <Flash3></Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -227,7 +227,7 @@
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <RoSelD>3</RoSelD>
-            <RwSelD>4</RwSelD>
+            <RwSelD>3</RwSelD>
             <CodeSel>0</CodeSel>
             <OptFeed>0</OptFeed>
             <NoZi1>0</NoZi1>
@@ -244,7 +244,7 @@
             <Ra2Chk>0</Ra2Chk>
             <Ra3Chk>0</Ra3Chk>
             <Im1Chk>1</Im1Chk>
-            <Im2Chk>1</Im2Chk>
+            <Im2Chk>0</Im2Chk>
             <OnChipMemories>
               <Ocm1>
                 <Type>0</Type>
@@ -355,14 +355,14 @@
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
-            <wLevel>0</wLevel>
+            <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>1</uC99>
             <useXO>0</useXO>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
+              <Define></Define>
               <Undefine></Undefine>
               <IncludePath>..\AppLunch;..\COM;..\Datas;..\Function;..\HardwareDriver;..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\Libraries\STM32F4x7_ETH_Driver\inc;..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\Task;..\ThirdParty\Fatfs\src;..\ThirdParty\lwip-1.4.1\src\include;..\ThirdParty\lwip-1.4.1\src\include\ipv4;..\ThirdParty\lwip-1.4.1\src\include\netif;..\ThirdParty\lwip-1.4.1\src\include\lwip;..\ThirdParty\lwip-1.4.1\port\STM32F4x7\FreeRTOS;..\ThirdParty\lwip-1.4.1\port\STM32F4x7;..\ThirdParty\lwip-1.4.1\User;..\ThirdParty\cJSON-master;..\UI;..\ThirdParty\FreeRTOS\inc;..\Daos;..\Entity;..\Libraries\CMSIS\Include</IncludePath>
             </VariousControls>
@@ -408,6 +408,11 @@
           <GroupName>User</GroupName>
           <Files>
             <File>
+              <FileName>stm32f4xx_it.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\AppLunch\stm32f4xx_it.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\AppLunch\main.c</FilePath>
@@ -417,16 +422,21 @@
               <FileType>1</FileType>
               <FilePath>..\AppLunch\SystemInit.c</FilePath>
             </File>
-            <File>
-              <FileName>stm32f4xx_it.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\AppLunch\stm32f4xx_it.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Drivers</GroupName>
           <Files>
+            <File>
+              <FileName>CardCheck_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\CardCheck_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>CodeScanner_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\CodeScanner_Driver.c</FilePath>
+            </File>
             <File>
               <FileName>Iwdg_Driver.c</FileName>
               <FileType>1</FileType>
@@ -436,6 +446,26 @@
               <FileName>Led_Driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\Led_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>Motor1_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\Motor1_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>Motor2_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\Motor2_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>Motor3_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\Motor3_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>Motor4_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\Motor4_Driver.c</FilePath>
             </File>
             <File>
               <FileName>Timer3_Driver.c</FileName>
@@ -468,11 +498,6 @@
               <FilePath>..\HardwareDriver\Usart4_Driver.c</FilePath>
             </File>
             <File>
-              <FileName>CardCheck_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\CardCheck_Driver.c</FilePath>
-            </File>
-            <File>
               <FileName>Usart5_Driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\Usart5_Driver.c</FilePath>
@@ -483,29 +508,14 @@
               <FilePath>..\HardwareDriver\Usart6_Driver.c</FilePath>
             </File>
             <File>
-              <FileName>CodeScanner_Driver.c</FileName>
+              <FileName>SDIO_Driver.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\CodeScanner_Driver.c</FilePath>
+              <FilePath>..\HardwareDriver\SDIO_Driver.c</FilePath>
             </File>
             <File>
-              <FileName>Motor1_Driver.c</FileName>
+              <FileName>stm324x7i_eval_sdio_sd.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\Motor1_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>Motor2_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\Motor2_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>Motor3_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\Motor3_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>Motor4_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\Motor4_Driver.c</FilePath>
+              <FilePath>..\HardwareDriver\stm324x7i_eval_sdio_sd.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -516,26 +526,6 @@
               <FileName>CodeScanFunction.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Function\CodeScanFunction.c</FilePath>
-            </File>
-            <File>
-              <FileName>Paidui_Fun.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Function\Paidui_Fun.c</FilePath>
-            </File>
-            <File>
-              <FileName>Printf_Fun.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Function\Printf_Fun.c</FilePath>
-            </File>
-            <File>
-              <FileName>ReadBarCode_Fun.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Function\ReadBarCode_Fun.c</FilePath>
-            </File>
-            <File>
-              <FileName>Universal_Fun.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Function\Universal_Fun.c</FilePath>
             </File>
             <File>
               <FileName>Motor1_Fun.c</FileName>
@@ -556,6 +546,26 @@
               <FileName>Motor4_Fun.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Function\Motor4_Fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>Paidui_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\Paidui_Fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>Printf_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\Printf_Fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>ReadBarCode_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\ReadBarCode_Fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>Universal_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\Universal_Fun.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -588,7 +598,7 @@
           <GroupName>UI</GroupName>
         </Group>
         <Group>
-          <GroupName>Entity</GroupName>
+          <GroupName>Entitys</GroupName>
           <Files>
             <File>
               <FileName>DateTime.h</FileName>
@@ -606,6 +616,11 @@
               <FilePath>..\Entity\ItemConstData.h</FilePath>
             </File>
             <File>
+              <FileName>Motor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\Motor.h</FilePath>
+            </File>
+            <File>
               <FileName>PaiduiUnitData.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Entity\PaiduiUnitData.h</FilePath>
@@ -620,15 +635,10 @@
               <FileType>5</FileType>
               <FilePath>..\Entity\Temperature.h</FilePath>
             </File>
-            <File>
-              <FileName>Motor.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Entity\Motor.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>DataS</GroupName>
+          <GroupName>Datas</GroupName>
           <Files>
             <File>
               <FileName>ItemConst_Data.c</FileName>
@@ -636,9 +646,9 @@
               <FilePath>..\Datas\ItemConst_Data.c</FilePath>
             </File>
             <File>
-              <FileName>System_Data.c</FileName>
+              <FileName>Motor_Data.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Datas\System_Data.c</FilePath>
+              <FilePath>..\Datas\Motor_Data.c</FilePath>
             </File>
             <File>
               <FileName>QRCode_Data.c</FileName>
@@ -646,9 +656,14 @@
               <FilePath>..\Datas\QRCode_Data.c</FilePath>
             </File>
             <File>
-              <FileName>Motor_Data.c</FileName>
+              <FileName>System_Data.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Datas\Motor_Data.c</FilePath>
+              <FilePath>..\Datas\System_Data.c</FilePath>
+            </File>
+            <File>
+              <FileName>SystemSet_Data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Datas\SystemSet_Data.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -656,7 +671,10 @@
           <GroupName>Daos</GroupName>
         </Group>
         <Group>
-          <GroupName>COM</GroupName>
+          <GroupName>LwipUser</GroupName>
+        </Group>
+        <Group>
+          <GroupName>Com</GroupName>
           <Files>
             <File>
               <FileName>CRC_CCITT.c</FileName>
@@ -711,7 +729,7 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>FreertOS</GroupName>
+          <GroupName>Freertos</GroupName>
           <Files>
             <File>
               <FileName>heap_4.c</FileName>
@@ -756,12 +774,22 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>STM32_Lib</GroupName>
+          <GroupName>ST_Lib</GroupName>
           <Files>
             <File>
               <FileName>misc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\misc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_dac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_dac.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_dma.c</FileName>
@@ -784,14 +812,14 @@
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_iwdg.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_pwr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_pwr.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f4xx_rcc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_rcc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_sdio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_sdio.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_spi.c</FileName>
@@ -821,14 +849,33 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Doc</GroupName>
+          <GroupName>Fatfs</GroupName>
           <Files>
             <File>
-              <FileName>README.txt</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\DOC\README.txt</FilePath>
+              <FileName>diskio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\Fatfs\src\diskio.c</FilePath>
+            </File>
+            <File>
+              <FileName>ff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\Fatfs\src\ff.c</FilePath>
+            </File>
+            <File>
+              <FileName>syscall.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\Fatfs\src\option\syscall.c</FilePath>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>Lwip_1.4.1</GroupName>
+        </Group>
+        <Group>
+          <GroupName>Cjson</GroupName>
+        </Group>
+        <Group>
+          <GroupName>Doc</GroupName>
         </Group>
       </Groups>
     </Target>

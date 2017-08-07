@@ -3,8 +3,6 @@
 
 #include	"MyEncryptTool.h"
 #include	"MyMem.h"
-#include	"user_fatfs.h"
-
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"

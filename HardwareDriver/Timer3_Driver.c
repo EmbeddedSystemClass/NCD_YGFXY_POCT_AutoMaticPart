@@ -20,7 +20,7 @@
 /***************************************************************************************************/
 /******************************************Static Variables*****************************************/
 /***************************************************************************************************/
-
+static Motor * motor = NULL;
 /***************************************************************************************************/
 /******************************************Static Methods*******************************************/
 /***************************************************************************************************/
@@ -69,15 +69,16 @@ void TIM3_IRQHandler(void)
 {	
 	if(TIM_GetITStatus(TIM3, TIM_IT_Update) == SET)
 	{
-		if(getMotorxMoveStepNum(Motor_1) > 0)
+		motor = getMotor(Motor_1);
+		if(motor->moveStepNum > 0)
 		{
 			plusMotorxPeriodCnt(Motor_1);
 			
-			if(getMotorxPeriodCnt(Motor_1) <= getMotorxHighTime(Motor_1))
+			if(motor->periodCnt <= motor->highTime)
 				setMotor1ClkGPIO(ON);
-			else if(getMotorxPeriodCnt(Motor_1) < getMotorxLowTime(Motor_1))
+			else if(motor->periodCnt < motor->lowTime)
 				setMotor1ClkGPIO(OFF);
-			else if(getMotorxPeriodCnt(Motor_1) == getMotorxLowTime(Motor_1))
+			else if(motor->periodCnt == motor->lowTime)
 			{
 				setMotorxPeriodCnt(Motor_1, 0);
 				setMotor1ClkGPIO(OFF);
@@ -85,16 +86,17 @@ void TIM3_IRQHandler(void)
 				plusMotorxLocation(Motor_1, 1);
 			}
 		}
-		
-		if(getMotorxMoveStepNum(Motor_2) > 0)
+
+		motor = getMotor(Motor_2);
+		if(motor->moveStepNum > 0)
 		{
 			plusMotorxPeriodCnt(Motor_2);
 			
-			if(getMotorxPeriodCnt(Motor_2) <= getMotorxHighTime(Motor_2))
+			if(motor->periodCnt <= motor->highTime)
 				setMotor2ClkGPIO(ON);
-			else if(getMotorxPeriodCnt(Motor_2) < getMotorxLowTime(Motor_2))
+			else if(motor->periodCnt < motor->lowTime)
 				setMotor2ClkGPIO(OFF);
-			else if(getMotorxPeriodCnt(Motor_2) == getMotorxLowTime(Motor_2))
+			else if(motor->periodCnt == motor->lowTime)
 			{
 				setMotorxPeriodCnt(Motor_2, 0);
 				setMotor2ClkGPIO(OFF);
@@ -103,15 +105,16 @@ void TIM3_IRQHandler(void)
 			}
 		}
 	
-		if(getMotorxMoveStepNum(Motor_3) > 0)
+		motor = getMotor(Motor_3);
+		if(motor->moveStepNum > 0)
 		{
 			plusMotorxPeriodCnt(Motor_3);
 			
-			if(getMotorxPeriodCnt(Motor_3) <= getMotorxHighTime(Motor_3))
+			if(motor->periodCnt <= motor->highTime)
 				setMotor3ClkGPIO(ON);
-			else if(getMotorxPeriodCnt(Motor_3) < getMotorxLowTime(Motor_3))
+			else if(motor->periodCnt < motor->lowTime)
 				setMotor3ClkGPIO(OFF);
-			else if(getMotorxPeriodCnt(Motor_3) == getMotorxLowTime(Motor_3))
+			else if(motor->periodCnt == motor->lowTime)
 			{
 				setMotorxPeriodCnt(Motor_3, 0);
 				setMotor3ClkGPIO(OFF);
@@ -127,15 +130,16 @@ void TIM3_IRQHandler(void)
 			}
 		}
 		
-		if(getMotorxMoveStepNum(Motor_4) > 0)
+		motor = getMotor(Motor_4);
+		if(motor->moveStepNum > 0)
 		{
 			plusMotorxPeriodCnt(Motor_4);
 			
-			if(getMotorxPeriodCnt(Motor_4) <= getMotorxHighTime(Motor_4))
+			if(motor->periodCnt <= motor->highTime)
 				setMotor4ClkGPIO(ON);
-			else if(getMotorxPeriodCnt(Motor_4) < getMotorxLowTime(Motor_4))
+			else if(motor->periodCnt < motor->lowTime)
 				setMotor4ClkGPIO(OFF);
-			else if(getMotorxPeriodCnt(Motor_4) == getMotorxLowTime(Motor_4))
+			else if(motor->periodCnt == motor->lowTime)
 			{
 				setMotorxPeriodCnt(Motor_4, 0);
 				setMotor4ClkGPIO(OFF);
@@ -144,7 +148,7 @@ void TIM3_IRQHandler(void)
 			}
 			
 			//如果是打开过程，检测到最大位置，则停止，记为原点
-			if((getMotorxDir(Motor_4) == false) && (ON == getMotor4OriginStatus()))
+			if((motor->isFront == false) && (ON == getMotor4OriginStatus()))
 			{
 				setMotorxParm1(Motor_4, false);
 				setMotorxMoveStepNum(Motor_4, 0);

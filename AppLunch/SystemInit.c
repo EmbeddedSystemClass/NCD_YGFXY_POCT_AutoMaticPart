@@ -88,20 +88,22 @@ void MySystemBSPInit(void)
 //	Motor2_GPIO_Init();							//电机 IO初始化
 	delay_ms(1);
 	
-	Motor3_GPIO_Init();							//电机 IO初始化
+//	Motor3_GPIO_Init();							//电机 IO初始化
 	delay_ms(1);
 	
-	Motor4_GPIO_Init();							//电机 IO初始化
+//	Motor4_GPIO_Init();							//电机 IO初始化
 	delay_ms(1);
 	
 //	CodeScanner_GPIO_Init();
 	delay_ms(1);
 	
 	//	Timer4_Init();						//定时器初始化
-	Timer3_Init();						//定时器初始化
+//	Timer3_Init();						//定时器初始化
 	delay_ms(1);
 	
-	IWDG_Init(3, 3000);					//看门狗初始化,超时时间2S
+//	SD_Init();
+	
+	
+//	IWDG_Init(3, 3000);					//看门狗初始化,超时时间2S
 	delay_ms(1);
 }
-

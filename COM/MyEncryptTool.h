@@ -6,7 +6,6 @@
 
 typedef struct PointBuffer_Tag
 {
-	FatfsFileInfo_Def myfile;
 	unsigned short i;
 	unsigned short j;
 	unsigned short tempIndex;
