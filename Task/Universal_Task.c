@@ -13,6 +13,7 @@
 #include	"Led_Driver.h"
 #include	"Universal_Fun.h"
 #include 	"stm324x7i_eval_sdio_sd.h"
+#include	"Ads8325_Driver.h"
 
 #include	"CRC16.h"
 
@@ -34,7 +35,7 @@ const char * UniversalTaskName = "vUniversalTask";		//看门狗任务名
 
 static SD_TestStruct sd_TestStruct;
 static FatfsFileInfo_Def myfile;
-static FATFS S_Fatfs;				/* File system object */
+
 
 char fileName[10];
 /***************************************************************************************************/
@@ -74,17 +75,22 @@ char StartvUniversalTask(void)
 static void vUniversalTask( void *pvParameters )
 {
 	static unsigned int count = 0;
+	double tempv = 0;
 	
-	FRESULT res = f_mount(&S_Fatfs, "0:", 1);					//挂载SD卡
-	res = FR_OK;
+//	FRESULT res = f_mount(&S_Fatfs, "0:", 1);					//挂载SD卡
+//	res = FR_OK;
 	while(1)
 	{
 		/*系统状态灯*/
 		//LedToggle();
-		sd_test(count);
+		
+		tempv = ADS8325();
+		
+		tempv = 0;
+
 		count++;
 		
-		vTaskDelay(10000 / portTICK_RATE_MS);
+		vTaskDelay(1000 / portTICK_RATE_MS);
 	}
 }
 

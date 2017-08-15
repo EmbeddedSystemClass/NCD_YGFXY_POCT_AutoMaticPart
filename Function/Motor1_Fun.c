@@ -10,7 +10,10 @@
 /***************************************************************************************************/
 #include	"Motor1_Fun.h"
 
+#include	"Motor1_Driver.h"
 #include	"Timer3_Driver.h"
+
+#include	"Delay.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -23,7 +26,7 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-
+static Motor * motor1 = NULL;
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -34,12 +37,78 @@
 /****************************************File Start*************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-void startMotrox(Motorx_Def motor, bool isFront, unsigned short stepNum)
-{	
-	setMotorxDir(motor, isFront);
+/***************************************************************************************************
+*FunctionName: motor1Reset
+*Description: 电机1重置位置，则下次转盘运动的时候会重新定位
+*Input: 
+*Output: 
+*Return: 
+*Author: xsx
+*Date: 2017年8月11日 08:59:08
+***************************************************************************************************/
+void motor1Reset(void)
+{
+	motor1 = getMotor(Motor_1);
 	
-	setMotorxMoveStepNum(motor, stepNum);
-	setMotorxPeriodCnt(motor, 0);
+	motor1->motorLocation = 0;
+}
+/***************************************************************************************************
+*FunctionName: motor1StartMove
+*Description: 电机1开始运动N步
+*Input:  isFront -- 是否往前走
+*		stepNum -- 走的步数
+*		waitTime -- 等待时间
+*Output: 
+*Return: 
+*Author: xsx
+*Date: 2017年8月10日 14:12:21
+***************************************************************************************************/
+void motor1MoveToNum(unsigned char num, unsigned short waitTime)
+{
+	unsigned char tempv = 0;
+	motor1 = getMotor(Motor_1);
+
+	if(motor1->motorLocation == 0)
+		motor1->isFront = true;
+	else 
+	{
+		if(motor1->motorLocation == num)
+			return;
+		else if(motor1->motorLocation > num)
+		{
+			tempv = motor1->motorLocation - num;
+			if(tempv <= 4)
+				motor1->isFront = false;
+			else
+				motor1->isFront = true;
+		}
+		else
+		{
+			tempv = num - motor1->motorLocation;
+			if(tempv <= 4)
+				motor1->isFront = true;
+			else
+				motor1->isFront = false;
+		}
+		
+		
+	}
+
+	if(motor1->isFront)
+		setMotor1DirGPIO(ON);
+	else
+		setMotor1DirGPIO(OFF);
+	delay_ms(5);
+	
+	motor1->periodCnt = 0;
+	motor1->motorTargetLocation = num;
+	motor1->parm2 = true;
+	motor1->moveStepNum = 65000;
+	
+	while(waitTime-- && (motor1->motorLocation != motor1->motorTargetLocation))
+	{
+		vTaskDelay(1 / portTICK_RATE_MS);
+	}
 }
 /****************************************end of file************************************************/
 

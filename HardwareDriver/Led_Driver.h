@@ -6,9 +6,9 @@
 #include	"stm32f4xx_rcc.h"
 #include	"Define.h"
 
-#define	Led_Pin			GPIO_Pin_9
-#define	Led_GpioGroup	GPIOF
-#define	Led_Rcc			RCC_AHB1Periph_GPIOF
+#define	Led_Pin			GPIO_Pin_7
+#define	Led_GpioGroup	GPIOB
+#define	Led_Rcc			RCC_AHB1Periph_GPIOB
 
 
 void Led_GPIOInit(void);

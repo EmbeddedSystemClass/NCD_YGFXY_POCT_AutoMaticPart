@@ -473,11 +473,6 @@
               <FilePath>..\HardwareDriver\Timer3_Driver.c</FilePath>
             </File>
             <File>
-              <FileName>Timer4_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\Timer4_Driver.c</FilePath>
-            </File>
-            <File>
               <FileName>Usart1_Driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\Usart1_Driver.c</FilePath>
@@ -516,6 +511,36 @@
               <FileName>stm324x7i_eval_sdio_sd.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\stm324x7i_eval_sdio_sd.c</FilePath>
+            </File>
+            <File>
+              <FileName>Channel_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\Channel_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>ADS8325_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\ADS8325_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>DA_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\DA_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>RX8025_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\RX8025_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>LCD_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\LCD_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>LedCheck_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\LedCheck_Driver.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -567,6 +592,16 @@
               <FileType>1</FileType>
               <FilePath>..\Function\Universal_Fun.c</FilePath>
             </File>
+            <File>
+              <FileName>SelfTest_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\SelfTest_Fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>LCDInputFun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\LCDInputFun.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -592,10 +627,32 @@
               <FileType>1</FileType>
               <FilePath>..\Task\Universal_Task.c</FilePath>
             </File>
+            <File>
+              <FileName>LcdInput_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Task\LcdInput_Task.c</FilePath>
+            </File>
+            <File>
+              <FileName>SystemUI_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Task\SystemUI_Task.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>UI</GroupName>
+          <Files>
+            <File>
+              <FileName>LunchPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\LunchPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>WelcomePage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\WelcomePage.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Entitys</GroupName>
@@ -635,6 +692,61 @@
               <FileType>5</FileType>
               <FilePath>..\Entity\Temperature.h</FilePath>
             </File>
+            <File>
+              <FileName>Device.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\Device.h</FilePath>
+            </File>
+            <File>
+              <FileName>NetWork.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\NetWork.h</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceAdjust.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\DeviceAdjust.h</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceError.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\DeviceError.h</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceMaintenance.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\DeviceMaintenance.h</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceQuality.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\DeviceQuality.h</FilePath>
+            </File>
+            <File>
+              <FileName>Operator.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\Operator.h</FilePath>
+            </File>
+            <File>
+              <FileName>RemoteSoftInfo.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\RemoteSoftInfo.h</FilePath>
+            </File>
+            <File>
+              <FileName>ReTestData.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\ReTestData.h</FilePath>
+            </File>
+            <File>
+              <FileName>TestData.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\TestData.h</FilePath>
+            </File>
+            <File>
+              <FileName>AdjustData.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\AdjustData.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -665,13 +777,107 @@
               <FileType>1</FileType>
               <FilePath>..\Datas\SystemSet_Data.c</FilePath>
             </File>
+            <File>
+              <FileName>UI_Data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Datas\UI_Data.c</FilePath>
+            </File>
+            <File>
+              <FileName>MyTest_Data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Datas\MyTest_Data.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Daos</GroupName>
+          <Files>
+            <File>
+              <FileName>AppFileDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\AppFileDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceAdjustDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceAdjustDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceErrorDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceErrorDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceMaintenanceDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceMaintenanceDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceQualityDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceQualityDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>RecordDataDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\RecordDataDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>RemoteSoftDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\RemoteSoftDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>SystemSet_Dao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\SystemSet_Dao.c</FilePath>
+            </File>
+            <File>
+              <FileName>TestDataDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\TestDataDao.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>LwipUser</GroupName>
+          <Files>
+            <File>
+              <FileName>stm32f4x7_eth.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\STM32F4x7_ETH_Driver\src\stm32f4x7_eth.c</FilePath>
+            </File>
+            <File>
+              <FileName>ethernetif.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\port\STM32F4x7\FreeRTOS\ethernetif.c</FilePath>
+            </File>
+            <File>
+              <FileName>sys_arch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\port\STM32F4x7\FreeRTOS\sys_arch.c</FilePath>
+            </File>
+            <File>
+              <FileName>netconf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\User\netconf.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4x7_eth_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\User\stm32f4x7_eth_bsp.c</FilePath>
+            </File>
+            <File>
+              <FileName>etharp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\netif\etharp.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Com</GroupName>
@@ -725,6 +931,16 @@
               <FileName>Timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\COM\Timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>MyStack.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\COM\MyStack.c</FilePath>
+            </File>
+            <File>
+              <FileName>Intent.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\COM\Intent.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -870,6 +1086,168 @@
         </Group>
         <Group>
           <GroupName>Lwip_1.4.1</GroupName>
+          <Files>
+            <File>
+              <FileName>api_lib.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\api\api_lib.c</FilePath>
+            </File>
+            <File>
+              <FileName>api_msg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\api\api_msg.c</FilePath>
+            </File>
+            <File>
+              <FileName>err.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\api\err.c</FilePath>
+            </File>
+            <File>
+              <FileName>netbuf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\api\netbuf.c</FilePath>
+            </File>
+            <File>
+              <FileName>netdb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\api\netdb.c</FilePath>
+            </File>
+            <File>
+              <FileName>netifapi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\api\netifapi.c</FilePath>
+            </File>
+            <File>
+              <FileName>sockets.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\api\sockets.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcpip.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\api\tcpip.c</FilePath>
+            </File>
+            <File>
+              <FileName>autoip.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\autoip.c</FilePath>
+            </File>
+            <File>
+              <FileName>icmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\icmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>igmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\igmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>inet.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\inet.c</FilePath>
+            </File>
+            <File>
+              <FileName>inet_chksum.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\inet_chksum.c</FilePath>
+            </File>
+            <File>
+              <FileName>ip.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\ip.c</FilePath>
+            </File>
+            <File>
+              <FileName>ip_addr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\ip_addr.c</FilePath>
+            </File>
+            <File>
+              <FileName>ip_frag.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\ip_frag.c</FilePath>
+            </File>
+            <File>
+              <FileName>def.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\def.c</FilePath>
+            </File>
+            <File>
+              <FileName>dhcp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\dhcp.c</FilePath>
+            </File>
+            <File>
+              <FileName>dns.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\dns.c</FilePath>
+            </File>
+            <File>
+              <FileName>init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\init.c</FilePath>
+            </File>
+            <File>
+              <FileName>mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\mem.c</FilePath>
+            </File>
+            <File>
+              <FileName>memp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\memp.c</FilePath>
+            </File>
+            <File>
+              <FileName>netif.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\netif.c</FilePath>
+            </File>
+            <File>
+              <FileName>pbuf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\pbuf.c</FilePath>
+            </File>
+            <File>
+              <FileName>raw.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\raw.c</FilePath>
+            </File>
+            <File>
+              <FileName>stats.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\stats.c</FilePath>
+            </File>
+            <File>
+              <FileName>sys.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\sys.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\tcp.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcp_in.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\tcp_in.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcp_out.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\tcp_out.c</FilePath>
+            </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\timers.c</FilePath>
+            </File>
+            <File>
+              <FileName>udp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\udp.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Cjson</GroupName>

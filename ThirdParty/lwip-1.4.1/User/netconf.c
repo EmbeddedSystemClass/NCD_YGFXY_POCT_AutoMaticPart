@@ -1,3 +1,4 @@
+#if _Use_Lwip_Fun
 /***************************************************************************************************
 *FileName：netconf
 *Description：LWIP的初始化，网线状态检测任务
@@ -188,5 +189,5 @@ void ETH_link_callback(struct netif *netif)
 	}
 }
 
-
+#endif
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

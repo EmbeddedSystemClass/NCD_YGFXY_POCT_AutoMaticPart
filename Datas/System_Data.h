@@ -2,10 +2,12 @@
 #ifndef	SYSTEM_D_H
 #define	SYSTEM_D_H
 
+#include	"DateTime.h"
+
 #pragma pack(1)
 typedef struct
 {
-	unsigned char temp;
+	DateTime systemDateTime;
 }SystemData;
 #pragma pack()
 

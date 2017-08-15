@@ -13,6 +13,12 @@ typedef enum
 	Motor_None = 0xff,
 }Motorx_Def;
 
+#define	Motor2_MidLocation		40000
+
+#define	Motor4_OpenLocation		1000
+#define	Motor4_CardLocation		3700
+#define	Motor4_CloseLocation	4500
+
 Motor * getMotor(Motorx_Def motor);
 
 void setMotorxDir(Motorx_Def motor, bool value);

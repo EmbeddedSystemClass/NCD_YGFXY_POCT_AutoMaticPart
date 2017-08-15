@@ -28,16 +28,25 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_it.h"
+#include 	"stm32f4xx_it.h"
 
-#include "stm324x7i_eval_sdio_sd.h"
+#include	"Led_Driver.h"
+#include	"Motor1_Driver.h"
+#include	"Motor2_Driver.h"
+#include	"Motor3_Driver.h"
+#include	"Motor4_Driver.h"
+#include 	"stm324x7i_eval_sdio_sd.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
+#include	"Motor_Data.h"
+
+#include 	"FreeRTOS.h"
+#include 	"task.h"
+#include 	"queue.h"
 
 
-extern void xPortSysTickHandler(void); 
+extern void xPortSysTickHandler(void);
+
+static Motor * motor = NULL;
 
 /** @addtogroup STM32F4xx_StdPeriph_Examples
   * @{
@@ -141,14 +150,70 @@ void DebugMon_Handler(void)
 {
 }
 
-/**
-  * @brief  This function handles PendSVC exception.
-  * @param  None
-  * @retval None
-  */
-//void PendSV_Handler(void)
-//{
-//}
+void EXTI9_5_IRQHandler(void)
+{
+	
+	//电机1，原点传感器触发
+	if(EXTI_GetFlagStatus(Motor1_Sensor1_EXTI_Line) == SET)
+	{
+
+		EXTI_ClearITPendingBit(Motor1_Sensor1_EXTI_Line);
+	}
+	
+	//电机1，排队位传感器触发
+	if(EXTI_GetFlagStatus(Motor1_Sensor2_EXTI_Line) == SET)
+	{
+		motor = getMotor(Motor_1);
+		
+		if((motor->motorLocation != 0) && (motor->parm1 > 2000))
+		{
+			if(motor->isFront)
+				motor->motorLocation++;
+			else
+				motor->motorLocation--;
+			
+			if(motor->motorLocation <= 0)
+				motor->motorLocation = PaiDuiWeiNum;
+			else if(motor->motorLocation > PaiDuiWeiNum)
+				motor->motorLocation = 1;
+		}
+		
+		motor->parm1 = 0;
+		
+		if(Motor1Sensor1Triggered)
+			motor->motorLocation = 1;
+		
+		EXTI_ClearITPendingBit(Motor1_Sensor2_EXTI_Line);
+	}
+	
+/*	//电机2，原点传感器
+	if(EXTI_GetFlagStatus(Motor2_Sensor1_EXTI_Line) == SET)
+	{
+		motor = getMotor(Motor_2);
+		
+		motor->motorLocation = 0;
+
+		EXTI_ClearITPendingBit(Motor2_Sensor1_EXTI_Line);
+	}*/
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+	
+	//电机3，中间传感器
+	if(EXTI_GetFlagStatus(Motor2_Sensor2_EXTI_Line) == SET)
+	{
+
+		EXTI_ClearITPendingBit(Motor2_Sensor2_EXTI_Line);
+	}
+	
+	//电机3，最外面传感器
+	if(EXTI_GetFlagStatus(Motor2_Sensor3_EXTI_Line) == SET)
+	{
+		
+		EXTI_ClearITPendingBit(Motor2_Sensor3_EXTI_Line);
+	}
+}
 
 
 /**

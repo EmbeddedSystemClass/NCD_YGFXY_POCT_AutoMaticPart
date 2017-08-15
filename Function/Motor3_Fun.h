@@ -5,8 +5,8 @@
 #include	"Motor_Data.h"
 #include	"Motor.h"
 
-void motor3StartMove(bool isFront, unsigned short stepNum);
-void resetToOriginLocation(bool isWait);
+void motor3MoveTo(unsigned short location, unsigned short waitTime);
+void motor3GotoOriginLocation(unsigned short waitTime);
 
 #endif
 

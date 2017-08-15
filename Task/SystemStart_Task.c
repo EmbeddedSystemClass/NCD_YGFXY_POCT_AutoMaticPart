@@ -12,11 +12,12 @@
 
 #include	"Iwdg_Task.h"
 #include	"Universal_Task.h"
-#include	"Motor_Data.h"
-#include	"Motor1_Fun.h"
-#include	"Motor2_Fun.h"
-#include	"Motor3_Fun.h"
-#include	"Motor4_Fun.h"
+#include	"LcdInput_Task.h"
+#include	"SystemUI_Task.h"
+
+#include	"WelcomePage.h"
+
+#include	"UI_Data.h"
 
 #include	"Define.h"
 
@@ -65,45 +66,15 @@ static void vSystemStartTask( void *pvParameters )
 	
 	/*通用任务*/
 	StartvUniversalTask();
-	
-	
-//	resetToOriginLocation(true);
-/*	motor4ResetToOriginLocation();
-		vTaskDelay(1000 / portTICK_RATE_MS);
-	resetToOriginLocation(true);
-	
-	motor3StartMove(true, 10000);
-	vTaskDelay(1000 / portTICK_RATE_MS);
-	
-	while(1)
-	{
-		motor4MoveTo(500);
-		motor3StartMove(true, 2000);
-		vTaskDelay(1000 / portTICK_RATE_MS);
-		
-		motor4MoveTo(960);
-		vTaskDelay(1000 / portTICK_RATE_MS);
-		
-		motor3StartMove(true, 15000);
-		vTaskDelay(1000 / portTICK_RATE_MS);
-		
-		motor4MoveTo(500);
-		vTaskDelay(1000 / portTICK_RATE_MS);
-		
-		motor3StartMove(false, 5000);
-		vTaskDelay(1000 / portTICK_RATE_MS);
-		
-		motor3StartMove(true, 5000);
-		vTaskDelay(1000 / portTICK_RATE_MS);
-		
-		motor4MoveTo(960);
-		vTaskDelay(1000 / portTICK_RATE_MS);
-		
-		motor3StartMove(false, 17000);
-		vTaskDelay(1000 / portTICK_RATE_MS);
-		
-		
-	}*/
+
+	startActivity(createWelcomeActivity, NULL, NULL);
+
+	StartvSystemUITask();
+
+	StartvLcdInputTask();
+
+	SelfTest_Function();
+
 	vTaskDelete(NULL);
 }
 

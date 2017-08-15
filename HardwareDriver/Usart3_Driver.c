@@ -57,16 +57,20 @@ static void ConfigUsart3(void)
 	NVIC_InitTypeDef NVIC_InitStructure;
 
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
 
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_8 | GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_9;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
 	
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource8, GPIO_AF_USART3);
+	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_10;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_USART3);
 	GPIO_PinAFConfig(GPIOD, GPIO_PinSource9, GPIO_AF_USART3);
 
 	USART_InitStructure.USART_BaudRate   = 9600;

@@ -16,8 +16,9 @@ typedef struct Motor_Tag
 	unsigned short motorLocation;					//电机当前位置
 	unsigned short motorTargetLocation;				//电机目标位置
 	unsigned short motorMaxLocation;				//电机最大位置
-	bool parm1;										//电机参数1
+	unsigned short parm1;							//电机参数1
 	bool parm2; 									//电机参数2
+	bool parm3; 									//电机参数3
 }Motor;
 #pragma pack()
 

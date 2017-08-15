@@ -21,6 +21,8 @@
 /******************************************Static Variables*****************************************/
 /***************************************************************************************************/
 static Motor * motor = NULL;
+extern unsigned int GB_ClockTime;
+static unsigned short ClockStep = 0;
 /***************************************************************************************************/
 /******************************************Static Methods*******************************************/
 /***************************************************************************************************/
@@ -64,7 +66,6 @@ void Timer3_Init(void)
 	assert_param(IS_TIM_ALL_PERIPH(TIM3)); 
 }
 
-
 void TIM3_IRQHandler(void)
 {	
 	if(TIM_GetITStatus(TIM3, TIM_IT_Update) == SET)
@@ -83,7 +84,14 @@ void TIM3_IRQHandler(void)
 				setMotorxPeriodCnt(Motor_1, 0);
 				setMotor1ClkGPIO(OFF);
 				minusMotorxMoveStepNum(Motor_1);
-				plusMotorxLocation(Motor_1, 1);
+				
+				motor->parm1++;
+				
+				if((motor->motorLocation == motor->motorTargetLocation) && (motor->parm2))
+				{
+					motor->moveStepNum = 100;
+					motor->parm2 = false;
+				}
 			}
 		}
 
@@ -101,7 +109,26 @@ void TIM3_IRQHandler(void)
 				setMotorxPeriodCnt(Motor_2, 0);
 				setMotor2ClkGPIO(OFF);
 				minusMotorxMoveStepNum(Motor_2);
-				plusMotorxLocation(Motor_2, 1);
+				
+				if(motor->isFront)
+					motor->motorLocation++;
+				else
+					motor->motorLocation--;
+				
+				//原点
+				if(Motor2Sensor1Triggered)
+					motor->motorLocation = 0;
+				
+				//中间
+				if(Motor2Sensor2Triggered)
+					motor->parm1 = 1;
+				
+				//最大
+				if(Motor2Sensor3Triggered && motor->isFront)
+					motor->motorTargetLocation = motor->motorLocation;
+				
+				if(motor->motorLocation == motor->motorTargetLocation)
+					motor->moveStepNum = 0;
 			}
 		}
 	
@@ -120,14 +147,10 @@ void TIM3_IRQHandler(void)
 				setMotor3ClkGPIO(OFF);
 				minusMotorxMoveStepNum(Motor_3);
 				plusMotorxLocation(Motor_3, 1);
-			}
-			
-			//传感器触发,且是后退，则停止运动，置位置为0点
-			if((getMotorxDir(Motor_3) == false) && (ON == getMotor3OriginStatus()))
-			{
-				setMotorxMoveStepNum(Motor_3, 0);
-				setMotorxLocation(Motor_3, 0);
-			}
+				
+				if(motor->motorLocation == motor->motorTargetLocation)
+					motor->moveStepNum = 0;
+			}	
 		}
 		
 		motor = getMotor(Motor_4);
@@ -145,15 +168,21 @@ void TIM3_IRQHandler(void)
 				setMotor4ClkGPIO(OFF);
 				minusMotorxMoveStepNum(Motor_4);
 				plusMotorxLocation(Motor_4, 1);
+				
+				//原点
+				if(Motor4Sensor1Triggered)
+					motor->motorLocation = 0;
+				
+				if(motor->motorLocation == motor->motorTargetLocation)
+					motor->moveStepNum = 0;
 			}
-			
-			//如果是打开过程，检测到最大位置，则停止，记为原点
-			if((motor->isFront == false) && (ON == getMotor4OriginStatus()))
-			{
-				setMotorxParm1(Motor_4, false);
-				setMotorxMoveStepNum(Motor_4, 0);
-				setMotorxLocation(Motor_4, 0);
-			}
+		}
+		
+		ClockStep++;
+		if(ClockStep >= 10000)
+		{
+			GB_ClockTime++;
+			ClockStep = 0;
 		}
 		
 		TIM_ClearITPendingBit(TIM3, TIM_IT_Update);

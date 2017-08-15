@@ -1,5 +1,5 @@
 /***************************************************************************************************
-*FileName：CardLimit_Driver
+*FileName：CardCheck_Driver
 *Description：检测卡限位驱动
 *Author：xsx
 *Data：2016年5月3日10:48:53
@@ -38,15 +38,31 @@ void CardCheck_GPIO_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	RCC_AHB1PeriphClockCmd(CardIn_RCC, ENABLE);
+	RCC_AHB1PeriphClockCmd(CardCheck_RCC, ENABLE);
 
-  	GPIO_InitStructure.GPIO_Pin = CardIn_Pin; 
+  	GPIO_InitStructure.GPIO_Pin = CardCheck_Pin; 
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_Init(CardIn_Group, &GPIO_InitStructure);
+	GPIO_Init(CardCheck_Group, &GPIO_InitStructure);
 }
 
-
+/***************************************************************************************************
+*FunctionName: readCaedCheckStatus
+*Description: 读取是否有检测卡
+*Input: 
+*Output:  	ON -- 有卡
+*			OFF -- 无卡
+*Return: 
+*Author: xsx
+*Date: 2017年8月10日 13:47:56
+***************************************************************************************************/
+MyBitAction readCaedCheckStatus(void)
+{
+	if(ReadCardCheckPin)
+		return ON;
+	else
+		return OFF;
+}
 

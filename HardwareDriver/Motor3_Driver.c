@@ -35,9 +35,12 @@
 void Motor3_GPIO_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
+	NVIC_InitTypeDef   NVIC_InitStructure;
+	EXTI_InitTypeDef   EXTI_InitStructure;
 	
-	RCC_AHB1PeriphClockCmd(Motor3_CLK_RCC | Motor3_DIR_RCC | Motor3_Sleep_RCC | Motor3_Origin_RCC, ENABLE);
-
+	RCC_AHB1PeriphClockCmd(Motor3_CLK_RCC | Motor3_DIR_RCC | Motor3_Sleep_RCC, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+	
   	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
@@ -51,13 +54,7 @@ void Motor3_GPIO_Init(void)
 	
 	GPIO_InitStructure.GPIO_Pin = Motor3_Sleep_Pin;
 	GPIO_Init(Motor3_Sleep_Group, &GPIO_InitStructure);
-	
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_InitStructure.GPIO_Pin = Motor3_Origin_Pin;
-	GPIO_Init(Motor3_Origin_Group, &GPIO_InitStructure);
+	setMotor3SleepGPIO(ON);
 }
 
 /***************************************************************************************************
@@ -114,21 +111,4 @@ void setMotor3SleepGPIO(MyBitAction myBitAction)
 		GPIO_WriteBit(Motor3_Sleep_Group, Motor3_Sleep_Pin, Bit_RESET);
 }
 
-/***************************************************************************************************
-*FunctionName:  getMotor3OriginStatus
-*Description:   读取爪子移动原点传感器状态
-*Input:  	on -- 传感器触发
-*			off -- 传感器没触发
-*Output:  
-*Return:  
-*Author:  xsx
-*Date:  2017年7月20日 15:52:11
-***************************************************************************************************/
-MyBitAction getMotor3OriginStatus(void)
-{
-	if(GPIO_ReadInputDataBit(Motor3_Origin_Group, Motor3_Origin_Pin))
-		return OFF;
-	else
-		return ON;
-}
 /****************************************end of file************************************************/

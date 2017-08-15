@@ -44,7 +44,7 @@ void CodeScanner_GPIO_Init(void)
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 	GPIO_Init(Trig_GpioGroup, &GPIO_InitStructure);
 
-  	CloseCodeScanner();
+  	OpenCodeScanner();
 }
 
 /***************************************************************************************************

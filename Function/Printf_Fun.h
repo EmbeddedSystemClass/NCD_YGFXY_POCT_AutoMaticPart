@@ -3,8 +3,9 @@
 #define	PRINTF_F_H
 
 #include	"Define.h"
+#include	"TestData.h"
 
-void PrintfData(void * testd);
+void PrintfData(TestData * testd);
 
 #endif
 

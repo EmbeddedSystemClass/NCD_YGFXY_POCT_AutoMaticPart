@@ -1,14 +1,18 @@
 /****************************************file start****************************************************/
-#ifndef	TIMER4_D_H
-#define	TIMER4_D_H
+#ifndef	_TEST_T_H
+#define	_TEST_T_H
 
-#include	"stm32f4xx_rcc.h"
-#include	"misc.h"
+#include	"Define.h"
+#include	"TestData.h"
 
-void Timer4_Init(void);
-void StartTimer4(void);
-void StopTimer4(void);
 
+char StartvTestTask(void);
+
+MyRes StartTest(TestData * parm);
+
+MyRes TakeTestResult(ResultState *testsult);
+
+void clearTestResult(void);
 #endif
 
 /****************************************end of file************************************************/

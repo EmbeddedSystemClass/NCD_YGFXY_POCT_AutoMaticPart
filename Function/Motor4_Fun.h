@@ -5,11 +5,7 @@
 #include	"Motor_Data.h"
 #include	"Motor.h"
 
-void motor4ResetToOriginLocation(void);
-void motor4MoveTo(unsigned short value);
-void motor4CatchCard(void);
-void motor4Open(void);
-void testMotor4(void);
+void motor4MoveTo(unsigned short location, unsigned short waitTime);
 #endif
 
 /****************************************end of file************************************************/

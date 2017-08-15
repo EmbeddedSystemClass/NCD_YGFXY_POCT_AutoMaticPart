@@ -4,16 +4,17 @@
 #include	"stm32f4xx.h"
 #include	"stm32f4xx_gpio.h"
 #include	"stm32f4xx_rcc.h"
+#include	"Define.h"
 
-#define	CardIn_Pin				GPIO_Pin_9
-#define	CardIn_Group			GPIOB
-#define	CardIn_RCC				RCC_AHB1Periph_GPIOB
+#define	CardCheck_Pin				GPIO_Pin_3
+#define	CardCheck_Group				GPIOD
+#define	CardCheck_RCC				RCC_AHB1Periph_GPIOD
 
-#define	CardPinIn 				GPIO_ReadInputDataBit(CardIn_Group, CardIn_Pin)
+#define	ReadCardCheckPin 			GPIO_ReadInputDataBit(CardCheck_Group, CardCheck_Pin)
 
 
 void CardCheck_GPIO_Init(void);
-
+MyBitAction readCaedCheckStatus(void);
 
 #endif
 

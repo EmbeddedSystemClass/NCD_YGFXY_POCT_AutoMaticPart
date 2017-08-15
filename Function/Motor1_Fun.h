@@ -5,7 +5,8 @@
 #include	"Motor_Data.h"
 #include	"Motor.h"
 
-void startMotrox(Motorx_Def motor, bool isFront, unsigned short stepNum);
+void motor1Reset(void);
+void motor1MoveToNum(unsigned char num, unsigned short waitTime);
 
 #endif
 

@@ -23,9 +23,12 @@
 #include	"Motor3_Driver.h"
 #include	"Motor4_Driver.h"
 #include 	"Iwdg_Driver.h"
-#include	"Timer4_Driver.h"
 #include	"Timer3_Driver.h"
 #include	"CodeScanner_Driver.h"
+#include	"DA_Driver.h"
+#include	"Ads8325_Driver.h"
+#include	"Channel_Driver.h"
+#include	"LedCheck_Driver.h"
 
 #include	"Delay.h"
 /***************************************************************************************************/
@@ -61,49 +64,57 @@ void MySystemBSPInit(void)
 	Led_GPIOInit();						//系统指示灯初始化
 	delay_ms(1);
 
-//	Usart1_Init();						//串口2初始化
+	Usart1_Init();						//串口2初始化
 	delay_ms(1);
 	
-//	Usart2_Init();						//串口3初始化
+	Usart2_Init();						//串口3初始化
 	delay_ms(1);
 	
-//	Usart3_Init();						//串口2初始化
+	Usart3_Init();						//串口2初始化
 	delay_ms(1);
 	
-//	Usart4_Init();						//串口4初始化
+	Usart4_Init();						//串口4初始化
 	delay_ms(1);
 	
-//	Usart5_Init();						//串口4初始化
+	Usart5_Init();						//串口4初始化
 	delay_ms(1);
 	
-//	Usart6_Init();						//串口6初始化
+	Usart6_Init();						//串口6初始化
 	delay_ms(1);
 	
-//	CardCheck_GPIO_Init();						//限位开关初始化
+	CardCheck_GPIO_Init();						//限位开关初始化
 	delay_ms(1);
 	
-//	Motor1_GPIO_Init();							//电机 IO初始化
+	Motor1_GPIO_Init();							//电机 IO初始化
 	delay_ms(1);
 	
-//	Motor2_GPIO_Init();							//电机 IO初始化
+	Motor2_GPIO_Init();							//电机 IO初始化
 	delay_ms(1);
 	
 //	Motor3_GPIO_Init();							//电机 IO初始化
 	delay_ms(1);
 	
-//	Motor4_GPIO_Init();							//电机 IO初始化
+	Motor4_GPIO_Init();							//电机 IO初始化
 	delay_ms(1);
 	
-//	CodeScanner_GPIO_Init();
+	CodeScanner_GPIO_Init();
 	delay_ms(1);
 	
-	//	Timer4_Init();						//定时器初始化
-//	Timer3_Init();						//定时器初始化
+	DA_GPIOInit();
 	delay_ms(1);
 	
-//	SD_Init();
+	Channel_GPIOInit();
+	delay_ms(1);
 	
+	ADS_IO_Init();
+	delay_ms(1);
 	
-//	IWDG_Init(3, 3000);					//看门狗初始化,超时时间2S
+	LedCheck_GPIO_Init();
+	delay_ms(1);
+
+	Timer3_Init();						//定时器初始化
+	delay_ms(1);
+	
+	IWDG_Init(3, 3000);					//看门狗初始化,超时时间2S
 	delay_ms(1);
 }

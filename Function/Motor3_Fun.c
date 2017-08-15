@@ -25,7 +25,7 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-
+static Motor * motor3 = NULL;
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -37,37 +37,6 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************
-*FunctionName:  motor3StartMove
-*Description:   电机3开始移动
-*Input:  	isFront -- 方向
-*			stepNum -- 移动步数
-*Output:  
-*Return:  
-*Author:  xsx
-*Date:  2017年7月20日 15:36:32
-***************************************************************************************************/
-void motor3StartMove(bool isFront, unsigned short stepNum)
-{
-	if(isFront)
-		setMotor3DirGPIO(ON);
-	else
-		setMotor3DirGPIO(OFF);
-	delay_ms(5);
-	setMotorxDir(Motor_3, isFront);
-	
-	setMotorxMoveStepNum(Motor_3, stepNum);
-	setMotorxPeriodCnt(Motor_3, 0);
-	
-	while(1)
-	{
-		if(getMotorxMoveStepNum(Motor_3) == 0)
-			break;
-		
-		vTaskDelay(1 / portTICK_RATE_MS);
-	}
-}
-
-/***************************************************************************************************
 *FunctionName:  resetToOriginLocation
 *Description:   回原点
 *Input:  
@@ -76,20 +45,45 @@ void motor3StartMove(bool isFront, unsigned short stepNum)
 *Author:  xsx
 *Date:  2017年7月20日 15:59:48
 ***************************************************************************************************/
-void resetToOriginLocation(bool isWait)
+void motor3MoveTo(unsigned short location, unsigned short waitTime)
 {
-	setMotorxLocation(Motor_3, getMotorxMaxLocation(Motor_3));
+	motor3 = getMotor(Motor_3);
+
+	if(motor3->motorLocation == location)
+		return;
+	else if(motor3->motorLocation > location)
+		motor3->isFront = false;
+	else
+		motor3->isFront = true;
+
+	if(motor3->isFront)
+		setMotor3DirGPIO(ON);
+	else
+		setMotor3DirGPIO(OFF);
+	delay_ms(5);
 	
-	motor3StartMove(false, getMotorxMaxLocation(Motor_3));
+	motor3->periodCnt = 0;
+	motor3->motorTargetLocation = location;
 	
-	while(isWait)
+	if(motor3->isFront)
+		motor3->moveStepNum = (motor3->motorTargetLocation - motor3->motorLocation);
+	else
+		motor3->moveStepNum = (motor3->motorLocation - motor3->motorTargetLocation);
+	
+	while(waitTime-- && (motor3->motorLocation != motor3->motorTargetLocation))
 	{
-		if(getMotorxMoveStepNum(Motor_3) == 0)
-			break;
-		
 		vTaskDelay(1 / portTICK_RATE_MS);
 	}
-
 }
+
+void motor3GotoOriginLocation(unsigned short waitTime)
+{
+	motor3 = getMotor(Motor_3);
+	
+	motor3->motorLocation = 65000;
+	
+	motor3MoveTo(0, waitTime);
+}
+
 /****************************************end of file************************************************/
 
