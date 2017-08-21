@@ -11,6 +11,7 @@
 #include	"SelfTest_Fun.h"
 
 #include	"SystemSet_Data.h"
+#include	"DeviceDao.h"
 #include	"LedCheck_Driver.h"
 #include	"DA_Driver.h"
 #include	"SystemSet_Dao.h"
@@ -72,6 +73,7 @@ ERROR_SelfTest getSelfTestStatus(void)
 ***************************************************************************************************/
 void SelfTest_Function(void)
 {
+	setSelfTestStatus(SelfTestting);
 	
 	//SD卡初始化
 	if(FR_OK != f_mount(&S_Fatfs, "0:", 1))
@@ -86,8 +88,6 @@ void SelfTest_Function(void)
 		setSelfTestStatus(SystemData_ERROR);
 		return;
 	}
-	else
-		setSelfTestStatus(SystemData_OK);
 	
 	//检测led
 	if(My_Pass != testLed())
@@ -104,7 +104,7 @@ void SelfTest_Function(void)
 	}
 	
 	//设备校准
-	deviceAdjustSelf();
+//	deviceAdjustSelf();
 	
 	//自检完成，发送结果
 	setSelfTestStatus(SelfTest_OK);
@@ -125,7 +125,7 @@ static MyRes loadSystemData(void)
 	MyRes status = My_Fail;
 	
 	systemSetData = MyMalloc(SystemSetDataStructSize);
-	
+
 	if(systemSetData)
 	{
 		memset(systemSetData, 0, SystemSetDataStructSize);
@@ -190,7 +190,7 @@ static MyRes testLed(void)
 static MyRes testMotol(void)
 {
 	//测试电机1
-	motor1MoveToNum(1, 15000);
+	motor1MoveToNum(1, 20000);
 	
 	if(getMotorxLocation(Motor_1) != 1)
 		return My_Fail;

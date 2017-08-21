@@ -2,6 +2,7 @@
 /*****************************************头文件*******************************************/
 
 #include	"SampleIDPage.h"
+#include	"WaittingCardPage.h"
 
 #include	"LCD_Driver.h"
 #include	"UI_Data.h"
@@ -9,14 +10,11 @@
 #include	"MyMem.h"
 #include	"MyTools.h"
 #include	"MyTest_Data.h"
-
-#include	"PaiDuiPage.h"
+#include	"CodeScanner_Driver.h"
 #include	"MyTest_Data.h"
 #include	"SelectUserPage.h"
 #include	"WaittingCardPage.h"
-#include	"PlaySong_Task.h"
 #include	"ReadBarCode_Fun.h"
-#include	"Motor_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -82,18 +80,12 @@ MyRes createSampleActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_SampleIDPage)
-	{
-		S_SampleIDPage->currenttestdata = GetCurrentTestItem();
-		S_SampleIDPage->currenttestdata->statues = status_sample;
+	S_SampleIDPage->currenttestdata = GetCurrentTestItem();
 	
-		while(ReadBarCodeFunction((char *)(S_SampleIDPage->tempbuf), 100) > 0)
-			;
+	while(ReadBarCodeFunction((char *)(S_SampleIDPage->tempbuf), 100) > 0)
+		;
 		
-		RefreshSampleID();
-		
-		AddNumOfSongToList(10, 0);
-	}
+	RefreshSampleID();
 	
 	SelectPage(86);
 }
@@ -118,14 +110,6 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*返回*/
 		if(S_SampleIDPage->lcdinput[0] == 0x1300)
 		{
-			if(checkFatherActivityIs(paiduiActivityName))
-			{
-				MotorMoveTo(MaxLocation, 1);
-				DeleteCurrentTest();
-			}
-			else
-				S_SampleIDPage->currenttestdata->statues = status_user;
-			
 			backToFatherActivity();
 		}
 		
@@ -133,14 +117,9 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		else if(S_SampleIDPage->lcdinput[0] == 0x1301)
 		{
 			if(strlen(S_SampleIDPage->currenttestdata->testData.sampleid) == 0)
-			{
 				SendKeyCode(1);
-				AddNumOfSongToList(10, 0);
-			}
 			else
-			{
 				startActivity(createWaittingCardActivity, NULL, NULL);
-			}
 		}
 		/*获取输入的id*/
 		else if(S_SampleIDPage->lcdinput[0] == 0x1310)
@@ -167,15 +146,6 @@ static void activityFresh(void)
 	{
 		memcpy(S_SampleIDPage->currenttestdata->testData.sampleid, S_SampleIDPage->tempbuf, MaxSampleIDLen);
 		RefreshSampleID();
-	}
-	
-	//如果排队中，有卡接近测试时间，则删除当前测试创建任务，返回
-	if(GetMinWaitTime() < 40)
-	{
-		MotorMoveTo(MaxLocation, 1);
-		DeleteCurrentTest();
-		
-		backToFatherActivity();
 	}
 }
 
@@ -204,12 +174,7 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	if(S_SampleIDPage)
-	{
-		AddNumOfSongToList(10, 0);
-		
-		RefreshSampleID();
-	}
+	RefreshSampleID();
 	
 	SelectPage(86);
 }
@@ -275,5 +240,6 @@ static void activityBufferFree(void)
 
 static void RefreshSampleID(void)
 {
-	DisText(0x1310, S_SampleIDPage->currenttestdata->testData.sampleid, MaxSampleIDLen);
+	snprintf(S_SampleIDPage->tempbuf, MaxSampleIDLen, "%s", S_SampleIDPage->currenttestdata->testData.sampleid);
+	DisText(0x1310, S_SampleIDPage->tempbuf, strlen(S_SampleIDPage->tempbuf)+1);
 }

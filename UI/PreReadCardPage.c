@@ -7,20 +7,16 @@
 #include	"UI_Data.h"
 #include	"MyMem.h"
 #include	"MyTest_Data.h"
-#include 	"MLX90614_Driver.h"
 #include	"LunchPage.h"
 #include	"CodeScan_Task.h"
 #include	"WaittingCardPage.h"
 #include	"TimeDownNorPage.h"
-#include	"CodeScanFunction.h"
 #include	"PaiDuiPage.h"
-#include	"Motor_Fun.h"
-#include	"PlaySong_Task.h"
-#include	"Test_Task.h"
-#include	"SDFunction.h"
 #include	"MyTools.h"
 #include	"CRC16.h"
 #include	"System_Data.h"
+#include	"Motor2_Fun.h"
+#include	"Motor4_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -32,7 +28,6 @@
 /******************************************************************************************/
 /*****************************************局部变量声明*************************************/
 static PreReadPageBuffer * S_PreReadPageBuffer = NULL;
-const unsigned int TestLineHigh1 = 77010;	//此数据与曲线显示区域高度有关，如果界面不改，此数不改
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
 static void activityStart(void);
@@ -47,8 +42,6 @@ static void activityBufferFree(void);
 static void clearPageText(void);
 static void CheckQRCode(void);
 static void ShowCardInfo(void);
-static void CheckPreTestCard(void);
-static void showTemperature(void);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -91,18 +84,12 @@ MyRes createPreReadCardActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_PreReadPageBuffer)
-	{
-		S_PreReadPageBuffer->currenttestdata = GetCurrentTestItem();
+	S_PreReadPageBuffer->currenttestdata = GetCurrentTestItem();
 		
-		clearPageText();
-		
-		clearScanQRCodeResult();
-		clearTestResult();
-		
-		vTaskDelay(500 / portTICK_RATE_MS);
-		StartScanQRCode(&(S_PreReadPageBuffer->temperweima));
-	}
+	clearPageText();
+
+	StartScanQRCode(&(S_PreReadPageBuffer->temperweima));
+	S_PreReadPageBuffer->qrIsGet = false;
 	
 	SelectPage(92);
 }
@@ -134,7 +121,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			/*更换检测卡*/
 			if(S_PreReadPageBuffer->lcdinput[1] == 0x0001)
 			{
-				//如果是排队中的再次预读，则返回排队界面，状态切换回之前的状态
+				/*//如果是排队中的再次预读，则返回排队界面，状态切换回之前的状态
 				if(S_PreReadPageBuffer->currenttestdata->statues == status_prereadagain_n)
 					S_PreReadPageBuffer->currenttestdata->statues = status_incard_n;
 				else if(S_PreReadPageBuffer->currenttestdata->statues == status_prereadagain_o)
@@ -142,7 +129,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 				//如果是第一次预读
 				else if(S_PreReadPageBuffer->currenttestdata->statues == status_wait1)
 					S_PreReadPageBuffer->currenttestdata->statues = status_wait1;
-				
+				*/
 				backToFatherActivity();
 			}
 			//取消测试
@@ -150,11 +137,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			{
 				DeleteCurrentTest();
 				
-				//如果还有卡在排队，说明这个界面是从排队界面过来的，只需返回到排队界面
-				if(IsPaiDuiTestting())
-					backToActivity(paiduiActivityName);	
-				else
-					backToActivity(lunchActivityName);
+				backToActivity(lunchActivityName);
 			}
 		}
 	}
@@ -172,8 +155,6 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 static void activityFresh(void)
 {
 	CheckQRCode();
-		
-	CheckPreTestCard();
 }
 
 /***************************************************************************************************
@@ -265,119 +246,58 @@ static void activityBufferFree(void)
 
 static void CheckQRCode(void)
 {
-	if(My_Pass == TakeScanQRCodeResult(&(S_PreReadPageBuffer->scancode)))
-	{	
-		//不支持的品种
-		if(S_PreReadPageBuffer->scancode == CardUnsupported)
+	if(S_PreReadPageBuffer->qrIsGet == false)
+	{
+		S_PreReadPageBuffer->scancode = getScanResult();
+		
+		if(CardCodeScanning != S_PreReadPageBuffer->scancode)
 		{
-			MotorMoveTo(MaxLocation, 1);
-			AddNumOfSongToList(56, 0);
-			SendKeyCode(6);
-		}
-		//过期
-		else if(S_PreReadPageBuffer->scancode == CardCodeTimeOut)
-		{
-			MotorMoveTo(MaxLocation, 1);
-			AddNumOfSongToList(15, 0);
-			SendKeyCode(4);
-		}
-		//读取成功
-		else if(S_PreReadPageBuffer->scancode == CardCodeScanOK)
-		{
-			ShowCardInfo();
-			
-			//读取完二维码后，试剂卡在卡槽内部，此时读取温度比较合适
-			showTemperature();
-			
-			//如果是第一次读取二维码
-			if(S_PreReadPageBuffer->currenttestdata->statues == status_preread)
+			//不支持的品种
+			if(S_PreReadPageBuffer->scancode == CardUnsupported)
 			{
+				motor4MoveTo(Motor4_OpenLocation, 1);
+				motor2MoveTo(Motor2_WaitCardLocation, 1);
+				SendKeyCode(6);
+			}
+			//过期
+			else if(S_PreReadPageBuffer->scancode == CardCodeTimeOut)
+			{
+				motor4MoveTo(Motor4_OpenLocation, 1);
+				motor2MoveTo(Motor2_WaitCardLocation, 1);
+				SendKeyCode(4);
+			}
+			//读取成功
+			else if(S_PreReadPageBuffer->scancode == CardCodeScanOK)
+			{
+				ShowCardInfo();
+				
 				//将读取的二维码数据拷贝到测试数据包中
 				memcpy(&(S_PreReadPageBuffer->currenttestdata->testData.qrCode), &(S_PreReadPageBuffer->temperweima), sizeof(QRCode));
-				
+					
 				//设置倒计时时间
-				timer_set(&(S_PreReadPageBuffer->currenttestdata->timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*60);
-			
+				timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*60);
+				
 				//读取校准参数
 				memcpy(S_PreReadPageBuffer->currenttestdata->testData.adjustData.ItemName, S_PreReadPageBuffer->currenttestdata->testData.qrCode.ItemName, ItemNameLen);
 				getAdjPram(getGBSystemSetData(), &(S_PreReadPageBuffer->currenttestdata->testData.adjustData));
-				
-				S_PreReadPageBuffer->preTestErrorCount = 0;
-				StartTest(&(S_PreReadPageBuffer->currenttestdata->testData));
-			}
-			else
-			{
-				//校验试机卡编号
-				if((pdPASS == CheckStrIsSame(S_PreReadPageBuffer->currenttestdata->testData.qrCode.PiHao, S_PreReadPageBuffer->temperweima.PiHao, 15)) &&
-					(pdPASS == CheckStrIsSame(S_PreReadPageBuffer->currenttestdata->testData.qrCode.piNum, S_PreReadPageBuffer->temperweima.piNum, 5)))
-				{
-					startActivity(createTimeDownActivity, NULL, NULL);
-				}
-				//试剂卡变更
-				else
-				{
-					vTaskDelay(100 / portTICK_RATE_MS);
-					MotorMoveTo(MaxLocation, 1);
-					AddNumOfSongToList(13, 0);
-					SendKeyCode(2);
-				}
-			}
-		}
-		/*其他错误：CardCodeScanFail, CardCodeCardOut, CardCodeScanTimeOut, CardCodeCRCError*/
-		else
-		{
-			MotorMoveTo(MaxLocation, 1);
-			AddNumOfSongToList(12, 0);
-			SendKeyCode(1);
-		}
-	}
-}
 
-static void CheckPreTestCard(void)
-{
-	if(My_Pass == TakeTestResult(&(S_PreReadPageBuffer->cardpretestresult)))
-	{
-		timer_restart(&(S_PreReadPageBuffer->currenttestdata->timer));
-		
-		//未加样
-		if(S_PreReadPageBuffer->cardpretestresult == NoSample)
-		{
-			//未加样重测3次，第三次未加样则表明真的未加样
-			S_PreReadPageBuffer->preTestErrorCount++;
-			if(S_PreReadPageBuffer->preTestErrorCount < 8)
-			{	
-				StartTest(&(S_PreReadPageBuffer->currenttestdata->testData));
-			}
-			else
-			{
-				MotorMoveTo(MaxLocation, 1);
-				AddNumOfSongToList(16, 0);
-				SendKeyCode(5);
-			}
-		}
-		else if(S_PreReadPageBuffer->cardpretestresult == ResultIsOK)
-		{
-			MotorMoveTo(MaxLocation, 1);
-			AddNumOfSongToList(14, 0);
-			SendKeyCode(3);
-		}
-		else if(S_PreReadPageBuffer->cardpretestresult == PeakError)
-		{
-			//如果是排队模式，则进入排队界面
-			if(S_PreReadPageBuffer->currenttestdata->testlocation > 0)
-			{
-				MotorMoveTo(MaxLocation, 1);
+				motor2MoveTo(Motor2_PutDownCardLocation, 10000);
+				motor4MoveTo(Motor4_OpenLocation, 5000);
+				motor2MoveTo(Motor2_MidLocation, 1);
 				
 				S_PreReadPageBuffer->currenttestdata->statues = status_start;
-
 				startActivity(createPaiDuiActivity, NULL, NULL);
 			}
+			//其他错误：CardCodeScanFail, CardCodeCardOut, CardCodeScanTimeOut, CardCodeCRCError
 			else
-			{		
-				startActivity(createTimeDownActivity, NULL, NULL);
+			{
+				motor4MoveTo(Motor4_OpenLocation, 1);
+				motor2MoveTo(Motor2_WaitCardLocation, 1);
+				SendKeyCode(1);
 			}
+			
+			S_PreReadPageBuffer->qrIsGet = true;
 		}
-		
 	}
 }
 
@@ -407,16 +327,4 @@ static void ShowCardInfo(void)
 	DisText(0x1450, S_PreReadPageBuffer->buf, strlen(S_PreReadPageBuffer->buf)+1);
 }
 
-static void showTemperature(void)
-{
-	//获取检测卡温度
-	S_PreReadPageBuffer->currenttestdata->testData.temperature.O_Temperature = GetCardTemperature();
-	S_PreReadPageBuffer->currenttestdata->testData.temperature.E_Temperature = getSystemRunTimeData()->enTemperature;
-	
-	sprintf(S_PreReadPageBuffer->buf, "%2.1f ℃\0", S_PreReadPageBuffer->currenttestdata->testData.temperature.O_Temperature);
-	DisText(0x1460, S_PreReadPageBuffer->buf, strlen(S_PreReadPageBuffer->buf)+1);
-	
-	sprintf(S_PreReadPageBuffer->buf, "%2.1f ℃\0",S_PreReadPageBuffer->currenttestdata->testData.temperature.E_Temperature);
-	DisText(0x1470, S_PreReadPageBuffer->buf, strlen(S_PreReadPageBuffer->buf)+1);
-}
 

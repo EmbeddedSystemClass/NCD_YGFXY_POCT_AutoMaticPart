@@ -7,15 +7,18 @@
 #include	"DateTime.h"
 #include	"Define.h"
 #include	"Temperature.h"
+#include	"AdjustData.h"
 
 #define	TestDataRecordPageShowNum		8							//一页8个数据
+#define	AvregeNum		10								//平均值滤波个数
+#define	MaxPointLen	300
 
 #pragma pack(1)
 typedef struct TestSeries_tag {
 	unsigned short TestPoint[MaxPointLen];
-	unsigned short C_Point[2];
-	unsigned short T_Point[2];
-	unsigned short B_Point[2];
+	Point C_Point;
+	Point T_Point;
+	Point B_Point;
 	float BasicBili;
 	float BasicResult;
 	float AdjustResult;
@@ -28,6 +31,7 @@ typedef struct TestData_tag {
 	char 			sampleid[MaxSampleIDLen];			//样本编号
 	QRCode 			qrCode;								//二维码信息
 	TestSeries 		testSeries;
+	AdjustData 		adjustData;							//校准数据
 	DateTime 		testDateTime;						//测试时间
 	Temperature 	temperature;						//测试温度
 	unsigned short 	time;								//超时时间

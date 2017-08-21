@@ -13,7 +13,11 @@ typedef enum
 	Motor_None = 0xff,
 }Motorx_Def;
 
-#define	Motor2_MidLocation		40000
+#define	Motor2_EndTestLocation				31000							//停止测试位置
+#define	Motor2_StartTestLocation			34000							//开始测试位置
+#define	Motor2_MidLocation					40000							//中心位置
+#define	Motor2_PutDownCardLocation			46000							//将卡在排队位放好
+#define	Motor2_WaitCardLocation				52000							//等待插卡
 
 #define	Motor4_OpenLocation		1000
 #define	Motor4_CardLocation		3700
@@ -49,8 +53,6 @@ unsigned short getMotorxLowTime(Motorx_Def motor);
 
 unsigned short getMotorxMaxLocation(Motorx_Def motor);
 
-void setMotorxParm1(Motorx_Def motor, bool value);
-bool getMotorxParm1(Motorx_Def motor);
 #endif
 
 /****************************************end of file************************************************/

@@ -192,9 +192,9 @@ LinkStatus ReadPHYLinkState(void)
 	tempdata >>= 2;
 	
 	if(1 == tempdata)
-		return LinkUp;
+		return Link_Up;
 	else
-		return LinkDown;
+		return Link_Down;
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

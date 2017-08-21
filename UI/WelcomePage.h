@@ -12,6 +12,7 @@ typedef struct WelcomePageBuffer_tag {
 	Timer timer;													//页面超时时间
 	unsigned char tempv1;											//临时数据
 	unsigned short lcdinput[100];									//lcd输入解析
+	bool canAram;
 }WelcomePageBuffer;
 
 MyRes createWelcomeActivity(Activity * thizActivity, Intent * pram);

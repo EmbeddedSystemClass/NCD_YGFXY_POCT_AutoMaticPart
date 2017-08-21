@@ -10,6 +10,8 @@ typedef struct TimeDownPage_tag {
 	PaiduiUnitData * currenttestdata;
 	unsigned short count;
 	unsigned short time;
+	unsigned char step;
+	unsigned char cardNum;
 }TimeDownPageData;
 
 

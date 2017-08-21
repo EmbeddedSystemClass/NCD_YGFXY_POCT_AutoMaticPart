@@ -34,7 +34,7 @@ static PaiduiUnitData * CurrentTestDataBuffer;
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-CreateTestErrorType CreateANewTest(void)
+CreateTestErrorType CreateANewTest(PaiduiUnitData ** TestDataBuffer)
 {
 	unsigned char i=0;
 	
@@ -51,7 +51,7 @@ CreateTestErrorType CreateANewTest(void)
 	{
 		if(PaiduiTestDataBuffer[i] == NULL)
 		{
-				//ÉêÇë²âÊÔÄÚ´æ
+			//ÉêÇë²âÊÔÄÚ´æ
 			PaiduiTestDataBuffer[i] = (PaiduiUnitData *)MyMalloc(PaiduiUnitDataStructSize);
 				
 			//ÄÚ´æÉêÇëÊ§°Ü
@@ -62,6 +62,9 @@ CreateTestErrorType CreateANewTest(void)
 				CurrentTestDataBuffer = PaiduiTestDataBuffer[i];
 				memset(CurrentTestDataBuffer, 0, PaiduiUnitDataStructSize);
 				CurrentTestDataBuffer->testlocation = i + 1;
+				
+				if(TestDataBuffer)
+					*TestDataBuffer = CurrentTestDataBuffer;
 					
 				return Error_OK;
 			}
@@ -118,7 +121,7 @@ unsigned short GetMinWaitTime(void)
 ***************************************************************************************************/
 bool isInTimeOutStatus(PaiduiUnitData * paiduiUnitData)
 {
-	if(paiduiUnitData && (paiduiUnitData->timeUp_timer.start != 0))
+	if(paiduiUnitData && (paiduiUnitData->timeUp_timer.start > 0))
 		return true;
 	else
 		return false;
@@ -163,5 +166,18 @@ MyRes DeleteCurrentTest(void)
 		CurrentTestDataBuffer = NULL;
 	}
 	return My_Pass;
+}
+
+bool IsPaiDuiTestting(void)
+{
+	unsigned char i=0;
+
+	for(i=0; i<PaiDuiWeiNum; i++)
+	{
+		if(PaiduiTestDataBuffer[i])
+			return true;
+	}
+	
+	return false;
 }
 

@@ -58,8 +58,8 @@ void DA_GPIOInit(void)
 	DAC_Cmd(DA_Led_Channel, ENABLE);
 	DAC_Cmd(DA_Line_Channel, ENABLE);
   
-	SetLedVol(1500);
-	SetLineVol(2500);
+	SetLedVol(0);
+	SetLineVol(0);
 }
 
 /***************************************************************************************************
@@ -73,12 +73,12 @@ void DA_GPIOInit(void)
 ***************************************************************************************************/
 void SetLedVol(unsigned short volNum)
 {
-	double temp = volNum;
+	float temp = volNum;
 
-	temp *= 4096;
-	temp /= 3300;
+	temp *= 4096.2f;
+	temp /= 3300.1f;
 	
-	DAC_SetChannel1Data(DAC_Align_12b_R, temp);
+	DAC_SetChannel1Data(DAC_Align_8b_R, temp);
 }
 
 /***************************************************************************************************
@@ -92,10 +92,10 @@ void SetLedVol(unsigned short volNum)
 ***************************************************************************************************/
 void SetLineVol(unsigned short volNum)
 {
-	double temp = volNum;
+	float temp = volNum;
 
-	temp *= 4096;
-	temp /= 3300;
+	temp *= 4096.2f;
+	temp /= 3300.1f;
 	
 	DAC_SetChannel2Data(DAC_Align_12b_R, temp);
 }

@@ -27,7 +27,7 @@
 const char * TestTaskName = "vTestTask";
 
 static xQueueHandle xStartTestQueue = NULL ;						//扫卡数据空间队列，并用于启动扫卡任务
-static TestData * testdata;											//扫卡数据指针
+static PaiduiUnitData * paiduiUnitData;											//扫卡数据指针
 
 static xQueueHandle xTestResultQueue = NULL;						//扫卡结果队列
 static ResultState resultstatues;									//扫卡结果
@@ -66,17 +66,13 @@ static void vTestTask( void *pvParameters )
 {
 	while(1)
 	{
-		if(pdPASS == xQueueReceive( xStartTestQueue, &testdata, portMAX_DELAY))
+		if(pdPASS == xQueueReceive( xStartTestQueue, &paiduiUnitData, portMAX_DELAY))
 		{
 			clearTestResult();
-			
-			SetTestStatusFlorLab(1);
 
-			resultstatues = TestFunction(testdata);
+			resultstatues = TestFunction(paiduiUnitData);
 			
 			xQueueSend( xTestResultQueue, &resultstatues, 1000/portTICK_RATE_MS );
-			
-			SetTestStatusFlorLab(0);
 
 		}
 	}

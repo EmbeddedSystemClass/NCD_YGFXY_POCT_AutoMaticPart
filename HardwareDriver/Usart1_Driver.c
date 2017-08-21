@@ -14,11 +14,10 @@
 /***************************************************************************************************/
 static xQueueHandle xRxQueue;									//接收队列
 static xQueueHandle xTxQueue;									//发送队列
+static xSemaphoreHandle xMutex;									//互斥量
 /***************************************************************************************************/
 /******************************************Static Methods*******************************************/
 /***************************************************************************************************/
-static void Usart1_Os_Init(void);
-static void ConfigUsart1(void);
 static portBASE_TYPE prvUsart1_ISR_NonNakedBehaviour( void );
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -26,21 +25,6 @@ static portBASE_TYPE prvUsart1_ISR_NonNakedBehaviour( void );
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-
-/***************************************************************************************************
-*FunctionName：Usart1_Os_Init
-*Description：串口1队列互斥量创建
-*Input：None
-*Output：None
-*Author：xsx
-*Data：2016年4月29日13:37:35
-***************************************************************************************************/
-static void Usart1_Os_Init(void)
-{
-	xRxQueue = xQueueCreate( xRxQueue1_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-	xTxQueue = xQueueCreate( xTxQueue1_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-}
-
 /***************************************************************************************************
 *FunctionName：ConfigUsart1
 *Description：串口1的端口初始化
@@ -49,7 +33,7 @@ static void Usart1_Os_Init(void)
 *Author：xsx
 *Data：2016年4月29日11:58:48
 ***************************************************************************************************/
-static void ConfigUsart1(void)
+void Usart1_Init(void)
 {
 	USART_InitTypeDef USART_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -87,24 +71,14 @@ static void ConfigUsart1(void)
 	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
 	
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 10;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-}
-
-/***************************************************************************************************
-*FunctionName：Usart1_Init
-*Description：串口1初始化，外部调用
-*Input：None
-*Output：None
-*Author：xsx
-*Data：2016年4月29日11:59:09
-***************************************************************************************************/
-void Usart1_Init(void)
-{
-	Usart1_Os_Init();
-	ConfigUsart1();
+	
+	xRxQueue = xQueueCreate( xRxQueue1_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	xTxQueue = xQueueCreate( xTxQueue1_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	vSemaphoreCreateBinary(xMutex);
 }
 
 /***************************************************************************************************
@@ -190,6 +164,10 @@ xQueueHandle GetUsart1RXQueue(void)
 xQueueHandle GetUsart1TXQueue(void)
 {
 	return xTxQueue;
+}
+xSemaphoreHandle GetUsart1Mutex(void)
+{
+	return xMutex;
 }
 
 /****************************************end of file************************************************/

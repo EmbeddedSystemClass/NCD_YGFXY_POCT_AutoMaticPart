@@ -60,7 +60,10 @@ void Led_GPIOInit(void)
 ***************************************************************************************************/
 void SetLedState(MyBitAction state)
 {
-	GPIO_WriteBit(Led_GpioGroup, Led_Pin, (BitAction)state);
+	if(state == ON)
+		GPIO_WriteBit(Led_GpioGroup, Led_Pin, Bit_RESET);
+	else
+		GPIO_WriteBit(Led_GpioGroup, Led_Pin, Bit_SET);
 }
 
 /***************************************************************************************************

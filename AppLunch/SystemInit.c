@@ -56,9 +56,7 @@ extern void SystemInit(void);
 ***************************************************************************************************/
 void MySystemBSPInit(void)
 {
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-	delay_ms(500);
-	SystemInit();						//手动系统初始化
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	delay_ms(500);
 	
 	Led_GPIOInit();						//系统指示灯初始化
@@ -73,10 +71,10 @@ void MySystemBSPInit(void)
 	Usart3_Init();						//串口2初始化
 	delay_ms(1);
 	
-	Usart4_Init();						//串口4初始化
+//	Usart4_Init();						//串口4初始化
 	delay_ms(1);
 	
-	Usart5_Init();						//串口4初始化
+//	Usart5_Init();						//串口4初始化
 	delay_ms(1);
 	
 	Usart6_Init();						//串口6初始化
@@ -116,5 +114,5 @@ void MySystemBSPInit(void)
 	delay_ms(1);
 	
 	IWDG_Init(3, 3000);					//看门狗初始化,超时时间2S
-	delay_ms(1);
+	delay_ms(500);
 }

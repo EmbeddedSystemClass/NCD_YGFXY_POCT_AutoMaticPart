@@ -100,6 +100,28 @@ unsigned int timer_surplus(Timer *t)
 }
 
 /***************************************************************************************************
+*FunctionName: timer_Count
+*Description: 计时器已经计时多久
+*Input: 
+*Output: 
+*Return: 
+*Author: xsx
+*Date: 2017年8月16日 14:26:38
+***************************************************************************************************/
+unsigned int timer_Count(Timer *t)
+{
+	if(t)
+	{
+		if((t->start > 0) && (GB_ClockTime > t->start))
+			return (GB_ClockTime - t->start);
+		else
+			return 0;
+	}
+	
+	return 0;
+}
+
+/***************************************************************************************************
 *FunctionName: timerIsStartted
 *Description: 判断定时器是否已经启动
 *Input: 

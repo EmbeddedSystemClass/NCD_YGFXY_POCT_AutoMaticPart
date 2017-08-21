@@ -10,8 +10,8 @@
 #include 	"queue.h"
 #include	"semphr.h"
 
-#define xRxQueue3_Len				10
-#define xTxQueue3_Len				100
+#define xRxQueue3_Len				300
+#define xTxQueue3_Len				200
 
 void Usart3_Init(void);
 void EnableUsart3TXInterrupt(void);

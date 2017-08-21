@@ -7,7 +7,7 @@
 #include	"UI_Data.h"
 
 typedef struct SampleIDPage_tag {
-	unsigned char tempbuf[150];
+	char tempbuf[150];
 	unsigned int tempv1;
 	PaiduiUnitData * currenttestdata;												//当前测试数据
 	unsigned short lcdinput[100];

@@ -48,7 +48,7 @@ void Timer3_Init(void)
 	
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE);
 	
-	TIM_TimeBaseInitStructure.TIM_Period = 100;									//reload value 100
+	TIM_TimeBaseInitStructure.TIM_Period = 50;									//reload value 100
 	TIM_TimeBaseInitStructure.TIM_Prescaler= (84 - 1);  						//84prescaler, 84MHZ/84 = 1us
 	TIM_TimeBaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up;
 	TIM_TimeBaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1;
@@ -58,12 +58,10 @@ void Timer3_Init(void)
 	TIM_Cmd(TIM3, ENABLE);
 	
 	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x04;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=10;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x03;
 	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-	
-	assert_param(IS_TIM_ALL_PERIPH(TIM3)); 
 }
 
 void TIM3_IRQHandler(void)
@@ -120,8 +118,8 @@ void TIM3_IRQHandler(void)
 					motor->motorLocation = 0;
 				
 				//中间
-				if(Motor2Sensor2Triggered)
-					motor->parm1 = 1;
+				//if(Motor2Sensor2Triggered)
+				//	motor->parm1 = 1;
 				
 				//最大
 				if(Motor2Sensor3Triggered && motor->isFront)
@@ -179,7 +177,7 @@ void TIM3_IRQHandler(void)
 		}
 		
 		ClockStep++;
-		if(ClockStep >= 10000)
+		if(ClockStep >= 20000)
 		{
 			GB_ClockTime++;
 			ClockStep = 0;

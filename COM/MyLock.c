@@ -30,7 +30,7 @@
 *Description:  上锁
 *Input:  	myLock -- 锁地址
 *			ownerId -- 谁给锁上锁
-*			cnt -- 等待时间（时间基数50ms）
+*			cnt -- 等待时间（时间基数5ms）
 *Output:  
 *Return:  
 *Author:  xsx
@@ -45,7 +45,7 @@ MyRes LockObject(MyLock * myLock, void * ownerId, unsigned char cnt)
 	//如果已经存在拥有者，即已处于上锁的状态，则等待解锁
 	while((cnt--) && (myLock->ownerId != NULL))
 	{
-		vTaskDelay(50 / portTICK_RATE_MS);
+		vTaskDelay(5 / portTICK_RATE_MS);
 	}	
 
 	//如果依然处于上锁状态，则返回失败

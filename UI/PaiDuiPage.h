@@ -13,13 +13,15 @@ typedef struct PaiDuiPageBuffer_tag {
 	Timer timer1;								//检测排队模块失联计时器
 	unsigned short tarindex;
 	float tempvalue;
-	unsigned int tempvalue1;
+	unsigned int tempvalue1;					//超时时间
+	unsigned int tempvalue2;					//倒计时剩余时间
 	char buf[100];
 	char buf2[100];
 	unsigned short lcdinput[100];
 	CreateTestErrorType error;
-	unsigned short count;
-	unsigned short count2;
+	PaiduiUnitData * currentTestDataBuffer;							//当前测试数据地址
+	unsigned char step;												//创建步骤
+	unsigned int count;
 	bool pageisbusy;
 }PaiDuiPageBuffer;
 

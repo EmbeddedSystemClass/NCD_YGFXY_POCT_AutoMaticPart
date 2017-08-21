@@ -17,8 +17,8 @@ static Motor GB_Motors[4] =
 {
 	//电机1，转盘
 	{
-		.highTime = 3,										//高电平时间段，(1-3)*100us
-		.lowTime = 4,										//低电平时间段，(4)*100us
+		.highTime = 6,										//高电平时间段，(1-3)*100us
+		.lowTime = 8,										//低电平时间段，(4)*100us
 		.periodCnt = 0,
 		.isFront = true,									//是否前进
 		.isSleep = false,									//是否休眠
@@ -291,23 +291,5 @@ unsigned short getMotorxMaxLocation(Motorx_Def motor)
 	return GB_Motors[motor].motorMaxLocation;
 }
 
-/***************************************************************************************************
-*FunctionName:  
-*Description:   
-*Input:  
-*Output:  
-*Return:  
-*Author:  xsx
-*Date:  
-***************************************************************************************************/
-void setMotorxParm1(Motorx_Def motor, bool value)
-{
-	GB_Motors[motor].parm1 = value;
-}
-
-bool getMotorxParm1(Motorx_Def motor)
-{
-	return GB_Motors[motor].parm1;
-}
 
 /****************************************end of file************************************************/

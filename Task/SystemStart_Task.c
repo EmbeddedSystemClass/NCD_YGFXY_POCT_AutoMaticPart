@@ -14,20 +14,22 @@
 #include	"Universal_Task.h"
 #include	"LcdInput_Task.h"
 #include	"SystemUI_Task.h"
-
+#include	"QueueUnits.h"
 #include	"WelcomePage.h"
-
+#include 	"Usart6_Driver.h"
 #include	"UI_Data.h"
 
 #include	"Define.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
+
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
 #define	SystemStartTask_PRIORITY			2
 const char * SystemStartTaskName = "vSystemStartTask";
+unsigned char buf[100];
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -67,14 +69,14 @@ static void vSystemStartTask( void *pvParameters )
 	/*通用任务*/
 	StartvUniversalTask();
 
-	startActivity(createWelcomeActivity, NULL, NULL);
+/*	startActivity(createWelcomeActivity, NULL, NULL);
 
 	StartvSystemUITask();
 
 	StartvLcdInputTask();
 
 	SelfTest_Function();
-
+*/
 	vTaskDelete(NULL);
 }
 

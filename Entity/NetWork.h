@@ -4,6 +4,21 @@
 
 #include	"Define.h"
 
+typedef enum
+{ 
+	Link_Down = 0,
+	Link_Up = 1
+}LinkStatus;
+
+
+
+/*ip获取方式*/
+typedef enum
+{
+	Dynamic_IP = 1,														//自动获取动态ip
+	Static_IP = 2														//用户设置ip
+}IPMode;
+
 #pragma pack(1)
 typedef struct ip_Tag
 {

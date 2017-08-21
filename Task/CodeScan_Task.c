@@ -3,7 +3,6 @@
 
 #include	"CodeScan_Task.h"
 #include	"CodeScanFunction.h"
-#include	"QRCode_Data.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -19,7 +18,9 @@
 #define vCodeScanTask_PRIORITY			( ( unsigned portBASE_TYPE ) 2U )
 const char * CodeScanTaskName = "vCodeScanTask";
 
-static SemaphoreHandle_t xSemaphore;								//互斥量,用于启动读取二维码任务
+static xQueueHandle xStartScanQueue = NULL ;			//扫描二维码数据空间地址的队列，如果接受到空间地址则启动扫描二维码任务
+static QRCode * cardQR;							//扫描二维码数据空间地址
+static ScanCodeResult scanResult;						//扫码二维码的结果
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
 
@@ -44,7 +45,7 @@ static void vCodeScanTask( void *pvParameters );
 ************************************************************************/
 char StartCodeScanTask(void)
 {
-	xSemaphore = xSemaphoreCreateBinary();
+	xStartScanQueue = xQueueCreate(1, sizeof(void *));
 	
 	return xTaskCreate( vCodeScanTask, CodeScanTaskName, configMINIMAL_STACK_SIZE+100, NULL, vCodeScanTask_PRIORITY, NULL );
 }
@@ -63,26 +64,28 @@ static void vCodeScanTask( void *pvParameters )
 {
 	while(1)
 	{
-		if(pdPASS == xSemaphoreTake(xSemaphore, portMAX_DELAY))
-		{
-			setReadQRCodeStatus(true);
-			resetGB_QRCode();
-			vTaskDelay(10 / portTICK_RATE_MS);
-			
-			ScanCodeFun();
+		if(pdPASS == xQueueReceive( xStartScanQueue, &cardQR, portMAX_DELAY))
+		{			
+			scanResult = ScanCodeFun(cardQR);										//读取二维码
 			
 			vTaskDelay(10 / portTICK_RATE_MS);
-			setReadQRCodeStatus(false);
 		}
 	}
 }
 
 
-MyRes startScanQRCode(void)
+MyRes StartScanQRCode(QRCode * parm)
 {
-	if(pdPASS == xSemaphoreGive(xSemaphore))
+	scanResult = CardCodeScanning;
+	
+	if(pdPASS == xQueueSend( xStartScanQueue, &parm, 10*portTICK_RATE_MS))
 		return My_Pass;
 	else
 		return My_Fail;	
+}
+
+ScanCodeResult getScanResult(void)
+{
+	return scanResult;
 }
 

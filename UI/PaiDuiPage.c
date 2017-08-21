@@ -6,18 +6,19 @@
 #include	"LCD_Driver.h"
 
 #include	"SystemSetPage.h"
+#include	"SelectUserPage.h"
 #include	"MyMem.h"
 #include	"TimeDownNorPage.h"
 #include	"PreReadCardPage.h"
-#include	"TM1623_Driver.h"
-#include	"Motor_Fun.h"
-#include	"PlaySong_Task.h"
-#include	"CardLimit_Driver.h"
 #include	"SampleIDPage.h"
+#include	"CardCheck_Driver.h"
 #include	"MyTools.h"
 #include	"MyTest_Data.h"
 #include	"LunchPage.h"
 #include	"System_Data.h"
+#include	"Motor1_Fun.h"
+#include	"Motor2_Fun.h"
+#include	"Motor4_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -81,15 +82,6 @@ MyRes createPaiDuiActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_PaiDuiPageBuffer)
-	{
-		//进入界面先禁止插卡自动新建测试功能
-		timer_set(&(S_PaiDuiPageBuffer->timer0), 65535);
-		
-		//如果排队模块失联，则提示
-		timer_set(&(S_PaiDuiPageBuffer->timer1), 1);
-	}
-	
 	SelectPage(93);
 }
 
@@ -117,18 +109,15 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			if(NULL != GetCurrentTestItem())
 			{
 				SendKeyCode(4);
-				AddNumOfSongToList(21, 0);
 			}
 			//即将测试，不允许返回
 			else if(GetMinWaitTime() < 40)
 			{
 				SendKeyCode(3);
-				AddNumOfSongToList(20, 0);
 			}
 			else if(true == isSomePaiduiInOutTimeStatus())
 			{
 				SendKeyCode(3);
-				AddNumOfSongToList(20, 0);
 			}
 			else
 			{
@@ -144,41 +133,34 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		//继续测试
 		else if(S_PaiDuiPageBuffer->lcdinput[0] == 0x1501)
 		{
-			S_PaiDuiPageBuffer->error = CreateANewTest(PaiDuiTestType);
+			S_PaiDuiPageBuffer->error = CreateANewTest(&S_PaiDuiPageBuffer->currentTestDataBuffer);
+			S_PaiDuiPageBuffer->step = 0;
 			//创建成功
 			if(Error_OK == S_PaiDuiPageBuffer->error)
 			{
+				S_PaiDuiPageBuffer->step = 1;
+				motor4MoveTo(Motor4_OpenLocation, 1);
 				startActivity(createSampleActivity, NULL, NULL);
 			}
 			//排队位置满，不允许
 			else if(Error_PaiduiFull == S_PaiDuiPageBuffer->error)
 			{
 				SendKeyCode(2);
-				AddNumOfSongToList(19, 0);
 			}
 			//创建失败
 			else if(Error_Mem == S_PaiDuiPageBuffer->error)
 			{
 				SendKeyCode(1);
-				AddNumOfSongToList(7, 0);
 			}
 			//有卡即将测试
 			else if(Error_PaiDuiBusy == S_PaiDuiPageBuffer->error)
 			{
 				SendKeyCode(3);
-				AddNumOfSongToList(20, 0);
 			}
 			//测试中禁止添加
 			else if(Error_PaiduiTesting == S_PaiDuiPageBuffer->error)
 			{
 				SendKeyCode(4);
-				AddNumOfSongToList(21, 0);
-			}
-			//排队模块失联
-			else if(Error_PaiduiDisconnect == S_PaiDuiPageBuffer->error)
-			{
-				SendKeyCode(5);
-				AddNumOfSongToList(58, 0);
 			}
 		}
 	}
@@ -196,160 +178,103 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 static void activityFresh(void)
 {
 	unsigned char index = 0;
-	
-	if(S_PaiDuiPageBuffer)
+
+	//界面忙
+	S_PaiDuiPageBuffer->pageisbusy = true;
+
+/*	if((S_PaiDuiPageBuffer->step == 1) && (Motor4_OpenLocation == getMotorxLocation(Motor_4)))
 	{
-		S_PaiDuiPageBuffer->count2++;
+		motor2MoveTo(Motor2_WaitCardLocation, 1);
+		S_PaiDuiPageBuffer->step = 2;
+	}
 		
-		//界面忙
-		S_PaiDuiPageBuffer->pageisbusy = true;
+	if((S_PaiDuiPageBuffer->step == 2) && (Motor2_WaitCardLocation == getMotorxLocation(Motor_2)))
+	{
+		motor1MoveToNum(S_PaiDuiPageBuffer->currentTestDataBuffer->testlocation, 1);
+		S_PaiDuiPageBuffer->step = 3;
+	}
+		
+	if((S_PaiDuiPageBuffer->step == 3) && (S_PaiDuiPageBuffer->currentTestDataBuffer->testlocation == getMotorxLocation(Motor_1)))
+	{
+		S_PaiDuiPageBuffer->step = 0;
+		startActivity(createSelectUserActivity, NULL, createSampleActivity);
+	}	*/
 
-		//检测一次排队模块是否正常
-		if(Connect_Error == getSystemRunTimeData()->paiduiModuleStatus)
+	if(S_PaiDuiPageBuffer->count % 5 == 0)
+	{
+		//更新倒计时数据
+		for(index=0; index<PaiDuiWeiNum; index++)
 		{
-			if(TimeOut == timer_expired(&(S_PaiDuiPageBuffer->timer1)))
+			S_PaiDuiPageBuffer->tempd2 = GetTestItemByIndex(index);
+					
+			if(S_PaiDuiPageBuffer->tempd2)
 			{
-				timer_set(&(S_PaiDuiPageBuffer->timer1), 5);
-				SendKeyCode(6);
-				AddNumOfSongToList(57, 2);
-			}
-		}
+				S_PaiDuiPageBuffer->tempvalue1 = 0;
+				S_PaiDuiPageBuffer->tempvalue2 = 0;
+				//超时
+				if(S_PaiDuiPageBuffer->tempd2->statues == status_timeup)
+				{
+					S_PaiDuiPageBuffer->tempvalue1 = timer_Count(&(S_PaiDuiPageBuffer->tempd2->timeUp_timer));
+					if(S_PaiDuiPageBuffer->tempvalue1 > 60)
+						sprintf(S_PaiDuiPageBuffer->buf, "%02dM", S_PaiDuiPageBuffer->tempvalue1/60);
+					else
+						sprintf(S_PaiDuiPageBuffer->buf, "x%02dS", S_PaiDuiPageBuffer->tempvalue1);
 			
-		
-		//500ms刷新一次界面
-		if(S_PaiDuiPageBuffer->count2 % 5 == 0)
-		{
-			//如果当前功能处于禁止状态，且电机位置处于最大行程，且卡槽无卡，且最近的卡大于 则启用插卡自动创建功能
-			if((S_PaiDuiPageBuffer->timer0.interval == 65535) && (MaxLocation == getSystemRunTimeData()->motorData.location) && (!CardPinIn))
-			{
-				timer_set(&(S_PaiDuiPageBuffer->timer0), 1);
-			}
-
-			//如果当前空闲，且扫描时间到，则检测是否插卡了
-			if(TimeOut == timer_expired(&(S_PaiDuiPageBuffer->timer0)))
-			{
-				//如果当前空闲,且已经插卡
-				if((CardPinIn) && (NULL == GetCurrentTestItem()))
-				{
-					S_PaiDuiPageBuffer->error = CreateANewTest(PaiDuiTestType);
-					//创建成功
-					if(Error_OK == S_PaiDuiPageBuffer->error)
-					{
-						vTaskDelay(1000 / portTICK_RATE_MS);
-						//创建成功，则使电机远离，防止用户拔卡
-						MotorMoveTo(1000, 1);			
-						startActivity(createSampleActivity, NULL, NULL);		
-						return;
-					}
-					//排队位置满，不允许
-					else if(Error_PaiduiFull == S_PaiDuiPageBuffer->error)
-					{
-						SendKeyCode(2);
-						AddNumOfSongToList(19, 2);
-						timer_set(&(S_PaiDuiPageBuffer->timer0), 65535);
-					}
-					//创建失败
-					else if(Error_Mem == S_PaiDuiPageBuffer->error)
-					{
-						SendKeyCode(1);
-						AddNumOfSongToList(7, 0);
-						timer_set(&(S_PaiDuiPageBuffer->timer0), 65535);
-					}
-					//有卡即将测试
-					else if(Error_PaiDuiBusy == S_PaiDuiPageBuffer->error)
-					{
-						SendKeyCode(3);
-						AddNumOfSongToList(20, 0);
-						timer_set(&(S_PaiDuiPageBuffer->timer0), 65535);
-					}
-					//测试中禁止添加
-					else if(Error_PaiduiTesting == S_PaiDuiPageBuffer->error)
-					{
-						SendKeyCode(4);
-						AddNumOfSongToList(21, 0);
-						timer_set(&(S_PaiDuiPageBuffer->timer0), 65535);
-					}
-					//排队模块失联
-					else if(Error_PaiduiDisconnect == S_PaiDuiPageBuffer->error)
-					{
-						SendKeyCode(5);
-						AddNumOfSongToList(58, 0);
-					}
-				}
-			}
-			//更新倒计时数据
-			for(index=0; index<PaiDuiWeiNum; index++)
-			{
-				S_PaiDuiPageBuffer->tempd2 = GetTestItemByIndex(index);
-				
-				if(S_PaiDuiPageBuffer->tempd2)
-				{
-					DspNum(0x1506+index, S_PaiDuiPageBuffer->tempd2->statues, 2);
-					//超时
-					if(isInTimeOutStatus(S_PaiDuiPageBuffer->tempd2))
-					{
-						S_PaiDuiPageBuffer->tempvalue1 = timer_Count(&(S_PaiDuiPageBuffer->tempd2->timer2));
-						if(S_PaiDuiPageBuffer->tempvalue1 > 60)
-							sprintf(S_PaiDuiPageBuffer->buf, "%02dM", S_PaiDuiPageBuffer->tempvalue1/60);
-						else
-							sprintf(S_PaiDuiPageBuffer->buf, "%02dS", S_PaiDuiPageBuffer->tempvalue1);
-		
-						WriteVarIcoNum(0x1510+index*16, 50);
-					}
-					else
-					{
-						S_PaiDuiPageBuffer->tempvalue1 = timer_surplus(&(S_PaiDuiPageBuffer->tempd2->timer));
-						if(S_PaiDuiPageBuffer->tempvalue1 > 60)
-							sprintf(S_PaiDuiPageBuffer->buf, "%02dM", S_PaiDuiPageBuffer->tempvalue1/60);
-						else
-							sprintf(S_PaiDuiPageBuffer->buf, "%02dS", S_PaiDuiPageBuffer->tempvalue1);							
-						
-						S_PaiDuiPageBuffer->tempvalue = S_PaiDuiPageBuffer->tempd2->testData.qrCode.CardWaitTime*60 - S_PaiDuiPageBuffer->tempvalue1;
-						S_PaiDuiPageBuffer->tempvalue /= S_PaiDuiPageBuffer->tempd2->testData.qrCode.CardWaitTime*60;
-						S_PaiDuiPageBuffer->tempvalue *= 50;
-
-						WriteVarIcoNum(0x1510+index*16, (unsigned short)(S_PaiDuiPageBuffer->tempvalue));
-					}
-					
-					DisText(0x1610+index*0x08, S_PaiDuiPageBuffer->buf, 10);
-					
-					if((S_PaiDuiPageBuffer->tempd2->statues == status_timedown) || (S_PaiDuiPageBuffer->tempd2->statues == status_timeup)){
-						BasicPic(0x1590+index*0x10, 1, 138, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex, 10, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex+75, 10+285, 91+index*110, 190);
-					}
-					else
-					{
-						//检测卡图标闪烁
-						if((S_PaiDuiPageBuffer->count % 2) == 0)
-							BasicPic(0x1590+index*0x10, 1, 138, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex, 10, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex+75, 10+285, 91+index*110, 190);
-						else
-							BasicPic(0x1590+index*0x10, 0, 138, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex, 10, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex+75, 10+285, 91+index*110, 190);
-					}
+					WriteVarIcoNum(0x1510+index*16, 50);
 				}
 				else
 				{
-					//清除倒计时时间
-					ClearText(0x1610+index*0x08);
-					ClearText(0x1650+index*0x08);
-					
-					//显示卡凹槽
-					S_PaiDuiPageBuffer->myico.ICO_ID = 37;
-					S_PaiDuiPageBuffer->myico.X = 69+index*119;
-					S_PaiDuiPageBuffer->myico.Y = 135;
-					BasicUI(0x1590+index*0x10 ,0x1907 , 0, &(S_PaiDuiPageBuffer->myico) , sizeof(Basic_ICO));
-					
-					//时间进度条显示0
-					WriteVarIcoNum(0x1510+index*16, 0);
+					S_PaiDuiPageBuffer->tempvalue2 = timer_surplus(&(S_PaiDuiPageBuffer->tempd2->timeDown_timer));
+					if(S_PaiDuiPageBuffer->tempvalue2 > 60)
+						sprintf(S_PaiDuiPageBuffer->buf, "%02dM", S_PaiDuiPageBuffer->tempvalue2/60);
+					else
+						sprintf(S_PaiDuiPageBuffer->buf, "%02dS", S_PaiDuiPageBuffer->tempvalue2);							
+							
+					S_PaiDuiPageBuffer->tempvalue = S_PaiDuiPageBuffer->tempd2->testData.qrCode.CardWaitTime*60 - S_PaiDuiPageBuffer->tempvalue2;
+					S_PaiDuiPageBuffer->tempvalue /= S_PaiDuiPageBuffer->tempd2->testData.qrCode.CardWaitTime*60;
+					S_PaiDuiPageBuffer->tempvalue *= 50;
+
+					WriteVarIcoNum(0x1510+index*16, (unsigned short)(S_PaiDuiPageBuffer->tempvalue));
 				}
+						
+				DisText(0x1610+index*0x08, S_PaiDuiPageBuffer->buf, 10);
+
+				if(S_PaiDuiPageBuffer->tempd2->statues == status_waitTest)
+				{
+					//检测卡图标闪烁
+					if((S_PaiDuiPageBuffer->count % 2) == 0)
+						BasicPic(0x1590+index*0x10, 1, 138, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex, 10, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex+75, 10+285, 91+index*110, 190);
+					else
+						BasicPic(0x1590+index*0x10, 0, 138, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex, 10, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex+75, 10+285, 91+index*110, 190);
+				}
+				else
+					BasicPic(0x1590+index*0x10, 1, 138, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex, 10, 10+85*S_PaiDuiPageBuffer->tempd2->testData.qrCode.itemConstData.icoIndex+75, 10+285, 91+index*110, 190);
+
 			}
-			
-			S_PaiDuiPageBuffer->count++;
-			if(S_PaiDuiPageBuffer->count > 65535)
-				S_PaiDuiPageBuffer->count = 0;
+			else
+			{
+				//清除倒计时时间
+				ClearText(0x1610+index*0x08);
+				ClearText(0x1650+index*0x08);
+						
+				//显示卡凹槽
+				S_PaiDuiPageBuffer->myico.ICO_ID = 37;
+				S_PaiDuiPageBuffer->myico.X = 69+index*119;
+				S_PaiDuiPageBuffer->myico.Y = 135;
+				BasicUI(0x1590+index*0x10 ,0x1907 , 0, &(S_PaiDuiPageBuffer->myico) , sizeof(Basic_ICO));
+						
+				//时间进度条显示0
+				WriteVarIcoNum(0x1510+index*16, 0);
+			}
 		}
-		
-		//界面空闲
-		S_PaiDuiPageBuffer->pageisbusy = false;
 	}
+
+	S_PaiDuiPageBuffer->count++;
+	if(S_PaiDuiPageBuffer->count >= 60000)
+		S_PaiDuiPageBuffer->count = 1;
+	//界面空闲
+	S_PaiDuiPageBuffer->pageisbusy = false;
+	
 }
 
 /***************************************************************************************************
@@ -378,12 +303,6 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	if(S_PaiDuiPageBuffer)
-	{
-		//进入界面先禁止插卡自动新建测试功能，通过设置超大检测时间
-		timer_set(&(S_PaiDuiPageBuffer->timer0), 65535);
-	}
-	
 	SelectPage(93);
 }
 

@@ -3,11 +3,14 @@
 
 #include	"CodeScanner_Driver.h"
 #include	"CodeScanFunction.h"
-#include	"QRCode_Data.h"
 
 #include	"MyEncryptTool.h"
 #include	"QueueUnits.h"
 #include	"ItemConst_Data.h"
+#include	"Motor2_Fun.h"
+#include	"Motor4_Fun.h"
+#include 	"Usart3_Driver.h"
+#include	"CardCheck_Driver.h"
 
 #include	"Define.h"
 #include	"CRC16.h"
@@ -29,7 +32,6 @@
 /*****************************************局部函数声明*************************************/
 static void ReadBasicCodeData(ReadQRCodeBuffer * readQRCodeBuffer);
 static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer);
-static MyRes CheckCardIsTimeOut(ReadQRCodeBuffer * readQRCodeBuffer);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -37,76 +39,65 @@ static MyRes CheckCardIsTimeOut(ReadQRCodeBuffer * readQRCodeBuffer);
 /******************************************************************************************/
 /******************************************************************************************/
 
-void ScanCodeFun(void)
+ScanCodeResult ScanCodeFun(QRCode * cardQR)
 {
 	ReadQRCodeBuffer * readQRCodeBuffer;
+	ScanCodeResult scanResult = CardCodeScanning;
 	
-	readQRCodeBuffer = MyMalloc(sizeof(ReadQRCodeBuffer));
+	readQRCodeBuffer = MyMalloc(ReadQRCodeBufferStructSize);
 	if(readQRCodeBuffer)
 	{
-		memset(readQRCodeBuffer, 0, sizeof(ReadQRCodeBuffer));
+		memset(readQRCodeBuffer, 0, ReadQRCodeBufferStructSize);
 		
-		readQRCodeBuffer->cardQR = getGB_QRCode();
+		readQRCodeBuffer->cardQR = cardQR;
 		memset(readQRCodeBuffer->cardQR, 0, QRCodeStructSize);
 		
+		motor4MoveTo(Motor4_CardLocation, 5000);
+		motor2MoveTo(Motor2_WaitCardLocation, 10000);
 		
-	}
+		OpenCodeScanner();
 	
-	
-	
-/*	
-	
+		while(pdPASS == ReceiveDataFromQueue(GetUsart3RXQueue(), NULL, readQRCodeBuffer->originalcode , MAX_QR_CODE_LENGHT, NULL, 1, 10 / portTICK_RATE_MS, 10 / portTICK_RATE_MS))
+			;
 		
-	MotorMoveTo(0, 0);
-	MotorMoveTo(500, 0);
-	readQRCodeBuffer->motorLocation = getSystemRunTimeData()->motorData.location;
+		//设置定时器
+		timer_SetAndStart(&(readQRCodeBuffer->timer), MAX_SCAN_QR_TIME);
 		
-	OpenCodeScanner();
+		readQRCodeBuffer->motorLocation = getMotorxLocation(Motor_2);
 	
-	while(pdPASS == xQueueReceive(GetUsart2RXQueue(), readQRCodeBuffer->originalcode , 10/portTICK_RATE_MS))
-		;
-
-	readQRCodeBuffer->scanresult = CardCodeScanning;
-	
-	//设置定时器
-	timer_set(&(readQRCodeBuffer->timer), MAX_SCAN_QR_TIME);
-	
-	while(readQRCodeBuffer->scanresult == CardCodeScanning)
-	{
-		if(CardPinIn == NoCard)				//卡被拔出
+		while(readQRCodeBuffer->scanResult == CardCodeScanning)
 		{
-			readQRCodeBuffer->scanresult = CardCodeCardOut;
-			break;
-		}
-		else
-		{
-			if((readQRCodeBuffer->motorLocation >= 1000)||(readQRCodeBuffer->motorLocation <= 200))
-				readQRCodeBuffer->motorDir++;
-			
-			if(readQRCodeBuffer->motorDir%2 == 0)
-				readQRCodeBuffer->motorLocation += 1;
+			if(OFF == readCaedCheckStatus())				//卡被拔出
+			{
+				readQRCodeBuffer->scanResult = CardCodeCardOut;
+			}
 			else
-				readQRCodeBuffer->motorLocation -= 1;
-			
-			MotorMoveTo(readQRCodeBuffer->motorLocation, 0);
-			
-			if(readQRCodeBuffer->motorLocation % 50 == 0)
-				ReadBasicCodeData(readQRCodeBuffer);
+			{
+				readQRCodeBuffer->motorDir++;
+				
+				if(readQRCodeBuffer->motorDir%2 == 0)
+					motor2MoveTo(55000, 1000);
+				else
+					motor2MoveTo(48000, 1000);
+				
+				if(readQRCodeBuffer->motorLocation % 50 == 0)
+					ReadBasicCodeData(readQRCodeBuffer);
 
-			vTaskDelay(2 / portTICK_RATE_MS);
-			
-			if(TimeOut == timer_expired(&(readQRCodeBuffer->timer)))
-				readQRCodeBuffer->scanresult = CardCodeScanTimeOut;				
+				vTaskDelay(2 / portTICK_RATE_MS);
+				
+				if(TimerOut == timer_expired(&(readQRCodeBuffer->timer)))
+					readQRCodeBuffer->scanResult = CardCodeScanTimeOut;				
+			}
 		}
 	}
 
 	CloseCodeScanner();
 	
-	scanresult = readQRCodeBuffer->scanresult;
+	scanResult = readQRCodeBuffer->scanResult;
 	
 	MyFree(readQRCodeBuffer);
 	
-	*/
+	return scanResult;
 }
 
 /***************************************************************************************************
@@ -119,20 +110,20 @@ void ScanCodeFun(void)
 ***************************************************************************************************/
 static void ReadBasicCodeData(ReadQRCodeBuffer * readQRCodeBuffer)
 {
-/*	if(readQRCodeBuffer == NULL)
+	if(readQRCodeBuffer == NULL)
 		return;
 	
-	memset(readQRCodeBuffer->originalcode, 0, MAX_QR_CODE_LENGHT+1);
-	ReceiveDataFromQueue(GetUsart2RXQueue(), GetUsart2RXMutex(), readQRCodeBuffer->originalcode , MAX_QR_CODE_LENGHT, 
-		&(readQRCodeBuffer->originalCodeLen), 1, 10 / portTICK_RATE_MS, 10 / portTICK_RATE_MS);
+	memset(readQRCodeBuffer->originalcode, 0, MAX_QR_CODE_LENGHT);
+	ReceiveDataFromQueue(GetUsart3RXQueue(), NULL, readQRCodeBuffer->originalcode , MAX_QR_CODE_LENGHT, &(readQRCodeBuffer->originalCodeLen), 1, 10 / portTICK_RATE_MS
+		, 10 / portTICK_RATE_MS);
 	
 	if(readQRCodeBuffer->originalCodeLen > 0)
 	{
 		readQRCodeBuffer->originalCodeLen -= 1;
 		AnalysisCode(readQRCodeBuffer);
-	}*/
+	}
 }
-#if 0
+
 /***************************************************************************************************
 *FunctionName：DecryptCode
 *Description：解码并解析二维码数据
@@ -165,7 +156,7 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 		memcpy(readQRCodeBuffer->cardQR->ItemName, readQRCodeBuffer->pbuf1 ,strlen(readQRCodeBuffer->pbuf1));
 		if(getItemConstData(&(readQRCodeBuffer->cardQR->itemConstData), readQRCodeBuffer->cardQR->ItemName) == My_Fail)
 		{
-			readQRCodeBuffer->scanresult = CardUnsupported;
+			readQRCodeBuffer->scanResult = CardUnsupported;
 			goto END;
 		}
 	}
@@ -296,14 +287,14 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 		goto END;
 	
 	END:
-		if(readQRCodeBuffer->scanresult != CardCodeScanning)
+		if(readQRCodeBuffer->scanResult != CardCodeScanning)
 			return;
 		else if(readQRCodeBuffer->cardQR->CRC16 != CalModbusCRC16Fun(readQRCodeBuffer->pbuf2 , readQRCodeBuffer->originalCodeLen - 
 			readQRCodeBuffer->tempV1, NULL))
-			readQRCodeBuffer->scanresult = CardCodeCRCError;		
-		else if(My_Fail == CheckCardIsTimeOut(readQRCodeBuffer))
-			readQRCodeBuffer->scanresult = CardCodeTimeOut;
+			readQRCodeBuffer->scanResult = CardCodeCRCError;		
+		//else if(My_Fail == CheckCardIsTimeOut(readQRCodeBuffer))
+		//	readQRCodeBuffer->scanResult = CardCodeTimeOut;
 		else
-			readQRCodeBuffer->scanresult = CardCodeScanOK;
+			readQRCodeBuffer->scanResult = CardCodeScanOK;
 }
-#endif
+

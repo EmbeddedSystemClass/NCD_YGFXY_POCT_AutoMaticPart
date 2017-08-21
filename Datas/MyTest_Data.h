@@ -16,7 +16,7 @@ typedef enum
 	Error_PaiduiDisconnect = 6														//ÅÅ¶ÓÄ£¿éÊ§Áª
 }CreateTestErrorType;
 
-CreateTestErrorType CreateANewTest(void);
+CreateTestErrorType CreateANewTest(PaiduiUnitData ** TestDataBuffer);
 MyRes DeleteCurrentTest(void);
 PaiduiUnitData * GetTestItemByIndex(unsigned char index);
 unsigned short GetMinWaitTime(void);
@@ -24,7 +24,7 @@ bool isSomePaiduiInOutTimeStatus(void);
 bool isInTimeOutStatus(PaiduiUnitData * PaiduiUnitData);
 void SetCurrentTestItem(PaiduiUnitData * s_PaiduiUnitData);
 PaiduiUnitData * GetCurrentTestItem(void);
-
+bool IsPaiDuiTestting(void);
 
 #endif
 

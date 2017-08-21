@@ -13,6 +13,7 @@ typedef struct PaiduiUnitData_tag {
 	Timer timeDown_timer;																	//倒计时计时器
 	Timer timeUp_timer;																		//超时计时器
 	unsigned char testlocation;
+	MyPaiDuiStatues statues;																//测试阶段
 }PaiduiUnitData;
 #pragma pack()
 

@@ -8,9 +8,9 @@
 #include	"MyMem.h"
 
 #include	"LunchPage.h"
-
 #include	"Test_Task.h"
 #include	"CodeScan_Task.h"
+#include	"Paidui_Task.h"
 
 #include	<string.h>
 #include	"stdio.h"
@@ -72,6 +72,7 @@ static void activityStart(void)
 {
 	timer_SetAndStart(&(page->timer), 2);
 
+	page->canAram = true;
 	SelectPage(1);
 }
 
@@ -122,19 +123,28 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(SystemData_OK == getSelfTestStatus())
-		SetLEDLight(getGBSystemSetData()->ledLightIntensity);
-		
 	if(80 == page->currentPageId)
 	{
+		page->selfTestStatus = getSelfTestStatus();
+		
+		if(page->canAram == false)
+			return;
+		
+		if(page->selfTestStatus != SelfTestting)
+			page->canAram = false;
+
 		//自检完成
-		if(SelfTest_OK == getSelfTestStatus())
-		{
-			/*开启测试任务*/
-			//StartvTestTask();
-					
-			/*开启读二维码任务*/
+		if(SelfTest_OK == page->selfTestStatus)
+		{					
+			SetLEDLight(getGBSystemSetData()->ledLightIntensity);
+			
+			StartvTestTask();
+				
+			//开启读二维码任务
 			StartCodeScanTask();
+			
+			//开始排队任务
+			StartPaiduiTask();
 					
 			destroyTopActivity();
 			startActivity(createLunchActivity, NULL, NULL);
@@ -172,11 +182,10 @@ static void activityFresh(void)
 			SendKeyCode(1);
 		}
 	}
-		
-	if((81 != page->currentPageId) && (TimerOut == timer_expired(&(page->timer))))
+	else if(TimerOut == timer_expired(&(page->timer)))
 	{
 		ReadCurrentPageId();
-
+		
 		timer_restart(&(page->timer));
 	}
 }

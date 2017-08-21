@@ -24,6 +24,7 @@ void timer_SetAndStart(Timer *t, unsigned int interval);
 void timer_restart(Timer *t);
 TimerStatus timer_expired(Timer *t);
 unsigned int timer_surplus(Timer *t);
+unsigned int timer_Count(Timer *t);
 bool timerIsStartted(Timer * t);
 	
 #endif

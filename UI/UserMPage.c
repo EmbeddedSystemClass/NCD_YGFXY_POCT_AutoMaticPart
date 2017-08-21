@@ -81,7 +81,7 @@ static void activityStart(void)
 {
 	page->myDeviceLock = getMyDeviceLock();
 	page->isLocked = false;
-	timer_set(&(page->timer), 1);
+	timer_SetAndStart(&(page->timer), 1);
 	
 	clearPageList();
 	
@@ -211,13 +211,13 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(TimeOut == timer_expired(&(page->timer)))
+	if(TimerOut == timer_expired(&(page->timer)))
 	{
 		//先给设备信息文件上锁，防止其他线程修改数据
-		if((page->isLocked == false) && (My_Pass == LockObject(page->myDeviceLock, &page, 1)))
+		if((page->isLocked == false) && (My_Pass == LockObject(page->myDeviceLock, &page, 5)))
 		{
 			/*读取所有操作人*/
-			ReadDeviceFromFile(&(page->device));
+			ReadDeviceFromFile(&page->device);
 			
 			page->pageindex = 0;
 
@@ -338,7 +338,7 @@ static void showCurrentPageList(void)
 	page->tempOperator = &(page->device.operators[page->tempV1]);
 	
 	/*显示列表数据*/
-	for(page->tempV1=0; page->tempV1<MaxOperatorSize; page->tempV1++)
+	for(page->tempV1=0; page->tempV1<MaxPageShowOperatorSize; page->tempV1++)
 	{
 		if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
 			snprintf(page->buf, OperatorNameLen, "%s", page->tempOperator->name);
@@ -508,10 +508,17 @@ static MyRes addOrModifyOperator(void)
 		else
 			memcpy(&page->device.operators[page->tempV2], &page->newOperator, OneOperatorStructSize);
 	}
-	
+	page->device.operator.id = 0x0102;
+	page->device.operator.name[0] = 0x03;
+	page->device.operator.age[0] = 0x04;
+	page->device.operator.sex[0] = 0x05;
+	page->device.operator.phone[0] = 0x06;
+	page->device.operator.department[0] = 0x07;
+	page->device.operator.crc = 0x0809;
+	page->device.department[0] = 0x03;
 	page->device.crc = CalModbusCRC16Fun(&(page->device), DeviceStructCrcSize, NULL);
 		
-	if(My_Pass == SaveDeviceToFile(&(page->device)))
+	if(My_Pass == SaveDeviceToFile(&page->device))
 	{
 		page->pageindex = 0;
 

@@ -48,11 +48,11 @@ MyRes SaveSystemSetData(SystemSetData * systemSetData)
 	FatfsFileInfo_Def * myfile = NULL;
 	MyRes status = My_Fail;
 	
-	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
+	myfile = MyMalloc(MyFileStructSize);
 	
 	if(myfile && systemSetData)
 	{
-		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
+		memset(myfile, 0, MyFileStructSize);
 
 		myfile->res = f_open(&(myfile->file), "0:/SysSet.ncd", FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
 			
@@ -96,11 +96,11 @@ MyRes ReadSystemSetData(SystemSetData * systemSetData)
 	FatfsFileInfo_Def * myfile = NULL;
 	MyRes statues = My_Fail;
 	
-	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
+	myfile = MyMalloc(MyFileStructSize);
 	
 	if(myfile && systemSetData)
 	{
-		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
+		memset(myfile, 0, MyFileStructSize);
 
 		myfile->res = f_open(&(myfile->file), "0:/SysSet.ncd", FA_READ);
 		

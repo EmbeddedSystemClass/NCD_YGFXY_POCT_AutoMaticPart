@@ -412,6 +412,7 @@ SD_Error SD_Init(void)
 	// DMA2 STREAMx Interrupt ENABLE
 	NVIC_InitStructure.NVIC_IRQChannel = SD_SDIO_DMA_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_Init(&NVIC_InitStructure);
   /* SDIO Peripheral Low Level Init */
    SD_LowLevel_Init();

@@ -38,11 +38,11 @@ MyRes SaveDeviceToFile(Device * device)
 	FatfsFileInfo_Def * myfile = NULL;
 	MyRes statues = My_Fail;
 	
-	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
+	myfile = MyMalloc(MyFileStructSize);
 	
 	if(myfile && device)
 	{
-		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
+		memset(myfile, 0, MyFileStructSize);
 
 		myfile->res = f_open(&(myfile->file), DeviceFileName, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
 			
@@ -69,11 +69,12 @@ MyRes ReadDeviceFromFile(Device * device)
 	FatfsFileInfo_Def * myfile = NULL;
 	MyRes statues = My_Fail;
 	
-	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
+	myfile = MyMalloc(MyFileStructSize);
 
 	if(myfile && device)
 	{
-		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
+		memset(myfile, 0, MyFileStructSize);
+		memset(device, 0, DeviceStructSize);
 
 		myfile->res = f_open(&(myfile->file), DeviceFileName, FA_READ);
 		
@@ -83,13 +84,13 @@ MyRes ReadDeviceFromFile(Device * device)
 					
 			f_read(&(myfile->file), device, DeviceStructSize, &(myfile->br));
 			
-			statues = My_Pass;
+			if(device->crc == CalModbusCRC16Fun(device, DeviceStructCrcSize, NULL))
+				statues = My_Pass;
 			
 			f_close(&(myfile->file));
 		}
 		else if(FR_NO_FILE == myfile->res)
 		{
-			memset(device, 0, DeviceStructSize);
 			device->crc = CalModbusCRC16Fun(device, DeviceStructCrcSize, NULL);
 			
 			statues = My_Pass;

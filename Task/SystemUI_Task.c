@@ -10,6 +10,7 @@
 /***************************************************************************************************/
 
 #include	"SystemUI_Task.h"
+#include	"LCDInputFun.h"
 #include	"UI_Data.h"
 
 #include 	"FreeRTOS.h"

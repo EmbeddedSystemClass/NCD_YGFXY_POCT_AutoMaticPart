@@ -50,7 +50,7 @@ static void AnalysisCode(void * pbuf, unsigned short len);
 ***************************************************************************************************/
 void LCDInputData(void)
 {
-	ReceiveDataFromQueue(GetUsart6RXQueue(), NULL, buf, 100, &rxcount, 1, 10 / portTICK_RATE_MS, 10 / portTICK_RATE_MS);
+	ReceiveDataFromQueue(GetUsart6RXQueue(), GetUsart6RxMutex(), buf, 100, &rxcount, 1, 10 / portTICK_RATE_MS, 10 / portTICK_RATE_MS);
 	
 	if(rxcount > 0)
 		AnalysisCode(buf, rxcount);

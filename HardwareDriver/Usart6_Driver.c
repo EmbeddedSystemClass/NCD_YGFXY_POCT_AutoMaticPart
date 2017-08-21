@@ -9,38 +9,26 @@
 /******************************************Header List**********************************************/
 /***************************************************************************************************/
 #include 	"Usart6_Driver.h"
+#include	"Led_Driver.h"
+#include	"Delay.h"
 /***************************************************************************************************/
 /******************************************Static Variables*****************************************/
 /***************************************************************************************************/
 static xQueueHandle xRxQueue = NULL;									//receive queue
 static xQueueHandle xTxQueue = NULL;									//send queue
+static xSemaphoreHandle xRxMutex;									//互斥量
+static xSemaphoreHandle xTxMutex;									//互斥量
+static bool enableTXE = true;
 /***************************************************************************************************/
 /******************************************Static Methods*******************************************/
 /***************************************************************************************************/
-static void Usart6_Os_Init(void);
-static void ConfigUsart6(void);
-static portBASE_TYPE prvUsart6_ISR_NonNakedBehaviour( void );
+static void prvUsart6_ISR_NonNakedBehaviour( void );
 /***************************************************************************************************/
 /***************************************************************************************************/
 /******************************************Main Body************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-/***************************************************************************************************
-*FunctionName：Usart6_Os_Init
-*Description：创建串口6的队列互斥量
-*Input：None
-*Output：None
-*Author：xsx
-*Data：2016年4月29日11:28:04
-***************************************************************************************************/
-static void Usart6_Os_Init(void)
-{
-	xRxQueue = xQueueCreate( xRxQueue6_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-	xTxQueue = xQueueCreate( xTxQueue6_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-
-}
-
 /***************************************************************************************************
 *FunctionName：ConfigUsart6
 *Description：串口6的端口初始化和配置
@@ -49,7 +37,7 @@ static void Usart6_Os_Init(void)
 *Author：xsx
 *Data：2016年4月29日11:28:25
 ***************************************************************************************************/
-static void ConfigUsart6(void)
+void Usart6_Init(void)
 {
 	USART_InitTypeDef USART_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -66,6 +54,7 @@ static void ConfigUsart6(void)
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 	
 	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_USART6);
@@ -85,24 +74,15 @@ static void ConfigUsart6(void)
 	USART_ITConfig(USART6, USART_IT_RXNE, ENABLE);
 	
 	NVIC_InitStructure.NVIC_IRQChannel = USART6_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 6;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 15;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-}
-
-/***************************************************************************************************
-*FunctionName：Usart6_Init
-*Description：串口6外部调用初始化函数
-*Input：None
-*Output：None
-*Author：xsx
-*Data：2016年4月29日11:28:56
-***************************************************************************************************/
-void Usart6_Init(void)
-{
-	Usart6_Os_Init();
-	ConfigUsart6();
+	
+	xRxQueue = xQueueCreate( xRxQueue6_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	xTxQueue = xQueueCreate( xTxQueue6_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	vSemaphoreCreateBinary(xRxMutex);
+	vSemaphoreCreateBinary(xTxMutex);
 }
 
 /***************************************************************************************************
@@ -127,35 +107,34 @@ void USART6_IRQHandler(void)
 *Data：2016年4月29日11:29:32
 ***************************************************************************************************/
 __attribute__((__noinline__))
-static portBASE_TYPE prvUsart6_ISR_NonNakedBehaviour( void )
+static void prvUsart6_ISR_NonNakedBehaviour( void )
 {
-	signed portCHAR     cChar;
-	portBASE_TYPE     xHigherPriorityTaskWoken = pdFALSE;
+	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+	char cChar;
 
-	portBASE_TYPE retstatus;
-
-	if(USART_GetITStatus(USART6 , USART_IT_TXE) == SET)
+	if( USART_GetITStatus( USART6, USART_IT_TXE ) == SET )
 	{
-		portENTER_CRITICAL();
-			retstatus = xQueueReceiveFromISR( xTxQueue, &cChar, &xHigherPriorityTaskWoken );
-		portEXIT_CRITICAL();
-
-		if (retstatus == pdTRUE)
-			USART_SendData(USART6, cChar);
+		/* The interrupt was caused by the THR becoming empty.  Are there any
+		more characters to transmit? */
+		if( xQueueReceiveFromISR( xTxQueue, &cChar, &xHigherPriorityTaskWoken ) == pdTRUE )
+		{
+			/* A character was retrieved from the queue so can be sent to the
+			THR now. */
+			USART_SendData( USART6, cChar );
+		}
 		else
-			USART_ITConfig(USART6, USART_IT_TXE, DISABLE);
+		{
+			USART_ITConfig( USART6, USART_IT_TXE, DISABLE );		
+		}		
 	}
-
-	if(USART_GetITStatus(USART6, USART_IT_RXNE) == SET)
+	
+	if( USART_GetITStatus( USART6, USART_IT_RXNE ) == SET )
 	{
-		cChar = USART_ReceiveData(USART6);
-
-		portENTER_CRITICAL();
-			xQueueSendFromISR(xRxQueue, &cChar, &xHigherPriorityTaskWoken);
-		portEXIT_CRITICAL();
-	}
-
-	return ( xHigherPriorityTaskWoken );
+		cChar = USART_ReceiveData( USART6 );
+		xQueueSendFromISR( xRxQueue, &cChar, &xHigherPriorityTaskWoken );
+	}	
+	
+	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
 
 /***************************************************************************************************
@@ -169,6 +148,11 @@ static portBASE_TYPE prvUsart6_ISR_NonNakedBehaviour( void )
 void EnableUsart6TXInterrupt(void)
 {
 	USART_ITConfig(USART6, USART_IT_TXE, ENABLE);
+}
+
+void Usart6SendData(unsigned char data)
+{
+	USART_SendData(USART6, data);
 }
 
 /***************************************************************************************************
@@ -188,5 +172,12 @@ xQueueHandle GetUsart6TXQueue(void)
 {
 	return xTxQueue;
 }
-
+xSemaphoreHandle GetUsart6RxMutex(void)
+{
+	return xRxMutex;
+}
+xSemaphoreHandle GetUsart6TxMutex(void)
+{
+	return xTxMutex;
+}
 /****************************************end of file************************************************/

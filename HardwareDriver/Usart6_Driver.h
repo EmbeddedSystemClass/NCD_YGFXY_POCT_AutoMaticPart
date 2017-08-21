@@ -10,15 +10,15 @@
 #include 	"queue.h"
 #include	"semphr.h"
 
-#define xRxQueue6_Len				200
-#define xTxQueue6_Len				300
+#define xRxQueue6_Len				300
+#define xTxQueue6_Len				2500
 
 void Usart6_Init(void);
 void EnableUsart6TXInterrupt(void);
 xQueueHandle GetUsart6RXQueue(void);
 xQueueHandle GetUsart6TXQueue(void);
-xSemaphoreHandle GetUsart6RXMutex(void);
-xSemaphoreHandle GetUsart6TXMutex(void);
-
+xSemaphoreHandle GetUsart6RxMutex(void);
+xSemaphoreHandle GetUsart6TxMutex(void);
+void Usart6SendData(unsigned char data);
 #endif
 

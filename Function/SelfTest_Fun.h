@@ -24,7 +24,8 @@ typedef enum
 	SD_ERROR = 11,
 	
 	SelfTestting = 99,								//自检中
-	SelfTest_OK = 100								//自检成功
+	SelfTest_OK = 100,								//自检成功
+	SelfTest_None = 0xff
 }ERROR_SelfTest;
 
 void SelfTest_Function(void);

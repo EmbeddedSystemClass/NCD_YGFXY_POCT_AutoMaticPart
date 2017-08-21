@@ -52,16 +52,16 @@ void PrintfData(TestData * testd2)
 		memcpy(tempTestData, testd2, sizeof(TestData));
 		
 		sprintf(printfbuf, "武汉纽康度生物科技股份有限公司\n\0");
-		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
+		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 		
 		sprintf(printfbuf, "测试人: %s\n\0", tempTestData->operator.name);
-		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
+		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 		
 		sprintf(printfbuf, "样品编号: %s\n\0", tempTestData->sampleid);
-		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
+		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 		
 		sprintf(printfbuf, "测试项目: %s\n\0", tempTestData->qrCode.ItemName);
-		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
+		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 		
 		tempvalue = tempTestData->testSeries.AdjustResult;
 		if(tempTestData->testResultDesc != ResultIsOK)
@@ -75,22 +75,22 @@ void PrintfData(TestData * testd2)
 		else
 			sprintf(printfbuf, "测试结果: %.*f %-8.8s\n\0", tempTestData->qrCode.itemConstData.pointNum, tempTestData->testSeries.AdjustResult, tempTestData->qrCode.itemConstData.itemMeasure);
 		
-		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
+		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 		
 		sprintf(printfbuf, "参考值: %s\n\0", tempTestData->qrCode.itemConstData.normalResult);
-		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
+		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 		
 		sprintf(printfbuf, "测试时间: 20%02d-%02d-%02d %02d:%02d:%02d\n\0", tempTestData->testDateTime.year, tempTestData->testDateTime.month, tempTestData->testDateTime.day
 			, tempTestData->testDateTime.hour, tempTestData->testDateTime.min, tempTestData->testDateTime.sec);
-		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
+		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 		
 		memcpy(&mytime, &(getSystemRunTimeData()->systemDateTime), sizeof(DateTime));
 		sprintf(printfbuf, "打印时间: 20%02d-%02d-%02d %02d:%02d:%02d\n\0", mytime.year, mytime.month, mytime.day
 			, mytime.hour, mytime.min, mytime.sec);
-		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
+		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 		
 		sprintf(printfbuf, "声明: 本结果仅对本标本负责！\n\n\n\n\n\0");
-		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
+		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 	}
 	
 	MyFree(tempTestData);

@@ -23,8 +23,8 @@
 /***************************************************************************************************/
 /**************************************局部变量声明*************************************************/
 /***************************************************************************************************/
-static unsigned char *txdat = NULL;
-static unsigned char tempbuf[200];
+//static unsigned char *txdat = NULL;
+//static unsigned char tempbuf[200];
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
@@ -52,6 +52,7 @@ static void WriteLCDRegister(unsigned char reg, void *data, unsigned char len)
 	unsigned char *q = NULL;
 	unsigned char *p = (unsigned char *)data;
 	unsigned char i=0;
+	unsigned char *txdat = NULL;
 	
 	txdat = MyMalloc(len + 10);
 	if(txdat == NULL)
@@ -73,7 +74,7 @@ static void WriteLCDRegister(unsigned char reg, void *data, unsigned char len)
 	
 	CalModbusCRC16Fun(txdat+3, len + 2, q);
 	
-	SendDataToQueue(GetUsart6TXQueue(), NULL, txdat, txdat[2]+3, 1, 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
+	SendDataToQueue(GetUsart6TXQueue(), GetUsart6TxMutex(), txdat, txdat[2]+3, 1, 100 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
 	
 	MyFree(txdat);
 }
@@ -91,6 +92,7 @@ static void WriteLCDRegister(unsigned char reg, void *data, unsigned char len)
 static void ReadLCDRegister(unsigned char reg, unsigned char len)
 {			
 	unsigned char *q = NULL;
+	unsigned char *txdat = NULL;
 	
 	txdat = MyMalloc(16);
 	if(txdat == NULL)
@@ -111,7 +113,7 @@ static void ReadLCDRegister(unsigned char reg, unsigned char len)
 	
 	CalModbusCRC16Fun(txdat+3, 1 + 2, q);
 	
-	SendDataToQueue(GetUsart6TXQueue(), NULL, txdat, txdat[2]+3, 1, 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
+	SendDataToQueue(GetUsart6TXQueue(), GetUsart6TxMutex(), txdat, txdat[2]+3, 1, 100 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
 	
 	MyFree(txdat);
 }
@@ -121,6 +123,7 @@ static void WriteLCDData(unsigned short addr, void *data, unsigned char len)
 	unsigned char *q = NULL;
 	unsigned char *p = (unsigned char *)data;
 	unsigned char i=0;
+	unsigned char *txdat = NULL;
 	
 	txdat = MyMalloc(len + 10);
 	if(txdat == NULL)
@@ -143,7 +146,7 @@ static void WriteLCDData(unsigned short addr, void *data, unsigned char len)
 	
 	CalModbusCRC16Fun(txdat+3, len + 3, q);
 	
-	SendDataToQueue(GetUsart6TXQueue(), NULL, txdat, txdat[2]+3, 1, 50 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
+	SendDataToQueue(GetUsart6TXQueue(), GetUsart6TxMutex(), txdat, txdat[2]+3, 1, 100 / portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
 
 	MyFree(txdat);
 }
@@ -158,6 +161,7 @@ static void WriteLCDData(unsigned short addr, void *data, unsigned char len)
 ***************************************************************************************************/
 void SelectPage(unsigned short index)
 {
+	unsigned char tempbuf[10];
 	tempbuf[0] = index >> 8;
 	tempbuf[1] = index;
 	WriteLCDRegister(0x03, tempbuf, 2);
@@ -238,6 +242,7 @@ void DisText(unsigned short addr, void *data, unsigned short len)
 
 void ClearText(unsigned short addr)
 {	
+	unsigned char tempbuf[20];
 	memset(tempbuf, 0x0, 10);
 	DisText(addr, tempbuf, 1);
 }
@@ -251,20 +256,27 @@ void BasicUI(unsigned short addr , unsigned short cmd, unsigned short datapacknu
 {
 	unsigned char *p = (unsigned char *)data;
 	unsigned char i=0;
+	unsigned char *txdat = NULL;
+	txdat = MyMalloc(128);
+	if(txdat == NULL)
+		return;
 
+	memset(txdat, 0, 128);
 	//基本图形指令
-	tempbuf[0] = cmd>>8;		tempbuf[1] = cmd;
+	txdat[0] = cmd>>8;		txdat[1] = cmd;
 	//基本图形数据包个数
-	tempbuf[2] = datapacknum>>8;		tempbuf[3] = datapacknum;
+	txdat[2] = datapacknum>>8;		txdat[3] = datapacknum;
 	
 	//由于keil是低字节在前，而发生给屏的数据需要高字节在前，所以在这里将高低互换
 	for(i=0; i<len/2; i++)
 	{
-		tempbuf[4+i*2] = p[i*2+1];
-		tempbuf[5+i*2] = p[i*2];
+		txdat[4+i*2] = p[i*2+1];
+		txdat[5+i*2] = p[i*2];
 	}
 	
-	WriteLCDData(addr, tempbuf, len+4);
+	WriteLCDData(addr, txdat, len+4);
+	
+	MyFree(txdat);
 }
 
 /***************************************************************************************************
@@ -278,28 +290,36 @@ void BasicUI(unsigned short addr , unsigned short cmd, unsigned short datapacknu
 void BasicPic(unsigned short addr,unsigned short datanum, unsigned short soureid ,unsigned short xs,unsigned short ys ,unsigned short xe,unsigned short ye ,
 	unsigned short txs,unsigned short tys)
 {	
+	unsigned char *txdat = NULL;
+	txdat = MyMalloc(128);
+	if(txdat == NULL)
+		return;
+	memset(txdat, 0, 128);
+	
 	//cmd 0x0006
-	tempbuf[0] = 0;		tempbuf[1] = 6;
+	txdat[0] = 0;		txdat[1] = 6;
 		
 	//数据包个数1
-	tempbuf[2] = datanum>>8;		tempbuf[3] = datanum;
+	txdat[2] = datanum>>8;		txdat[3] = datanum;
 		
 	//原页面id
-	tempbuf[4] = soureid>>8;	tempbuf[5] = soureid;
+	txdat[4] = soureid>>8;	txdat[5] = soureid;
 	//原页面x
-	tempbuf[6] = xs>>8;	tempbuf[7] = xs;
+	txdat[6] = xs>>8;	txdat[7] = xs;
 	//原页面x
-	tempbuf[8] = ys>>8;	tempbuf[9] = ys;
+	txdat[8] = ys>>8;	txdat[9] = ys;
 	//原页面x
-	tempbuf[10] = xe>>8;	tempbuf[11] = xe;
+	txdat[10] = xe>>8;	txdat[11] = xe;
 	//原页面x
-	tempbuf[12] = ye>>8;	tempbuf[13] = ye;
+	txdat[12] = ye>>8;	txdat[13] = ye;
 	//原页面x
-	tempbuf[14] = txs>>8;	tempbuf[15] = txs;
+	txdat[14] = txs>>8;	txdat[15] = txs;
 	//原页面x
-	tempbuf[16] = tys>>8;	tempbuf[17] = tys;
+	txdat[16] = tys>>8;	txdat[17] = tys;
 
-	WriteLCDData(addr, tempbuf, 18);
+	WriteLCDData(addr, txdat, 18);
+	
+	MyFree(txdat);
 }
 
 
@@ -389,7 +409,8 @@ void DisPlayLine(unsigned char channel , void * data , unsigned char datalen)
 	unsigned char *q = NULL;
 	unsigned char i = 0;
 	unsigned short tempdat = 0;
-		
+	unsigned char *txdat = NULL;
+	
 	txdat = MyMalloc(datalen*2 + 50);
 	if(txdat == NULL)
 		return;
@@ -412,13 +433,14 @@ void DisPlayLine(unsigned char channel , void * data , unsigned char datalen)
 	
 	CalModbusCRC16Fun(txdat+3, datalen*2 + 2, q);
 	
-	SendDataToQueue(GetUsart6TXQueue(), NULL, txdat, txdat[2]+3, 1, 50 * portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
+	SendDataToQueue(GetUsart6TXQueue(), GetUsart6TxMutex(), txdat, txdat[2]+3, 1, 50 * portTICK_RATE_MS, 100 / portTICK_RATE_MS, EnableUsart6TXInterrupt);
 
 	MyFree(txdat);
 }
 
 void SetChartSize(unsigned short add , unsigned short num)
 {
+	unsigned char tempbuf[10];
 	tempbuf[0] = num>>8;
 	tempbuf[1] = num;
 	
@@ -428,6 +450,8 @@ void SetChartSize(unsigned short add , unsigned short num)
 void DspNum(unsigned short addr , unsigned int num, unsigned char len)
 {
 	unsigned char i=0;
+	unsigned char tempbuf[128];
+	
 	for(i=0; i<len; i++)
 	{
 		tempbuf[i] = (num >> ((len-i-1)*8));
@@ -438,6 +462,7 @@ void DspNum(unsigned short addr , unsigned int num, unsigned char len)
 
 void WriteVarIcoNum(unsigned short addr, unsigned short num)
 {
+	unsigned char tempbuf[6];
 	tempbuf[0] = (unsigned char)(num >> 8);
 	tempbuf[1] = (unsigned char)num ;
 

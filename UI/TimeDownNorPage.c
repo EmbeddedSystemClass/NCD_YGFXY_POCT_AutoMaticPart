@@ -5,10 +5,15 @@
 #include	"Define.h"
 #include	"LCD_Driver.h"
 
-#include	"SystemSetPage.h"
-#include	"MyMem.h"
 #include	"TestPage.h"
+#include	"SystemSetPage.h"
+#include	"LunchPage.h"
+#include	"PaiDuiPage.h"
+#include	"MyMem.h"
 #include	"MyTest_Data.h"
+#include	"Motor1_Fun.h"
+#include	"Motor2_Fun.h"
+#include	"Motor4_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -75,16 +80,20 @@ MyRes createTimeDownActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_TimeDownPageData)
-	{
-		S_TimeDownPageData->currenttestdata = GetCurrentTestItem();
-		S_TimeDownPageData->currenttestdata->statues = status_timedownagain;
+	S_TimeDownPageData->currenttestdata = GetCurrentTestItem();
 	
-		S_TimeDownPageData->S_Timer = &(S_TimeDownPageData->currenttestdata->timer);
-	}
+	S_TimeDownPageData->S_Timer = &(S_TimeDownPageData->currenttestdata->timeDown_timer);
 	
 	SelectPage(95);
 
+	S_TimeDownPageData->step = 1;
+	motor4MoveTo(Motor4_OpenLocation, 1);
+			
+			
+			
+				
+			motor2MoveTo(Motor2_StartTestLocation, 10000);
+			motor4MoveTo(Motor4_CardLocation, 5000);
 }
 
 /***************************************************************************************************
@@ -112,16 +121,46 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(S_TimeDownPageData->count % 3 == 0)
+	if(S_TimeDownPageData->count % 5 == 0)
 	{
 		RefreshTimeText();
-		if(TimeOut == timer_expired(S_TimeDownPageData->S_Timer))
+		if(TimerOut == timer_expired(S_TimeDownPageData->S_Timer))
 		{
-			startActivity(createTestActivity, NULL, NULL);
+			if(S_TimeDownPageData->step == 0)
+				startActivity(createTestActivity, NULL, NULL);
 		}
 	}
 	
 	S_TimeDownPageData->count++;
+	
+	if((S_TimeDownPageData->step == 1) && (Motor4_OpenLocation == getMotorxLocation(Motor_4)))
+	{
+		motor2MoveTo(Motor2_MidLocation, 1);
+		S_TimeDownPageData->step = 2;
+	}
+	
+	if((S_TimeDownPageData->step == 2) && (Motor2_MidLocation == getMotorxLocation(Motor_2)))
+	{
+		S_TimeDownPageData->cardNum = S_TimeDownPageData->currenttestdata->testlocation;
+		S_TimeDownPageData->cardNum += 4;
+		if(S_TimeDownPageData->cardNum > 8)
+			S_TimeDownPageData->cardNum -= 8;
+		motor1MoveToNum(S_TimeDownPageData->cardNum, 1);
+			
+		S_TimeDownPageData->step = 3;
+	}
+
+	if((S_TimeDownPageData->step == 3) && (S_TimeDownPageData->cardNum == getMotorxLocation(Motor_1)))
+	{
+		motor2MoveTo(Motor2_StartTestLocation, 1);
+		S_TimeDownPageData->step = 4;
+	}
+	
+	if((S_TimeDownPageData->step == 4) && (Motor2_StartTestLocation == getMotorxLocation(Motor_2)))
+	{
+		motor4MoveTo(Motor4_CardLocation, 1);
+		S_TimeDownPageData->step = 0;
+	}
 }
 
 /***************************************************************************************************

@@ -17,7 +17,6 @@
 #include	"Test_Task.h"
 #include	"LunchPage.h"
 #include	"Printf_Fun.h"
-#include	"Motor_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -89,19 +88,15 @@ MyRes createTestActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_TestPageBuffer)
-	{
-		/*获取当前测试数据的地址*/
-		S_TestPageBuffer->currenttestdata = GetCurrentTestItem();
-		S_TestPageBuffer->currenttestdata->statues = status_test;
+	/*获取当前测试数据的地址*/
+	S_TestPageBuffer->currenttestdata = GetCurrentTestItem();
 		
-		InitCurve();
+	InitCurve();
 		
-		//必须在获取当前测试数据地址后使用
-		InitPageText();
+	//必须在获取当前测试数据地址后使用
+	InitPageText();
 		
-		StartTest(&(S_TestPageBuffer->currenttestdata->testData));
-	}
+	StartTest(&(S_TestPageBuffer->currenttestdata->testData));
 	
 	SelectPage(96);
 
@@ -174,23 +169,7 @@ static void activityFresh(void)
 		RefreshCurve();
 	else
 	{
-		//如果打印完毕，且卡拔出，则退出
-		if((S_TestPageBuffer->isPrintfData == 0) &&(MaxLocation == getSystemRunTimeData()->motorData.location))
-		{
-				//删除当前测试
-			if(S_TestPageBuffer->currenttestdata)
-			{
-				DeleteCurrentTest();
-				S_TestPageBuffer->currenttestdata = NULL;
-			}
-			else if(CardPinIn == NoCard)
-			{
-				backToActivity(lunchActivityName);
-				
-				if(IsPaiDuiTestting())
-					startActivity(createPaiDuiActivity, NULL, NULL);
-			}
-		}
+
 	}
 }
 
@@ -339,7 +318,6 @@ static void RefreshCurve(void)
 	if(My_Pass == TakeTestResult(&(S_TestPageBuffer->currenttestdata->testData.testResultDesc)))
 	{
 		memcpy(&(S_TestPageBuffer->currenttestdata->testData.testDateTime), &(getSystemRunTimeData()->systemDateTime), sizeof(DateTime));
-		MotorMoveTo(MaxLocation, 1);
 
 		//保留一份数据给打印机打印
 		memcpy(&(S_TestPageBuffer->testDataForPrintf), &(S_TestPageBuffer->currenttestdata->testData), sizeof(TestData));
@@ -394,8 +372,8 @@ static void RefreshPageText(void)
 	{
 		//在曲线上标记出T,C,基线
 		S_TestPageBuffer->myico[0].ICO_ID = 22;
-		S_TestPageBuffer->myico[0].X = 574+S_TestPageBuffer->currenttestdata->testData.testSeries.T_Point[1]-12;
-		tempvalue = S_TestPageBuffer->currenttestdata->testData.testSeries.T_Point[0];
+		S_TestPageBuffer->myico[0].X = 574+S_TestPageBuffer->currenttestdata->testData.testSeries.T_Point.x-12;
+		tempvalue = S_TestPageBuffer->currenttestdata->testData.testSeries.T_Point.y;
 		tempvalue /= S_TestPageBuffer->line.Y_Scale*2;
 		tempvalue = 1-tempvalue;
 		tempvalue *= 302;										//曲线窗口宽度
@@ -403,8 +381,8 @@ static void RefreshPageText(void)
 		S_TestPageBuffer->myico[0].Y = (unsigned short)tempvalue - 11;
 		
 		S_TestPageBuffer->myico[1].ICO_ID = 22;
-		S_TestPageBuffer->myico[1].X = 574+S_TestPageBuffer->currenttestdata->testData.testSeries.C_Point[1]-12;
-		tempvalue = S_TestPageBuffer->currenttestdata->testData.testSeries.C_Point[0];
+		S_TestPageBuffer->myico[1].X = 574+S_TestPageBuffer->currenttestdata->testData.testSeries.C_Point.x-12;
+		tempvalue = S_TestPageBuffer->currenttestdata->testData.testSeries.C_Point.y;
 		tempvalue /= S_TestPageBuffer->line.Y_Scale*2;
 		tempvalue = 1-tempvalue;
 		tempvalue *= 302;										//曲线窗口宽度
@@ -412,8 +390,8 @@ static void RefreshPageText(void)
 		S_TestPageBuffer->myico[1].Y = (unsigned short)tempvalue - 11;
 		
 		S_TestPageBuffer->myico[2].ICO_ID = 22;
-		S_TestPageBuffer->myico[2].X = 574+S_TestPageBuffer->currenttestdata->testData.testSeries.B_Point[1]-12;
-		tempvalue = S_TestPageBuffer->currenttestdata->testData.testSeries.B_Point[0];
+		S_TestPageBuffer->myico[2].X = 574+S_TestPageBuffer->currenttestdata->testData.testSeries.B_Point.x-12;
+		tempvalue = S_TestPageBuffer->currenttestdata->testData.testSeries.B_Point.y;
 		tempvalue /= S_TestPageBuffer->line.Y_Scale*2;
 		tempvalue = 1-tempvalue;
 		tempvalue *= 302;										//曲线窗口宽度

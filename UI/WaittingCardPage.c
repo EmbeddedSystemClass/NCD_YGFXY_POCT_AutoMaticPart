@@ -2,6 +2,7 @@
 /*****************************************头文件*******************************************/
 
 #include	"WaittingCardPage.h"
+#include	"PreReadCardPage.h"
 #include	"Define.h"
 #include	"LCD_Driver.h"
 #include	"CardCheck_Driver.h"
@@ -10,9 +11,6 @@
 
 #include	"LunchPage.h"
 #include	"SampleIDPage.h"
-#include	"PreReadCardPage.h"
-#include	"Motor_Fun.h"
-#include	"PlaySong_Task.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -75,22 +73,9 @@ MyRes createWaittingCardActivity(Activity * thizActivity, Intent * pram)
 *Date: 2016年12月21日09:00:32
 ***************************************************************************************************/
 static void activityStart(void)
-{
-	if(S_WaitPageData)
-	{
-		MotorMoveTo(WaittingCardLocation, 1);
-		
-		S_WaitPageData->currenttestdata = GetCurrentTestItem();
-		S_WaitPageData->currenttestdata->statues = status_wait1;
-		
-		/*间隔一段时间提示插卡*/
-		timer_set(&(S_WaitPageData->timer2), 50);
-		
-		//如果无卡，提示插卡
-		if(CardPinIn == NoCard)
-			AddNumOfSongToList(11, 0);
-	}
-	
+{	
+	S_WaitPageData->currenttestdata = GetCurrentTestItem();
+
 	SelectPage(88);
 }
 
@@ -105,20 +90,13 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_WaitPageData)
-	{
-		/*命令*/
-		S_WaitPageData->lcdinput[0] = pbuf[4];
-		S_WaitPageData->lcdinput[0] = (S_WaitPageData->lcdinput[0]<<8) + pbuf[5];
+	/*命令*/
+	S_WaitPageData->lcdinput[0] = pbuf[4];
+	S_WaitPageData->lcdinput[0] = (S_WaitPageData->lcdinput[0]<<8) + pbuf[5];
 		
-		/*返回*/
-		if(S_WaitPageData->lcdinput[0] == 0x1303)
-		{
-			S_WaitPageData->currenttestdata->statues = status_sample;
-			stopPlay();
-			backToFatherActivity();
-		}
-	}
+	/*返回*/
+	if(S_WaitPageData->lcdinput[0] == 0x1303)
+		backToFatherActivity();
 }
 
 /***************************************************************************************************
@@ -133,32 +111,10 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 static void activityFresh(void)
 {
 	/*是否插卡*/
-	if(CardPinIn == CardIN)
+	if(readCaedCheckStatus() == ON)
 	{
-		stopPlay();
-		S_WaitPageData->currenttestdata->statues = status_preread;
 		startActivity(createPreReadCardActivity, NULL, NULL);
 		return;
-	}
-	/*时间到，未插卡，返回*/
-	else 
-	{
-		/*提示插卡*/
-		if(TimeOut == timer_expired(&(S_WaitPageData->timer2)))
-		{
-			AddNumOfSongToList(11, 0);
-			timer_restart(&(S_WaitPageData->timer2));
-		}
-	}
-	
-	//如果排队中，有卡接近测试时间，则删除当前测试创建任务，返回
-	if(GetMinWaitTime() < 40)
-	{
-		stopPlay();
-		MotorMoveTo(MaxLocation, 1);
-		DeleteCurrentTest();
-		
-		backToActivity(paiduiActivityName);
 	}
 }
 

@@ -33,7 +33,7 @@
  extern "C" {
 #endif
 
-#include	"Define.h"
+#include	"NetWork.h"
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/

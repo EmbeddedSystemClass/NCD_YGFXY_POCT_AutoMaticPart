@@ -21,7 +21,7 @@
 
 void Channel_GPIOInit(void);
 void SelectChannel(unsigned char index);
-
+unsigned char getChannelNum(void);
 #endif
 
 

@@ -87,8 +87,8 @@ static void ConfigUsart3(void)
 	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
 
 	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 12;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 }
@@ -195,10 +195,10 @@ int fputc(int ch, FILE *f)
 {
 	// Place your implementation of fputc here 
 	// e.g. write a character to the USART 
-	USART_SendData(USART3, (uint8_t) ch);
+	USART_SendData(USART1, (uint8_t) ch);
 
 	// Loop until the end of transmission 
-	while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET)
+	while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
 	{;}
 
 	return ch;

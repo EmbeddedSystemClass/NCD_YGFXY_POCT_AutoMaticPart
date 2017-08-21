@@ -50,11 +50,11 @@ MyRes WriteAppFile(char * file, unsigned short len, bool isNew)
 	FatfsFileInfo_Def * myfile = NULL;
 	MyRes statues = My_Fail;
 	
-	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
+	myfile = MyMalloc(MyFileStructSize);
 	
 	if(myfile && file)
 	{
-		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
+		memset(myfile, 0, MyFileStructSize);
 		
 		if(isNew == true)
 			myfile->res = f_open(&(myfile->file), "0:/UPDATE.BIN", FA_CREATE_ALWAYS | FA_WRITE | FA_READ);
@@ -95,13 +95,13 @@ MyRes ReadAppFile(unsigned int startAddr, unsigned char * dataBuf, unsigned shor
 	FatfsFileInfo_Def * myfile = NULL;
 	MyRes statues = My_Fail;
 	
-	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
+	myfile = MyMalloc(MyFileStructSize);
 	
 	*br = 0;
 	
 	if(myfile && dataBuf)
 	{
-		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
+		memset(myfile, 0, MyFileStructSize);
 
 		myfile->res = f_open(&(myfile->file), "0:/UPDATE.BIN", FA_OPEN_EXISTING | FA_READ);
 
@@ -142,11 +142,11 @@ MyRes checkNewAppFileIsExist(void)
 	FatfsFileInfo_Def * myfile = NULL;
 	MyRes statues = My_Fail;
 	
-	myfile = MyMalloc(sizeof(FatfsFileInfo_Def));
+	myfile = MyMalloc(MyFileStructSize);
 	
 	if(myfile)
 	{
-		memset(myfile, 0, sizeof(FatfsFileInfo_Def));
+		memset(myfile, 0, MyFileStructSize);
 		
 		myfile->res = f_open(&(myfile->file), "0:/UPDATE.BIN", FA_OPEN_EXISTING | FA_READ);
 

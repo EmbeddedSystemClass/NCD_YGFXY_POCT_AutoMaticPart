@@ -95,24 +95,11 @@ typedef struct
 typedef enum
 {
 	statusNull = 0,									//没开始,默认状态
-	status_user = 1,								//选择操作人状态
-	status_sample = 2,								//获取样品ID状态
-	status_wait1 = 3,								//等待插卡1
-	status_preread = 4,								//预读卡状态
 	status_start = 5,								//启动排队
-	status_outcard = 6,								//等待从卡槽拔出
-	status_in_n = 7,								//倒计时状态 -- 等待插入排队位
-	status_out_n = 8,								//倒计时状态 -- 等待拔出排队位
-	status_incard_n = 9,							//倒计时状态 -- 等待插入卡槽
 	status_timedown = 10,							//倒计时状态
-	status_prereadagain_n = 11,						//倒计时状态 -- 再次预读卡，主要检测卡变更
-	status_in_o = 12,								//超时状态 -- 等待插入排队位
-	status_out_o = 13,								//超时状态 -- 等待拔出排队位
-	status_incard_o = 14,							//超时状态 -- 等待插入卡槽
 	status_timeup = 15,								//超时状态
-	status_prereadagain_o = 16,						//超时状态 -- 再次预读卡，主要检测卡变更
-	status_timedownagain = 17,						//倒计时界面
-	status_test = 18,								//测试
+	status_waitTest = 14,							//倒计时时间小于30s，卡闪烁提示，界面不切换，锁定，不允许添加卡
+	status_testting = 16,							//进入测试状态，倒计时时间小于10s，切换到倒计时界面等待
 }MyPaiDuiStatues;
 
 /**********************************************************************************************************/
@@ -135,20 +122,9 @@ typedef enum
 	CardCodeCardOut = 4,											//卡被拔出
 	CardCodeScanTimeOut = 5,										//扫描超时
 	CardCodeCRCError = 6,											//crc错误
-	CardUnsupported = 7												//当前程序不支持
+	CardUnsupported = 7,											//当前程序不支持
+	CardNone = 0xff,
 }ScanCodeResult;
-
-
-
-
-
-#define	MaxLocation			6500						//最大行程
-#define	StartTestLocation	1250							//测试起始位置
-#define	EndTestLocation		4300						//测试结束为止
-#define	WaittingCardLocation	MaxLocation					//等待插卡的位置
-#define	AvregeNum		10								//平均值滤波个数
-#define	FilterNum		5								//平滑滤波个数
-#define	MaxPointLen		((EndTestLocation - StartTestLocation)/AvregeNum - FilterNum)	//测试点个数
 
 
 /**********************************************************************************************************/
@@ -244,62 +220,11 @@ typedef struct
 
 #define	DeviceRecordHeaderStructSize		sizeof(DeviceRecordHeader)								//最多保存的用户数目
 #define	DeviceRecordHeaderStructCrcSize		DeviceRecordHeaderStructSize - 2						//最多保存的用户数目
-/**********************************************************************************************************/
-/******************************************网络相关定义****************************************************/
-/**********************************************************************************************************/
-
-
-#define	MaxSaveWifiNum	50												//最多保存50个热点
-#define	MaxWifiListNum	20												//最多显示20个热点
-#define	PageWifiNum		8
-#define	MaxSSIDLen		50
-#define	MaxKEYLen		20
-
-/*wifi热点*/
-#pragma pack(1)
-typedef struct wifi_Tag
-{
-	char ssid[MaxSSIDLen];														//SSID
-	char auth[20];														//认证模式
-	char encry[10];														//加密方式
-	unsigned char indicator;											//信号强度
-	char key[MaxKEYLen];														//密码
-	unsigned short crc;
-}WIFI_Def;
-#pragma pack()
-
-
-typedef struct mynetbuf_tag
-{
-	void * data;
-	unsigned short datalen;
-}mynetbuf;
-
-typedef enum
-{ 
-	LinkDown = 0,
-	LinkUp = 1
-}LinkStatus;
-
-
-
-/*ip获取方式*/
-typedef enum
-{
-	Dynamic_IP = 1,														//动态IP
-	Static_IP = 2														//静态IP
-}IPMode;
-
-
-
-
 
 
 
 /**********************************************************************************************************/
 /**********************************************************************************************************/
-
-#define	MaxTestDataSaveNum	(unsigned int)1000000
 
 /*********************************************************************************************/
 /*********************************************************************************************/
@@ -316,17 +241,12 @@ typedef enum
 	ResultIsOK = 99,									//测试成功
 }ResultState;
 
-typedef enum
-{
-	Connect_Ok = 1,
-	Connect_Error = 0
-}PaiduiModuleStatus;
-
-typedef enum
-{ 
-	NoCard = 0,								//无卡
-	CardIN = 1								//有卡
-}CardState_Def;
+#pragma pack(1)
+typedef struct Point_tag {
+	unsigned short y;
+	unsigned short x;
+}Point;
+#pragma pack()
 
 
 #endif

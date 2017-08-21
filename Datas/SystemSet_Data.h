@@ -17,7 +17,7 @@ typedef struct SystemSetData_Tag
 	bool isMute;														//是否静音
 	unsigned short ledSleepTime;										//休眠时间 s
 	unsigned char ledLightIntensity;									//屏幕亮度 0-100
-	unsigned short testLedLightIntensity;								//测试时采用的led亮度值，为校准后产生，默认为200
+	unsigned short testLedLightIntensity;								//测试时采用的led亮度值，mv
 	AdjustData adjustData[MaxAdjustItemNum];
 	unsigned char parm1[512];											//预留512字节的参数位置
 	unsigned short crc;

@@ -5,7 +5,8 @@
 #include	"QRCode.h"
 
 char StartCodeScanTask(void);
-MyRes startScanQRCode(void);
+MyRes StartScanQRCode(QRCode * parm);
+ScanCodeResult getScanResult(void);
 
 #endif
 
