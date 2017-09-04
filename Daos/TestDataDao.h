@@ -9,9 +9,8 @@
 
 
 MyRes writeTestDataToFile(TestData * testData);
-MyRes readTestDataFromFile(PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, 
-	void * recordData1, void * recordData2);
-MyRes plusTestDataHeaderuserUpLoadIndexToFile(unsigned char userIndexPlusNum, unsigned char ncdIndexPlusNum);
+MyRes readTestDataFromFileByPageRequest(PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, Page * page);
+MyRes plusTestDataHeaderUpLoadIndexToFile(unsigned char userIndexPlusNum, unsigned char ncdIndexPlusNum);
 MyRes deleteTestDataFile(void);
 
 #endif

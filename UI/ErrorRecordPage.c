@@ -7,7 +7,7 @@
 
 #include	"Define.h"
 #include	"MyMem.h"
-
+#include	"DeviceErrorDao.h"
 #include	"CRC16.h"
 #include	"System_Data.h"
 #include	"SleepPage.h"
@@ -34,7 +34,7 @@ static void activityDestroy(void);
 static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
-static MyRes ShowRecord(unsigned char pageindex);
+static void ShowRecord(void);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -77,9 +77,14 @@ MyRes createErrorRecordActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	S_ErrorRecordPageBuffer->selectindex = 0;
-	S_ErrorRecordPageBuffer->pageindex = 1;
-	ShowRecord(S_ErrorRecordPageBuffer->pageindex);
+	S_ErrorRecordPageBuffer->pageRequest.pageIndex = 0;
+	S_ErrorRecordPageBuffer->pageRequest.pageSize = DeviceErrorRecordPageShowNum;
+	S_ErrorRecordPageBuffer->pageRequest.orderType = ASC;
+	
+	for(S_ErrorRecordPageBuffer->i=0; S_ErrorRecordPageBuffer->i<DeviceErrorRecordPageShowNum ; S_ErrorRecordPageBuffer->i++)
+		S_ErrorRecordPageBuffer->page.content[S_ErrorRecordPageBuffer->i] = &S_ErrorRecordPageBuffer->deviceError[S_ErrorRecordPageBuffer->i];
+	
+	ShowRecord();
 	
 	SelectPage(152);
 }
@@ -107,45 +112,46 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	/*上一页*/
 	else if(S_ErrorRecordPageBuffer->lcdinput[0] == 0x2d02)
 	{
-		if(S_ErrorRecordPageBuffer->pageindex > 1)
-			S_ErrorRecordPageBuffer->pageindex -= 1;
-		else
-			S_ErrorRecordPageBuffer->pageindex = S_ErrorRecordPageBuffer->maxpagenum;
+		if(S_ErrorRecordPageBuffer->page.totalPageSize > 0)
+		{
+			if(S_ErrorRecordPageBuffer->pageRequest.pageIndex >= 1)
+				S_ErrorRecordPageBuffer->pageRequest.pageIndex -= 1;
+			else
+				S_ErrorRecordPageBuffer->pageRequest.pageIndex = S_ErrorRecordPageBuffer->page.totalPageSize - 1;
 				
-		ShowRecord(S_ErrorRecordPageBuffer->pageindex);
+			ShowRecord();
+		}
 	}
 	/*下一页*/
 	else if(S_ErrorRecordPageBuffer->lcdinput[0] == 0x2d03)
 	{
-		if(S_ErrorRecordPageBuffer->pageindex < S_ErrorRecordPageBuffer->maxpagenum)
-			S_ErrorRecordPageBuffer->pageindex += 1;
-		else
-			S_ErrorRecordPageBuffer->pageindex = 1;
+		if(S_ErrorRecordPageBuffer->page.totalPageSize > 0)
+		{
+			if((S_ErrorRecordPageBuffer->pageRequest.pageIndex + 1) >= S_ErrorRecordPageBuffer->page.totalPageSize)
+				S_ErrorRecordPageBuffer->pageRequest.pageIndex = 0;
+			else
+				S_ErrorRecordPageBuffer->pageRequest.pageIndex += 1;
 				
-		ShowRecord(S_ErrorRecordPageBuffer->pageindex);
+			ShowRecord();
+		}
 	}
 	//选择数据
 	else if((S_ErrorRecordPageBuffer->lcdinput[0] >= 0x2d04)&&(S_ErrorRecordPageBuffer->lcdinput[0] <= 0x2d0b))
 	{
-		S_ErrorRecordPageBuffer->tempvalue1 = S_ErrorRecordPageBuffer->lcdinput[0] - 0x2d04 + 1;
-		
-		if(S_ErrorRecordPageBuffer->tempvalue1 <= S_ErrorRecordPageBuffer->deviceErrorReadPackge.readTotalNum)
-		{
-			S_ErrorRecordPageBuffer->selectindex = S_ErrorRecordPageBuffer->tempvalue1;
-			BasicPic(0x2d20, 1, 137, 11, 90, 940, 127, 38, 149+(S_ErrorRecordPageBuffer->selectindex - 1)*40);
-		}
+		S_ErrorRecordPageBuffer->tempvalue1 = S_ErrorRecordPageBuffer->lcdinput[0] - 0x2b04;
+			
+		if(S_ErrorRecordPageBuffer->tempvalue1 < S_ErrorRecordPageBuffer->page.readItemSize)
+			BasicPic(0x2d20, 1, 137, 11, 90, 940, 127, 38, 149+(S_ErrorRecordPageBuffer->tempvalue1)*40);
 	}
 	//跳页
 	else if(S_ErrorRecordPageBuffer->lcdinput[0] == 0x2d10)
 	{
 		S_ErrorRecordPageBuffer->tempvalue1 = strtol((char *)(&pbuf[7]), NULL, 10);
-		if( (S_ErrorRecordPageBuffer->tempvalue1 > 0) && (S_ErrorRecordPageBuffer->tempvalue1 <= S_ErrorRecordPageBuffer->maxpagenum))
+		if( (S_ErrorRecordPageBuffer->tempvalue1 > 0) && (S_ErrorRecordPageBuffer->tempvalue1 <= S_ErrorRecordPageBuffer->page.totalPageSize))
 		{
-			S_ErrorRecordPageBuffer->pageindex = S_ErrorRecordPageBuffer->tempvalue1;
-		
-			S_ErrorRecordPageBuffer->selectindex = 0;
+			S_ErrorRecordPageBuffer->pageRequest.pageIndex = S_ErrorRecordPageBuffer->tempvalue1;
 
-			ShowRecord(S_ErrorRecordPageBuffer->pageindex);
+			ShowRecord();
 		}
 	}
 }
@@ -255,69 +261,61 @@ static void activityBufferFree(void)
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-static MyRes ShowRecord(unsigned char pageindex)
+static void ShowRecord(void)
 {
-	unsigned short i=0;
-		
-	//设置分页读取信息
-	S_ErrorRecordPageBuffer->tempvalue1 = pageindex-1;
-	S_ErrorRecordPageBuffer->tempvalue1 *= DeviceErrorRecordPageShowNum;
-	S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest.startElementIndex = S_ErrorRecordPageBuffer->tempvalue1;
-	S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest.pageSize = DeviceErrorRecordPageShowNum;
-	S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest.orderType = ASC;
-	S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest.crc = CalModbusCRC16Fun(&S_ErrorRecordPageBuffer->deviceErrorReadPackge.pageRequest, PageRequestStructCrcSize, NULL);
-		
 	//读取数据
-	readDeviceErrorFromFile(&(S_ErrorRecordPageBuffer->deviceErrorReadPackge));
-	
-	S_ErrorRecordPageBuffer->maxpagenum = ((S_ErrorRecordPageBuffer->deviceErrorReadPackge.deviceRecordHeader.itemSize % DeviceErrorRecordPageShowNum) == 0)
-		? (S_ErrorRecordPageBuffer->deviceErrorReadPackge.deviceRecordHeader.itemSize / DeviceErrorRecordPageShowNum)
-		: ((S_ErrorRecordPageBuffer->deviceErrorReadPackge.deviceRecordHeader.itemSize / DeviceErrorRecordPageShowNum)+1);
+	memset(S_ErrorRecordPageBuffer->deviceError, 0, DeviceErrorRecordPageShowNum * DeviceErrorStructSize);
+	readDeviceErrorFromFileByPageRequest(&(S_ErrorRecordPageBuffer->pageRequest), &(S_ErrorRecordPageBuffer->deviceRecordHeader), &S_ErrorRecordPageBuffer->page);
 		
-	BasicPic(0x2d20, 0, 100, 11, 90, 940, 127, 39, 140+(S_ErrorRecordPageBuffer->selectindex)*36);
+	BasicPic(0x2d20, 0, 100, 11, 142, 940, 179, 39, 140);
 	
 	vTaskDelay(10 / portTICK_RATE_MS);
 
-	S_ErrorRecordPageBuffer->tempDeviceError = &(S_ErrorRecordPageBuffer->deviceErrorReadPackge.deviceError[S_ErrorRecordPageBuffer->deviceErrorReadPackge.readTotalNum - 1]);
-	for(i=0; i<S_ErrorRecordPageBuffer->deviceErrorReadPackge.readTotalNum; i++)
+	for(S_ErrorRecordPageBuffer->i=0; S_ErrorRecordPageBuffer->i<DeviceErrorRecordPageShowNum; S_ErrorRecordPageBuffer->i++)
 	{
-		//显示索引
-		snprintf(S_ErrorRecordPageBuffer->buf, 20, "%d", (pageindex-1)*DeviceErrorRecordPageShowNum+i+1);
-		DisText(0x2d30+(i)*0x30, S_ErrorRecordPageBuffer->buf, strlen(S_ErrorRecordPageBuffer->buf)+1);
-			
-		//显示异常代码
-		snprintf(S_ErrorRecordPageBuffer->buf, 10, "%04d", S_ErrorRecordPageBuffer->tempDeviceError->errorCode);
-		DisText(0x2d35+(i)*0x30, S_ErrorRecordPageBuffer->buf, strlen(S_ErrorRecordPageBuffer->buf)+1);
-			
-		//显示异常时间
-		snprintf(S_ErrorRecordPageBuffer->buf, 30, "%02d-%02d-%02d %02d:%02d", S_ErrorRecordPageBuffer->tempDeviceError->dateTime.year, 
-			S_ErrorRecordPageBuffer->tempDeviceError->dateTime.month, S_ErrorRecordPageBuffer->tempDeviceError->dateTime.day,
-			S_ErrorRecordPageBuffer->tempDeviceError->dateTime.hour, S_ErrorRecordPageBuffer->tempDeviceError->dateTime.min);
-		DisText(0x2d3a+(i)*0x30, S_ErrorRecordPageBuffer->buf, strlen(S_ErrorRecordPageBuffer->buf)+1);
-			
-		//显示异常说明
-		snprintf(S_ErrorRecordPageBuffer->buf, 40, "%s", S_ErrorRecordPageBuffer->tempDeviceError->result);
-		DisText(0x2d45+(i)*0x30, S_ErrorRecordPageBuffer->buf, strlen(S_ErrorRecordPageBuffer->buf)+1);
+		S_ErrorRecordPageBuffer->tempDeviceError = &S_ErrorRecordPageBuffer->deviceError[S_ErrorRecordPageBuffer->i];
+		
+		S_ErrorRecordPageBuffer->tempvalue1 = S_ErrorRecordPageBuffer->i*0x30;
+		
+		if(S_ErrorRecordPageBuffer->tempDeviceError->crc == CalModbusCRC16Fun(S_ErrorRecordPageBuffer->tempDeviceError, DeviceErrorStructCrcSize, NULL))
+		{
+			//显示索引
+			if(S_ErrorRecordPageBuffer->pageRequest.orderType == ASC)
+				snprintf(S_ErrorRecordPageBuffer->buf, 10, "%d", S_ErrorRecordPageBuffer->page.totalItemSize - S_ErrorRecordPageBuffer->pageRequest.pageIndex*DeviceErrorRecordPageShowNum-S_ErrorRecordPageBuffer->i);
+			else
+				snprintf(S_ErrorRecordPageBuffer->buf, 10, "%d", S_ErrorRecordPageBuffer->pageRequest.pageIndex*DeviceErrorRecordPageShowNum+S_ErrorRecordPageBuffer->i+1);
+			DisText(0x2d30+S_ErrorRecordPageBuffer->tempvalue1, S_ErrorRecordPageBuffer->buf, strlen(S_ErrorRecordPageBuffer->buf)+1);
+				
+			//显示异常代码
+			snprintf(S_ErrorRecordPageBuffer->buf, 10, "%04d", S_ErrorRecordPageBuffer->tempDeviceError->errorCode);
+			DisText(0x2d35+S_ErrorRecordPageBuffer->tempvalue1, S_ErrorRecordPageBuffer->buf, strlen(S_ErrorRecordPageBuffer->buf)+1);
+				
+			//显示异常时间
+			snprintf(S_ErrorRecordPageBuffer->buf, 30, "%02d-%02d-%02d %02d:%02d", S_ErrorRecordPageBuffer->tempDeviceError->dateTime.year, 
+				S_ErrorRecordPageBuffer->tempDeviceError->dateTime.month, S_ErrorRecordPageBuffer->tempDeviceError->dateTime.day,
+				S_ErrorRecordPageBuffer->tempDeviceError->dateTime.hour, S_ErrorRecordPageBuffer->tempDeviceError->dateTime.min);
+			DisText(0x2d3a+S_ErrorRecordPageBuffer->tempvalue1, S_ErrorRecordPageBuffer->buf, strlen(S_ErrorRecordPageBuffer->buf)+1);
+				
+			//显示异常说明
+			snprintf(S_ErrorRecordPageBuffer->buf, 40, "%s", S_ErrorRecordPageBuffer->tempDeviceError->result);
+			DisText(0x2d45+S_ErrorRecordPageBuffer->tempvalue1, S_ErrorRecordPageBuffer->buf, strlen(S_ErrorRecordPageBuffer->buf)+1);
 
-		//显示操作人
-		snprintf(S_ErrorRecordPageBuffer->buf, 30, "%s", S_ErrorRecordPageBuffer->tempDeviceError->operator.name);
-		DisText(0x2d55+(i)*0x30, S_ErrorRecordPageBuffer->buf, strlen(S_ErrorRecordPageBuffer->buf)+1);
+			//显示操作人
+			snprintf(S_ErrorRecordPageBuffer->buf, 30, "%s", S_ErrorRecordPageBuffer->tempDeviceError->operator.name);
+			DisText(0x2d55+S_ErrorRecordPageBuffer->tempvalue1, S_ErrorRecordPageBuffer->buf, strlen(S_ErrorRecordPageBuffer->buf)+1);
 
-		S_ErrorRecordPageBuffer->tempDeviceError--;
-		vTaskDelay(10 / portTICK_RATE_MS);
-	}
-
-	for(i=S_ErrorRecordPageBuffer->deviceErrorReadPackge.readTotalNum; i<DeviceErrorRecordPageShowNum; i++)
-	{
-		ClearText(0x2d30+(i)*0x30);
-		ClearText(0x2d35+(i)*0x30);
-		ClearText(0x2d3a+(i)*0x30);
-		ClearText(0x2d45+(i)*0x30);
-		ClearText(0x2d55+(i)*0x30);
+			S_ErrorRecordPageBuffer->tempDeviceError--;
+		}
+		else
+		{
+			ClearText(0x2d30+S_ErrorRecordPageBuffer->tempvalue1);
+			ClearText(0x2d35+S_ErrorRecordPageBuffer->tempvalue1);
+			ClearText(0x2d3a+S_ErrorRecordPageBuffer->tempvalue1);
+			ClearText(0x2d45+S_ErrorRecordPageBuffer->tempvalue1);
+			ClearText(0x2d55+S_ErrorRecordPageBuffer->tempvalue1);
+		}
 		
 		vTaskDelay(10 / portTICK_RATE_MS);
 	}
-	
-	return My_Pass;
 }
 

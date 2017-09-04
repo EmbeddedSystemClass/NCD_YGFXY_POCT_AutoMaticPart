@@ -124,22 +124,10 @@ void ETH_GPIO_Config(void)
 	int i=0;
 	GPIO_InitTypeDef GPIO_InitStructure;
   
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD|RCC_AHB1Periph_GPIOA|RCC_AHB1Periph_GPIOC|RCC_AHB1Periph_GPIOG , ENABLE);//使能GPIO时钟 RMII接口
+	RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOD |RCC_AHB1Periph_GPIOG |RCC_AHB1Periph_GPIOC |RCC_AHB1Periph_GPIOB, ENABLE);//使能GPIO时钟 RMII接口
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);   //使能SYSCFG时钟
   
 	SYSCFG_ETH_MediaInterfaceConfig(SYSCFG_ETH_MediaInterface_RMII); //MAC和PHY之间使用RMII接口
-
-	/*网络引脚设置 RMII接口 
-	  ETH_MDIO -------------------------> PA2
-	  ETH_MDC --------------------------> PC1
-	  ETH_RMII_REF_CLK------------------> PA1
-	  ETH_RMII_CRS_DV ------------------> PA7
-	  ETH_RMII_RXD0 --------------------> PC4
-	  ETH_RMII_RXD1 --------------------> PC5
-	  ETH_RMII_TX_EN -------------------> PG11
-	  ETH_RMII_TXD0 --------------------> PG13
-	  ETH_RMII_TXD1 --------------------> PG14
-	  ETH_RESET-------------------------> PD3*/
 					
 	  //配置PA1 PA2 PA7
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_7;
@@ -161,23 +149,23 @@ void ETH_GPIO_Config(void)
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource5, GPIO_AF_ETH);
                                 
 	//配置PG11, PG14 and PG13 
-	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_11 | GPIO_Pin_13 | GPIO_Pin_14;
-	GPIO_Init(GPIOG, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOG, GPIO_PinSource11, GPIO_AF_ETH);
-	GPIO_PinAFConfig(GPIOG, GPIO_PinSource13, GPIO_AF_ETH);
-	GPIO_PinAFConfig(GPIOG, GPIO_PinSource14, GPIO_AF_ETH);
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_ETH);
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource12, GPIO_AF_ETH);
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource13, GPIO_AF_ETH);
 	
 	//配置PD3为推完输出
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;	//推完输出
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;  
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	
-	GPIO_ResetBits(GPIOD,GPIO_Pin_3);					//硬件复位LAN8720
+	GPIO_ResetBits(GPIOA,GPIO_Pin_6);					//硬件复位LAN8720
 	for(i=0; i<0x3ffff;i++);	
-	GPIO_SetBits(GPIOD,GPIO_Pin_3);				 	//复位结束 
+	GPIO_SetBits(GPIOA,GPIO_Pin_6);				 	//复位结束 
 }
 
 LinkStatus ReadPHYLinkState(void)

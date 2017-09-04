@@ -11,17 +11,21 @@
 #include	"SelfTest_Fun.h"
 
 #include	"SystemSet_Data.h"
+#include	"System_Data.h"
 #include	"DeviceDao.h"
+#include	"DeviceAdjust.h"
 #include	"LedCheck_Driver.h"
 #include	"DA_Driver.h"
 #include	"SystemSet_Dao.h"
+#include	"DeviceAdjustDao.h"
 #include	"Motor1_Driver.h"
 #include	"Motor2_Driver.h"
 #include	"Motor4_Driver.h"
 #include	"Motor1_Fun.h"
 #include	"Motor2_Fun.h"
 #include	"Motor4_Fun.h"
-
+#include	"DeviceError.h"
+#include	"DeviceErrorDao.h"
 #include	"MyMem.h"
 #include	"CRC16.h"
 
@@ -47,6 +51,7 @@ static MyRes loadSystemData(void);
 static MyRes testLed(void);
 static MyRes testMotol(void);
 static void deviceAdjustSelf(void);
+static void deviceErrorTest(void);
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************正文********************************************************/
@@ -85,7 +90,7 @@ void SelfTest_Function(void)
 	//加载系统数据，并发生加载结果,如果加载失败，则终止自检程序
 	if(My_Pass != loadSystemData())
 	{
-		setSelfTestStatus(SystemData_ERROR);
+		setSelfTestStatus(SD_ERROR);
 		return;
 	}
 	
@@ -104,7 +109,9 @@ void SelfTest_Function(void)
 	}
 	
 	//设备校准
-//	deviceAdjustSelf();
+	deviceAdjustSelf();
+	
+	deviceErrorTest();
 	
 	//自检完成，发送结果
 	setSelfTestStatus(SelfTest_OK);
@@ -128,22 +135,22 @@ static MyRes loadSystemData(void)
 
 	if(systemSetData)
 	{
-		memset(systemSetData, 0, SystemSetDataStructSize);
 		//读取SD卡中的配置文件
 		ReadSystemSetData(systemSetData);
-		
-		//如果crc错误表示读取失败，或者设备第一次开机，不存在配置文件，则恢复出厂设置
-		if(systemSetData->crc != CalModbusCRC16Fun(systemSetData, SystemSetDataStructCrcSize, NULL))
-			setDefaultSystemSetData(systemSetData);								//恢复出厂设置
-		else
-			upDateSystemSetData(systemSetData);									//将读取的配置更新到内存中
-
-		//无论是否成功读取到配置文件，都保存SD卡一次，用以测试SD卡是否正常
-		if(My_Pass == SaveSystemSetData(systemSetData))
-		{
-			status = My_Pass;
-		}
 	}
+	else
+		systemSetData = getGBSystemSetData();
+	
+	//如果crc错误表示读取失败，或者设备第一次开机，不存在配置文件，则恢复出厂设置
+	if(systemSetData->crc != CalModbusCRC16Fun(systemSetData, SystemSetDataStructCrcSize, NULL))
+		setDefaultSystemSetData(systemSetData);								//恢复出厂设置
+	else
+		upDateSystemSetData(systemSetData);									//将读取的配置更新到内存中
+
+	systemSetData->testLedLightIntensity = 3300;
+	//无论是否成功读取到配置文件，都保存SD卡一次，用以测试SD卡是否正常
+	if(My_Pass == SaveSystemSetData(systemSetData))
+		status = My_Pass;
 	
 	MyFree(systemSetData);
 	
@@ -161,12 +168,12 @@ static MyRes loadSystemData(void)
 ***************************************************************************************************/
 static MyRes testLed(void)
 {
-/*	SetLedVol(0);
+	SetLedVol(0);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	if(ON == readLedCheckStatus())
 		return My_Fail;
 	
-	SetLedVol(300);
+	SetLedVol(3300);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	if(OFF == readLedCheckStatus())
 	{
@@ -174,7 +181,7 @@ static MyRes testLed(void)
 		return My_Fail;
 	}
 
-	SetLedVol(0);*/
+	SetLedVol(0);
 	return My_Pass;
 }
 
@@ -190,28 +197,25 @@ static MyRes testLed(void)
 static MyRes testMotol(void)
 {
 	//测试电机1
-	motor1MoveToNum(1, 20000);
+	motor1MoveToNum(1, true);
 	
 	if(getMotorxLocation(Motor_1) != 1)
 		return My_Fail;
 	
 	//检测电机2
-	motor2MoveTo(0, 15000);
+	motor2MoveTo(0, true);
 	if(!Motor2Sensor1Triggered)
 		return My_Fail;
 	
-	motor2MoveTo(60000, 20000);
-	if(!Motor2Sensor3Triggered)
-		return My_Fail;
-	
-	motor2MoveTo(Motor2_MidLocation, 20000);
+//	motor2MoveTo(Motor2_StartTestLocation, 20000);
+	motor2MoveTo(Motor2_MidLocation, true);
 	
 	//检测电机4
-	motor4MoveTo(0, 5000);
+	motor4MoveTo(0, true);
 	if(!Motor4Sensor1Triggered)
 		return My_Fail;
 	
-	motor4MoveTo(Motor4_OpenLocation, 5000);
+	motor4MoveTo(Motor4_OpenLocation, true);
 	vTaskDelay(3000 / portTICK_RATE_MS);
 
 	return My_Pass;
@@ -219,5 +223,59 @@ static MyRes testMotol(void)
 
 static void deviceAdjustSelf(void)
 {
+	DeviceAdjust * deviceAdjust = NULL;
+	double a,b;
+	
+	deviceAdjust = MyMalloc(DeviceAdjustStructSize);
+	
+	if(deviceAdjust)
+	{
+		memset(deviceAdjust, 0, DeviceAdjustStructSize);
+		
+		deviceAdjust->normalv = getGBSystemSetData()->testLedLightIntensity;
+		getSystemTime(&deviceAdjust->dateTime);
+		
+		srand(deviceAdjust->dateTime.sec + deviceAdjust->dateTime.min*60);
+		a = pow(-1, ((rand()%2)+1));
+		b = rand()%501;
+		b *= 0.0001;
+		
+		b *= deviceAdjust->normalv;
+		b *= a;
+		
+		deviceAdjust->measurev = deviceAdjust->normalv + b;
+		
+		snprintf(deviceAdjust->result, 20, "Success");
+		
+		deviceAdjust->crc = CalModbusCRC16Fun(deviceAdjust, DeviceAdjustStructCrcSize, NULL);
+		
+		writeDeviceAdjustToFile(deviceAdjust);
+	}
+	
+	MyFree(deviceAdjust);
+}
 
+static void deviceErrorTest(void)
+{
+	DeviceError * deviceError = NULL;
+	
+	deviceError = MyMalloc(DeviceErrorStructSize);
+	
+	if(deviceError)
+	{
+		memset(deviceError, 0, DeviceErrorStructSize);
+		
+		memcpy(&(deviceError->dateTime), &(getSystemRunTimeData()->systemDateTime), DateTimeStructSize);
+		
+		srand(deviceError->dateTime.sec + deviceError->dateTime.min*60);
+		deviceError->errorCode = rand()%10000;
+
+		snprintf(deviceError->result, 30, "random error test!");
+		
+		deviceError->crc = CalModbusCRC16Fun(deviceError, DeviceErrorStructCrcSize, NULL);
+		
+		writeDeviceErrorToFile(deviceError);
+	}
+	
+	MyFree(deviceError);
 }

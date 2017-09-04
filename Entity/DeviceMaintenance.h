@@ -19,22 +19,8 @@ typedef struct
 }DeviceMaintenance;
 #pragma pack()
 
-#pragma pack(1)
-typedef struct
-{
-	PageRequest pageRequest;
-	DeviceRecordHeader deviceRecordHeader;
-	DeviceMaintenance deviceMaintenance[DeviceMaintenanceRecordPageShowNum];
-	unsigned char readTotalNum;							//读取到的有效数据数目
-}DeviceMaintenanceReadPackge;
-#pragma pack()
-
 #define	DeviceMaintenanceStructSize		sizeof(DeviceMaintenance)							//最多保存的用户数目
 #define	DeviceMaintenanceStructCrcSize	DeviceMaintenanceStructSize - 2						//最多保存的用户数目
-
-
-
-#define	DeviceMaintenanceReadPackgeStructSize		sizeof(DeviceMaintenanceReadPackge)								//最多保存的用户数目
 
 #endif
 

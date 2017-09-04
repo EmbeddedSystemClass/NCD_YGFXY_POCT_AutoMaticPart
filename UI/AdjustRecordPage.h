@@ -7,17 +7,14 @@
 
 
 typedef struct AdjustRecordPageBuffer_tag {
-
-	unsigned char selectindex;							//选中的索引
-	unsigned int pageindex;							//页面索引
-	unsigned int maxpagenum;
+	PageRequest pageRequest;							//请求参数
+	DeviceRecordHeader deviceRecordHeader;				//测试数据头信息
+	Page page;											//读取的数据信息
+	DeviceAdjust deviceAdjust[DeviceAdjustRecordPageShowNum];		//读取到的测试数据
 	
-	DeviceAdjustReadPackge deviceAdjustReadPackge;		//读取数据
-	
+	unsigned int i;
 	char buf[100];										//临时缓冲区
-	char tempBuf[100];										//临时缓冲区
 	unsigned int tempvalue1;
-	unsigned int tempvalue2;
 	DeviceAdjust *tempDeviceAdjust;
 	unsigned short lcdinput[100];
 }AdjustRecordPageBuffer;

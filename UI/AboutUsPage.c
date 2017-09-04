@@ -69,7 +69,7 @@ MyRes createAboutUsActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	timer_SetAndStart(&(page->timer), 10);
+	timer_SetAndStart(&(page->timer), 2);
 	
 	dspPageText();
 		
@@ -248,7 +248,7 @@ static void dspPageText(void)
 ***************************************************************************************************/
 static void freshRemoteFirmwareVersion(void)
 {
-/*	if((getIsSuccessDownloadFirmware() == true) && (getGbRemoteFirmwareVersion() > GB_SoftVersion))
+	if((getIsSuccessDownloadFirmware() == true) && (getGbRemoteFirmwareVersion() > GB_SoftVersion))
 	{
 		page->tempV = getGbRemoteFirmwareVersion();
 		snprintf(page->buf, 50, "V%d.%d.%02d (�°汾V%d.%d.%02d)", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100,
@@ -256,5 +256,5 @@ static void freshRemoteFirmwareVersion(void)
 	}
 	else
 		snprintf(page->buf, 50, "V%d.%d.%02d", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100);
-	DisText(0x2910, page->buf, strlen(page->buf)+1);*/
+	DisText(0x2910, page->buf, strlen(page->buf)+1);
 }

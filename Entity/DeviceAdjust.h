@@ -20,22 +20,8 @@ typedef struct
 }DeviceAdjust;
 #pragma pack()
 
-#pragma pack(1)
-typedef struct
-{
-	PageRequest pageRequest;
-	DeviceRecordHeader deviceRecordHeader;
-	DeviceAdjust deviceAdjust[DeviceAdjustRecordPageShowNum];
-	unsigned char readTotalNum;							//读取到的有效数据数目
-}DeviceAdjustReadPackge;
-#pragma pack()
-
 #define	DeviceAdjustStructSize		sizeof(DeviceAdjust)							//最多保存的用户数目
 #define	DeviceAdjustStructCrcSize	DeviceAdjustStructSize - 2						//最多保存的用户数目
-
-
-
-#define	DeviceAdjustReadPackgeStructSize		sizeof(DeviceAdjustReadPackge)								//最多保存的用户数目
 
 #endif
 

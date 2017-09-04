@@ -10,7 +10,6 @@ typedef struct PreReadPageBuffer_tag {
 	ResultState cardpretestresult;
 	unsigned char preTestErrorCount;				//如果是未加样，则需再次测试确保真的没加样，当前变量表示重测次数
 	ScanCodeResult scancode;
-	bool qrIsGet;									//是否获取到二维码扫描结果
 	Timer timer2;
 	TestData temptestdata;							//临时测试数据缓冲区
 	QRCode temperweima;						//临时二维码数据缓冲区

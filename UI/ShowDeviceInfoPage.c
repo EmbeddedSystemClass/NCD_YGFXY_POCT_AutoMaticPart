@@ -73,14 +73,11 @@ MyRes createDeviceInfoActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_ShowDeviceInfoPageBuffer)
-	{
-		memcpy(&(S_ShowDeviceInfoPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
+	memcpy(&(S_ShowDeviceInfoPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
 
-		ReadDeviceFromFile(&(S_ShowDeviceInfoPageBuffer->device));
+	ReadDeviceFromFile(&(S_ShowDeviceInfoPageBuffer->device));
 		
-		showDeviceInfo();
-	}
+	showDeviceInfo();
 	
 	SelectPage(100);
 }
@@ -180,14 +177,11 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	if(S_ShowDeviceInfoPageBuffer)
-	{
-		memcpy(&(S_ShowDeviceInfoPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
+	memcpy(&(S_ShowDeviceInfoPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
 		
-		ReadDeviceFromFile(&(S_ShowDeviceInfoPageBuffer->device));
+	ReadDeviceFromFile(&(S_ShowDeviceInfoPageBuffer->device));
 
-		showDeviceInfo();
-	}
+	showDeviceInfo();
 	
 	SelectPage(100);
 }
@@ -252,25 +246,22 @@ static void activityBufferFree(void)
 
 static void showDeviceInfo(void)
 {
-	if(S_ShowDeviceInfoPageBuffer)
-	{
-		/*显示设备id*/
-		DisText(0x1a40, S_ShowDeviceInfoPageBuffer->systemSetData.deviceId, DeviceIdLen);
+	/*显示设备id*/
+	DisText(0x1a40, S_ShowDeviceInfoPageBuffer->systemSetData.deviceId, DeviceIdLen);
 		
-		/*显示设备名称*/
-		DisText(0x1a50, "荧光免疫定量分析仪\0", 19);
+	/*显示设备名称*/
+	DisText(0x1a50, "荧光免疫定量分析仪\0", 19);
 			
-		/*显示使用单位*/
-		sprintf(S_ShowDeviceInfoPageBuffer->tempBuf, "%s\0", S_ShowDeviceInfoPageBuffer->device.addr);
-		DisText(0x1a60, S_ShowDeviceInfoPageBuffer->tempBuf, strlen(S_ShowDeviceInfoPageBuffer->tempBuf)+1);
+	/*显示使用单位*/
+	snprintf(S_ShowDeviceInfoPageBuffer->tempBuf, 20, "%s", S_ShowDeviceInfoPageBuffer->device.addr);
+	DisText(0x1a60, S_ShowDeviceInfoPageBuffer->tempBuf, strlen(S_ShowDeviceInfoPageBuffer->tempBuf)+1);
 
-		/*显示责任人*/
-		sprintf(S_ShowDeviceInfoPageBuffer->tempBuf, "%s\0", S_ShowDeviceInfoPageBuffer->device.operator.name);
-		DisText(0x1a90, S_ShowDeviceInfoPageBuffer->tempBuf, strlen(S_ShowDeviceInfoPageBuffer->tempBuf)+1);
+	/*显示责任人*/
+	snprintf(S_ShowDeviceInfoPageBuffer->tempBuf, 10, "%s", S_ShowDeviceInfoPageBuffer->device.operator.name);
+	DisText(0x1a90, S_ShowDeviceInfoPageBuffer->tempBuf, strlen(S_ShowDeviceInfoPageBuffer->tempBuf)+1);
 		
-		/*显示责任人联系方式*/
-		sprintf(S_ShowDeviceInfoPageBuffer->tempBuf, "%s\0", S_ShowDeviceInfoPageBuffer->device.operator.phone);
-		DisText(0x1a80, S_ShowDeviceInfoPageBuffer->tempBuf, strlen(S_ShowDeviceInfoPageBuffer->tempBuf)+1);
-	}
+	/*显示责任人联系方式*/
+	snprintf(S_ShowDeviceInfoPageBuffer->tempBuf, 20, "%s", S_ShowDeviceInfoPageBuffer->device.operator.phone);
+	DisText(0x1a80, S_ShowDeviceInfoPageBuffer->tempBuf, strlen(S_ShowDeviceInfoPageBuffer->tempBuf)+1);
 }
 

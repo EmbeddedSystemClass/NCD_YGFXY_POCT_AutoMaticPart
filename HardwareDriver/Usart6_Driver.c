@@ -18,7 +18,6 @@ static xQueueHandle xRxQueue = NULL;									//receive queue
 static xQueueHandle xTxQueue = NULL;									//send queue
 static xSemaphoreHandle xRxMutex;									//ª•≥‚¡ø
 static xSemaphoreHandle xTxMutex;									//ª•≥‚¡ø
-static bool enableTXE = true;
 /***************************************************************************************************/
 /******************************************Static Methods*******************************************/
 /***************************************************************************************************/

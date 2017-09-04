@@ -2,18 +2,14 @@
 /*****************************************头文件*******************************************/
 
 #include	"RecordPage.h"
-
 #include	"LCD_Driver.h"
-
 #include	"Define.h"
 #include	"MyMem.h"
-
 #include	"SystemSetPage.h"
 #include	"ShowResultPage.h"
 #include	"CRC16.h"
 #include	"Printf_Fun.h"
 #include	"System_Data.h"
-#include	"SleepPage.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -37,7 +33,7 @@ static void activityDestroy(void);
 static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
-static MyRes ShowRecord(unsigned char pageindex);
+static void ShowRecord(void);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -80,12 +76,14 @@ MyRes createRecordActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_RecordPageBuffer)
-	{
-		S_RecordPageBuffer->selectindex = 0;
-		S_RecordPageBuffer->pageindex = 1;
-		ShowRecord(S_RecordPageBuffer->pageindex);
-	}
+	S_RecordPageBuffer->pageRequest.pageIndex = 0;
+	S_RecordPageBuffer->pageRequest.pageSize = TestDataRecordPageShowNum;
+	S_RecordPageBuffer->pageRequest.orderType = ASC;
+	
+	for(S_RecordPageBuffer->i=0; S_RecordPageBuffer->i <TestDataRecordPageShowNum ; S_RecordPageBuffer->i++)
+		S_RecordPageBuffer->page.content[S_RecordPageBuffer->i] = &S_RecordPageBuffer->testData[S_RecordPageBuffer->i];
+	
+	ShowRecord();
 	
 	SelectPage(114);
 }
@@ -121,46 +119,49 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*上一页*/
 		else if(S_RecordPageBuffer->lcdinput[0] == 0x2002)
 		{
-			if(S_RecordPageBuffer->pageindex > 1)
-				S_RecordPageBuffer->pageindex -= 1;
-			else
-				S_RecordPageBuffer->pageindex = S_RecordPageBuffer->maxpagenum;
+			if(S_RecordPageBuffer->page.totalPageSize > 0)
+			{
+				if(S_RecordPageBuffer->pageRequest.pageIndex >= 1)
+					S_RecordPageBuffer->pageRequest.pageIndex -= 1;
+				else
+					S_RecordPageBuffer->pageRequest.pageIndex = S_RecordPageBuffer->page.totalPageSize - 1;
 				
-			ShowRecord(S_RecordPageBuffer->pageindex);
+				ShowRecord();
+			}
 		}
 		/*下一页*/
 		else if(S_RecordPageBuffer->lcdinput[0] == 0x2003)
 		{
-			if(S_RecordPageBuffer->pageindex < S_RecordPageBuffer->maxpagenum)
-				S_RecordPageBuffer->pageindex += 1;
-			else
-				S_RecordPageBuffer->pageindex = 1;
+			if(S_RecordPageBuffer->page.totalPageSize > 0)
+			{
+				if((S_RecordPageBuffer->pageRequest.pageIndex + 1) >= S_RecordPageBuffer->page.totalPageSize)
+					S_RecordPageBuffer->pageRequest.pageIndex = 0;
+				else
+					S_RecordPageBuffer->pageRequest.pageIndex += 1;
 				
-			ShowRecord(S_RecordPageBuffer->pageindex);
+				ShowRecord();
+			}
 		}
 		//选择数据
 		else if((S_RecordPageBuffer->lcdinput[0] >= 0x2004)&&(S_RecordPageBuffer->lcdinput[0] <= 0x200b))
 		{
-			S_RecordPageBuffer->tempvalue1 = S_RecordPageBuffer->lcdinput[0] - 0x2004 + 1;
+			S_RecordPageBuffer->tempvalue1 = S_RecordPageBuffer->lcdinput[0] - 0x2004;
 			
-			if(S_RecordPageBuffer->tempvalue1 <= S_RecordPageBuffer->readTotalNum)
+			if(S_RecordPageBuffer->tempvalue1 < S_RecordPageBuffer->page.readItemSize)
 			{
-				S_RecordPageBuffer->selectindex = S_RecordPageBuffer->tempvalue1;
-				BasicPic(0x2020, 1, 137, 11, 142, 940, 179, 38, 149+(S_RecordPageBuffer->selectindex - 1)*40);
-				startActivity(createShowResultActivity, createIntent(&(S_RecordPageBuffer->testData[S_RecordPageBuffer->readTotalNum - S_RecordPageBuffer->selectindex]), TestDataStructSize), NULL);
+				BasicPic(0x2020, 1, 137, 11, 142, 940, 179, 38, 149+(S_RecordPageBuffer->tempvalue1)*40);
+				startActivity(createShowResultActivity, createIntent(&(S_RecordPageBuffer->testData[S_RecordPageBuffer->tempvalue1]), TestDataStructSize), NULL);
 			}
 		}
 		//跳页
 		else if(S_RecordPageBuffer->lcdinput[0] == 0x2010)
 		{
 			S_RecordPageBuffer->tempvalue1 = strtol((char *)(&pbuf[7]), NULL, 10);
-			if( (S_RecordPageBuffer->tempvalue1 > 0) && (S_RecordPageBuffer->tempvalue1 <= S_RecordPageBuffer->maxpagenum))
+			if( (S_RecordPageBuffer->tempvalue1 > 0) && (S_RecordPageBuffer->tempvalue1 <= S_RecordPageBuffer->page.totalPageSize))
 			{
-				S_RecordPageBuffer->pageindex = S_RecordPageBuffer->tempvalue1;
-		
-				S_RecordPageBuffer->selectindex = 0;
+				S_RecordPageBuffer->pageRequest.pageIndex = S_RecordPageBuffer->tempvalue1;
 
-				ShowRecord(S_RecordPageBuffer->pageindex);
+				ShowRecord();
 			}
 		}
 	}
@@ -276,48 +277,37 @@ static void activityBufferFree(void)
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-static MyRes ShowRecord(unsigned char pageindex)
+static void ShowRecord(void)
 {
-	unsigned short i=0;
-		
-	//设置分页读取信息
-	S_RecordPageBuffer->tempvalue1 = pageindex-1;
-	S_RecordPageBuffer->tempvalue1 *= TestDataRecordPageShowNum;
-	S_RecordPageBuffer->pageRequest.startElementIndex = S_RecordPageBuffer->tempvalue1;
-	S_RecordPageBuffer->pageRequest.pageSize = TestDataRecordPageShowNum;
-	S_RecordPageBuffer->pageRequest.orderType = ASC;
-	S_RecordPageBuffer->pageRequest.crc = CalModbusCRC16Fun(&S_RecordPageBuffer->pageRequest, PageRequestStructCrcSize, NULL);
-
 	//读取数据
 	memset(S_RecordPageBuffer->testData, 0, TestDataRecordPageShowNum * TestDataStructSize);
-	readTestDataFromFile(&(S_RecordPageBuffer->pageRequest), &(S_RecordPageBuffer->deviceRecordHeader), S_RecordPageBuffer->testData, NULL);
-	
-	S_RecordPageBuffer->maxpagenum = ((S_RecordPageBuffer->deviceRecordHeader.itemSize % TestDataRecordPageShowNum) == 0)
-		? (S_RecordPageBuffer->deviceRecordHeader.itemSize / TestDataRecordPageShowNum)
-		: ((S_RecordPageBuffer->deviceRecordHeader.itemSize / TestDataRecordPageShowNum)+1);
+	readTestDataFromFileByPageRequest(&(S_RecordPageBuffer->pageRequest), &(S_RecordPageBuffer->deviceRecordHeader), &S_RecordPageBuffer->page);
 		
-	BasicPic(0x2020, 0, 100, 11, 142, 940, 179, 39, 140+(S_RecordPageBuffer->selectindex)*36);
+	BasicPic(0x2020, 0, 100, 11, 142, 940, 179, 39, 140);
 	
 	vTaskDelay(10 / portTICK_RATE_MS);
 
-	S_RecordPageBuffer->readTotalNum = 0;
-	for(i=0; i<TestDataRecordPageShowNum; i++)
+	for(S_RecordPageBuffer->i=0; S_RecordPageBuffer->i<TestDataRecordPageShowNum; S_RecordPageBuffer->i++)
 	{
-		S_RecordPageBuffer->tempdata = &(S_RecordPageBuffer->testData[TestDataRecordPageShowNum - i - 1]);
+		S_RecordPageBuffer->tempdata = &S_RecordPageBuffer->testData[S_RecordPageBuffer->i];
+		S_RecordPageBuffer->tempvalue1 = S_RecordPageBuffer->i*0x40;
 		
 		if(S_RecordPageBuffer->tempdata->crc == CalModbusCRC16Fun(S_RecordPageBuffer->tempdata, TestDataStructCrcSize, NULL))
 		{
 			//显示索引
-			snprintf(S_RecordPageBuffer->buf, 10, "%d", (pageindex-1)*TestDataRecordPageShowNum+S_RecordPageBuffer->readTotalNum+1);
-			DisText(0x2030+(S_RecordPageBuffer->readTotalNum)*0x40, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
+			if(S_RecordPageBuffer->pageRequest.orderType == ASC)
+				snprintf(S_RecordPageBuffer->buf, 10, "%d", S_RecordPageBuffer->page.totalItemSize - S_RecordPageBuffer->pageRequest.pageIndex*TestDataRecordPageShowNum-S_RecordPageBuffer->i);
+			else
+				snprintf(S_RecordPageBuffer->buf, 10, "%d", S_RecordPageBuffer->pageRequest.pageIndex*TestDataRecordPageShowNum+S_RecordPageBuffer->i+1);
+			DisText(0x2030+S_RecordPageBuffer->tempvalue1, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
 				
 			//显示项目
 			snprintf(S_RecordPageBuffer->buf, ItemNameLen, "%.11s", S_RecordPageBuffer->tempdata->qrCode.ItemName);
-			DisText(0x2036+(S_RecordPageBuffer->readTotalNum)*0x40, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
+			DisText(0x2036+S_RecordPageBuffer->tempvalue1, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
 				
 			//显示样品编号
 			snprintf(S_RecordPageBuffer->buf, 16, "%.15s", S_RecordPageBuffer->tempdata->sampleid);
-			DisText(0x2040+(S_RecordPageBuffer->readTotalNum)*0x40, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
+			DisText(0x2040+S_RecordPageBuffer->tempvalue1, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
 				
 			//显示结果
 			if(S_RecordPageBuffer->tempdata->testResultDesc != ResultIsOK)
@@ -326,45 +316,41 @@ static MyRes ShowRecord(unsigned char pageindex)
 			}
 			else if(IsShowRealValue() == true)
 				snprintf(S_RecordPageBuffer->buf, 20, "%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
-					S_RecordPageBuffer->tempdata->testSeries.AdjustResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
-			else if(S_RecordPageBuffer->tempdata->testSeries.AdjustResult <= S_RecordPageBuffer->tempdata->qrCode.itemConstData.lowstResult)
+					S_RecordPageBuffer->tempdata->testSeries.BasicResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
+			else if(S_RecordPageBuffer->tempdata->testSeries.BasicResult <= S_RecordPageBuffer->tempdata->qrCode.itemConstData.lowstResult)
 				snprintf(S_RecordPageBuffer->buf, 20, "<%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
 					S_RecordPageBuffer->tempdata->qrCode.itemConstData.lowstResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
-			else if(S_RecordPageBuffer->tempdata->testSeries.AdjustResult >= S_RecordPageBuffer->tempdata->qrCode.itemConstData.highestResult)
+			else if(S_RecordPageBuffer->tempdata->testSeries.BasicResult >= S_RecordPageBuffer->tempdata->qrCode.itemConstData.highestResult)
 				snprintf(S_RecordPageBuffer->buf, 20, ">%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
 					S_RecordPageBuffer->tempdata->qrCode.itemConstData.highestResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
 			else
 				snprintf(S_RecordPageBuffer->buf, 20, "%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
-					S_RecordPageBuffer->tempdata->testSeries.AdjustResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
-			DisText(0x204C+(S_RecordPageBuffer->readTotalNum)*0x40, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
+					S_RecordPageBuffer->tempdata->testSeries.BasicResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
+			DisText(0x204C+S_RecordPageBuffer->tempvalue1, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
 				
 			//显示时间
 			snprintf(S_RecordPageBuffer->buf, 15, "%02d-%02d-%02d %02d:%02d", S_RecordPageBuffer->tempdata->testDateTime.year, 
 				S_RecordPageBuffer->tempdata->testDateTime.month, S_RecordPageBuffer->tempdata->testDateTime.day,
 				S_RecordPageBuffer->tempdata->testDateTime.hour, S_RecordPageBuffer->tempdata->testDateTime.min);
-			DisText(0x2058+(S_RecordPageBuffer->readTotalNum)*0x40, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
+			DisText(0x2058+S_RecordPageBuffer->tempvalue1, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
 				
 			//显示操作人
 			snprintf(S_RecordPageBuffer->buf, 15, "%s", S_RecordPageBuffer->tempdata->operator.name);
-			DisText(0x2065+(S_RecordPageBuffer->readTotalNum)*0x40, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
+			DisText(0x2065+S_RecordPageBuffer->tempvalue1, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
 
 			S_RecordPageBuffer->tempdata--;
-			
-			S_RecordPageBuffer->readTotalNum++;
 		}
 		else
 		{
-			ClearText(0x2030+(TestDataRecordPageShowNum - i - 1)*0x40);
-			ClearText(0x2036+(TestDataRecordPageShowNum - i - 1)*0x40);
-			ClearText(0x2040+(TestDataRecordPageShowNum - i - 1)*0x40);
-			ClearText(0x204c+(TestDataRecordPageShowNum - i - 1)*0x40);
-			ClearText(0x2058+(TestDataRecordPageShowNum - i - 1)*0x40);
-			ClearText(0x2065+(TestDataRecordPageShowNum - i - 1)*0x40);
+			ClearText(0x2030+S_RecordPageBuffer->tempvalue1);
+			ClearText(0x2036+S_RecordPageBuffer->tempvalue1);
+			ClearText(0x2040+S_RecordPageBuffer->tempvalue1);
+			ClearText(0x204c+S_RecordPageBuffer->tempvalue1);
+			ClearText(0x2058+S_RecordPageBuffer->tempvalue1);
+			ClearText(0x2065+S_RecordPageBuffer->tempvalue1);
 		}
 		
 		vTaskDelay(10 / portTICK_RATE_MS);
 	}
-	
-	return My_Pass;
 }
 

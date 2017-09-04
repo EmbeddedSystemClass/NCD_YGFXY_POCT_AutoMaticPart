@@ -35,8 +35,6 @@
 void Motor3_GPIO_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	NVIC_InitTypeDef   NVIC_InitStructure;
-	EXTI_InitTypeDef   EXTI_InitStructure;
 	
 	RCC_AHB1PeriphClockCmd(Motor3_CLK_RCC | Motor3_DIR_RCC | Motor3_Sleep_RCC, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);

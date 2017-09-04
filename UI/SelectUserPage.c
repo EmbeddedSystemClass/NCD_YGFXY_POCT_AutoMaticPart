@@ -8,6 +8,7 @@
 #include	"CRC16.h"
 #include	"UserMPage.h"
 #include	"DeviceDao.h"
+#include	"Intent.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -58,6 +59,11 @@ MyRes createSelectUserActivity(Activity * thizActivity, Intent * pram)
 	{
 		InitActivity(thizActivity, "SelectUserActivity\0", activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
 		
+		if(pram)
+		{
+			readIntent(pram, &page->targetOperator);
+		}
+		
 		return My_Pass;
 	}
 	
@@ -75,11 +81,6 @@ MyRes createSelectUserActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	//获取当前测试数据地址
-	page->currentTestDataBuffer = GetCurrentTestItem();
-	if(page->currentTestDataBuffer)
-		page->currentTestDataBuffer->testData.operator.crc = 0;
-	
 	/*读取设备信息*/
 	ReadDeviceFromFile(&page->device);
 	
@@ -142,7 +143,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*确定*/
 		else if(page->lcdinput[0] == 0x1201)
 		{
-			if(page->currentTestDataBuffer->testData.operator.crc == CalModbusCRC16Fun(&page->currentTestDataBuffer->testData.operator, OneOperatorStructCrcSize, NULL))
+			if(page->targetOperator->crc == CalModbusCRC16Fun(page->targetOperator, OneOperatorStructCrcSize, NULL))
 				gotoChildActivity(NULL, NULL);
 			else
 				SendKeyCode(1);
@@ -158,7 +159,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 				BasicPic(0x1240, 0, 137, 11, 10, 303, 79, 363, 141+(page->tempV1-1)*72);
 				BasicPic(0x1240, 1, 137, 11, 10, 303, 79, 363, 141+(page->tempV1-1)*72);
 				
-				memcpy(&page->currentTestDataBuffer->testData.operator, page->tempOperator, OneOperatorStructSize);
+				memcpy(page->targetOperator, page->tempOperator, OneOperatorStructSize);
 			}
 		}
 		//编辑操作人
@@ -208,9 +209,6 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	//清除数据
-	page->currentTestDataBuffer->testData.operator.crc = 0;
-	
 	/*读取所有操作人*/
 	ReadDeviceFromFile(&page->device);
 	

@@ -14,11 +14,11 @@
 #include	"Define.h"
 #include	"MyMem.h"
 
-#include	"Maintenance_Data.h"
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"
 #include	"System_Data.h"
 #include	"DeviceMaintenanceDao.h"
+#include	"Maintenance_Data.h"
 
 #include	"CRC16.h"
 
@@ -109,13 +109,12 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//·µ»Ø
 	if(pageBuffer->lcdinput[0] == 0x3300)
 	{
-		deleteGB_DeviceMaintenance();
 		backToActivity(SystemSetActivityName);
 	}
 	//Ìá½»
 	else if(pageBuffer->lcdinput[0] == 0x3301)
 	{
-		memcpy(&(pageBuffer->deviceMaintenance->dateTime), &(getSystemRunTimeData()->systemDateTime), DateTimeStructSize);
+		getSystemTime(&pageBuffer->deviceMaintenance->dateTime);
 		pageBuffer->deviceMaintenance->crc = CalModbusCRC16Fun(pageBuffer->deviceMaintenance, DeviceMaintenanceStructCrcSize, NULL);
 
 		if(My_Pass == writeDeviceMaintenanceToFile(pageBuffer->deviceMaintenance))

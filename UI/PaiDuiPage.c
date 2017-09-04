@@ -134,34 +134,25 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		else if(S_PaiDuiPageBuffer->lcdinput[0] == 0x1501)
 		{
 			S_PaiDuiPageBuffer->error = CreateANewTest(&S_PaiDuiPageBuffer->currentTestDataBuffer);
-			S_PaiDuiPageBuffer->step = 0;
 			//创建成功
 			if(Error_OK == S_PaiDuiPageBuffer->error)
 			{
-				S_PaiDuiPageBuffer->step = 1;
-				motor4MoveTo(Motor4_OpenLocation, 1);
-				startActivity(createSampleActivity, NULL, NULL);
+				S_PaiDuiPageBuffer->motorAction.motorActionName = WaitPutInCard;
+				S_PaiDuiPageBuffer->motorAction.motorActionParm = S_PaiDuiPageBuffer->currentTestDataBuffer->testlocation;
+				StartMotorAction(&S_PaiDuiPageBuffer->motorAction);
 			}
 			//排队位置满，不允许
 			else if(Error_PaiduiFull == S_PaiDuiPageBuffer->error)
-			{
 				SendKeyCode(2);
-			}
 			//创建失败
 			else if(Error_Mem == S_PaiDuiPageBuffer->error)
-			{
 				SendKeyCode(1);
-			}
 			//有卡即将测试
 			else if(Error_PaiDuiBusy == S_PaiDuiPageBuffer->error)
-			{
 				SendKeyCode(3);
-			}
 			//测试中禁止添加
 			else if(Error_PaiduiTesting == S_PaiDuiPageBuffer->error)
-			{
 				SendKeyCode(4);
-			}
 		}
 	}
 }
@@ -181,25 +172,7 @@ static void activityFresh(void)
 
 	//界面忙
 	S_PaiDuiPageBuffer->pageisbusy = true;
-
-/*	if((S_PaiDuiPageBuffer->step == 1) && (Motor4_OpenLocation == getMotorxLocation(Motor_4)))
-	{
-		motor2MoveTo(Motor2_WaitCardLocation, 1);
-		S_PaiDuiPageBuffer->step = 2;
-	}
-		
-	if((S_PaiDuiPageBuffer->step == 2) && (Motor2_WaitCardLocation == getMotorxLocation(Motor_2)))
-	{
-		motor1MoveToNum(S_PaiDuiPageBuffer->currentTestDataBuffer->testlocation, 1);
-		S_PaiDuiPageBuffer->step = 3;
-	}
-		
-	if((S_PaiDuiPageBuffer->step == 3) && (S_PaiDuiPageBuffer->currentTestDataBuffer->testlocation == getMotorxLocation(Motor_1)))
-	{
-		S_PaiDuiPageBuffer->step = 0;
-		startActivity(createSelectUserActivity, NULL, createSampleActivity);
-	}	*/
-
+	
 	if(S_PaiDuiPageBuffer->count % 5 == 0)
 	{
 		//更新倒计时数据
@@ -272,6 +245,9 @@ static void activityFresh(void)
 	S_PaiDuiPageBuffer->count++;
 	if(S_PaiDuiPageBuffer->count >= 60000)
 		S_PaiDuiPageBuffer->count = 1;
+	
+	if(isMotorActionOver())
+		startActivity(createSampleActivity, NULL, NULL);
 	//界面空闲
 	S_PaiDuiPageBuffer->pageisbusy = false;
 	

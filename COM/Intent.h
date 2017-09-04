@@ -13,7 +13,7 @@ typedef struct Intent_tag
 #pragma pack()
 
 Intent * createIntent(void * data, unsigned short datalen);
-void readIntent(Intent * intent, void * data, unsigned short datalen);
+void readIntent(Intent * intent, void * data);
 
 #endif
 

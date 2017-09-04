@@ -35,8 +35,6 @@
 void Motor2_GPIO_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	NVIC_InitTypeDef   NVIC_InitStructure;
-	EXTI_InitTypeDef   EXTI_InitStructure;
 	
 	RCC_AHB1PeriphClockCmd(Motor2_CLK_RCC | Motor2_DIR_RCC | Motor2_Sleep_RCC | Motor2_Sensor1_RCC | 
 		Motor2_Sensor2_RCC | Motor2_Sensor3_RCC, ENABLE);

@@ -9,7 +9,6 @@
 #include	"SystemSetPage.h"
 #include	"ServerSetPage.h"
 #include	"NetSetPage.h"
-#include	"WifiSetPage.h"
 #include	"NetInfoPage.h"
 #include	"SleepPage.h"
 
@@ -74,11 +73,6 @@ MyRes createNetPreActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_NetPrePageBuffer)
-	{
-
-	}
-	
 	SelectPage(108);
 }
 
@@ -113,7 +107,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*wifi设置*/
 		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E02)
 		{
-			startActivity(createWifiSetActivity, NULL, NULL);
+			//startActivity(createWifiSetActivity, NULL, NULL);
 		}
 		//服务器设置
 		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1FA0)

@@ -6,6 +6,7 @@
 #include	"NetWork.h"
 #include	"SystemSet_Data.h"
 #include	"System_Data.h"
+#include	"Timer.h"
 
 typedef struct NetInfoPageBuffer_tag {
 	unsigned short lcdinput[20];

@@ -13,13 +13,16 @@ typedef enum
 	Motor_None = 0xff,
 }Motorx_Def;
 
-#define	Motor2_EndTestLocation				31000							//停止测试位置
-#define	Motor2_StartTestLocation			34000							//开始测试位置
+#define	Motor2_EndTestLocation				28300							//停止测试位置
+#define	Motor2_StartTestLocation			19300							//开始测试位置
+#define	Motor2_CatchCardLocation			32000							//抓卡准备测试
+#define	Motor2_PutDownCardLocation2			33500							//从测试的一边将卡在排队位放好
 #define	Motor2_MidLocation					40000							//中心位置
-#define	Motor2_PutDownCardLocation			46000							//将卡在排队位放好
+#define	Motor2_PutDownCardLocation			45500							//将卡在排队位放好
 #define	Motor2_WaitCardLocation				52000							//等待插卡
 
-#define	Motor4_OpenLocation		1000
+
+#define	Motor4_OpenLocation		0
 #define	Motor4_CardLocation		3700
 #define	Motor4_CloseLocation	4500
 

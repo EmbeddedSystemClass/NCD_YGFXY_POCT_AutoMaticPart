@@ -89,7 +89,6 @@ static void activityStart(void)
 	clearPageText();
 
 	StartScanQRCode(&(S_PreReadPageBuffer->temperweima));
-	S_PreReadPageBuffer->qrIsGet = false;
 	
 	SelectPage(92);
 }
@@ -121,15 +120,6 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			/*更换检测卡*/
 			if(S_PreReadPageBuffer->lcdinput[1] == 0x0001)
 			{
-				/*//如果是排队中的再次预读，则返回排队界面，状态切换回之前的状态
-				if(S_PreReadPageBuffer->currenttestdata->statues == status_prereadagain_n)
-					S_PreReadPageBuffer->currenttestdata->statues = status_incard_n;
-				else if(S_PreReadPageBuffer->currenttestdata->statues == status_prereadagain_o)
-					S_PreReadPageBuffer->currenttestdata->statues = status_incard_o;
-				//如果是第一次预读
-				else if(S_PreReadPageBuffer->currenttestdata->statues == status_wait1)
-					S_PreReadPageBuffer->currenttestdata->statues = status_wait1;
-				*/
 				backToFatherActivity();
 			}
 			//取消测试
@@ -246,57 +236,31 @@ static void activityBufferFree(void)
 
 static void CheckQRCode(void)
 {
-	if(S_PreReadPageBuffer->qrIsGet == false)
+	if(My_Pass == TakeScanQRCodeResult(&S_PreReadPageBuffer->scancode))
 	{
-		S_PreReadPageBuffer->scancode = getScanResult();
-		
-		if(CardCodeScanning != S_PreReadPageBuffer->scancode)
+		if(S_PreReadPageBuffer->scancode == CardCodeScanOK)
 		{
-			//不支持的品种
-			if(S_PreReadPageBuffer->scancode == CardUnsupported)
-			{
-				motor4MoveTo(Motor4_OpenLocation, 1);
-				motor2MoveTo(Motor2_WaitCardLocation, 1);
-				SendKeyCode(6);
-			}
-			//过期
-			else if(S_PreReadPageBuffer->scancode == CardCodeTimeOut)
-			{
-				motor4MoveTo(Motor4_OpenLocation, 1);
-				motor2MoveTo(Motor2_WaitCardLocation, 1);
-				SendKeyCode(4);
-			}
-			//读取成功
-			else if(S_PreReadPageBuffer->scancode == CardCodeScanOK)
-			{
-				ShowCardInfo();
+			ShowCardInfo();
 				
-				//将读取的二维码数据拷贝到测试数据包中
-				memcpy(&(S_PreReadPageBuffer->currenttestdata->testData.qrCode), &(S_PreReadPageBuffer->temperweima), sizeof(QRCode));
+			//将读取的二维码数据拷贝到测试数据包中
+			memcpy(&(S_PreReadPageBuffer->currenttestdata->testData.qrCode), &(S_PreReadPageBuffer->temperweima), sizeof(QRCode));
 					
-				//设置倒计时时间
-				timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*60);
+			//设置倒计时时间
+			timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*5);
 				
-				//读取校准参数
-				memcpy(S_PreReadPageBuffer->currenttestdata->testData.adjustData.ItemName, S_PreReadPageBuffer->currenttestdata->testData.qrCode.ItemName, ItemNameLen);
-				getAdjPram(getGBSystemSetData(), &(S_PreReadPageBuffer->currenttestdata->testData.adjustData));
-
-				motor2MoveTo(Motor2_PutDownCardLocation, 10000);
-				motor4MoveTo(Motor4_OpenLocation, 5000);
-				motor2MoveTo(Motor2_MidLocation, 1);
-				
-				S_PreReadPageBuffer->currenttestdata->statues = status_start;
-				startActivity(createPaiDuiActivity, NULL, NULL);
-			}
+			S_PreReadPageBuffer->currenttestdata->statues = status_start;
+			startActivity(createPaiDuiActivity, NULL, NULL);
+		}
+		else
+		{
+			if(S_PreReadPageBuffer->scancode == CardUnsupported)										//不支持的品种
+				SendKeyCode(6);
+			
+			else if(S_PreReadPageBuffer->scancode == CardCodeTimeOut)									//过期
+				SendKeyCode(4);
 			//其他错误：CardCodeScanFail, CardCodeCardOut, CardCodeScanTimeOut, CardCodeCRCError
 			else
-			{
-				motor4MoveTo(Motor4_OpenLocation, 1);
-				motor2MoveTo(Motor2_WaitCardLocation, 1);
 				SendKeyCode(1);
-			}
-			
-			S_PreReadPageBuffer->qrIsGet = true;
 		}
 	}
 }

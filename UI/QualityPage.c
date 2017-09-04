@@ -10,14 +10,15 @@
 /***************************************************************************************************/
 #include	"QualityPage.h"
 
-#include	"CardLimit_Driver.h"
 #include	"LCD_Driver.h"
 #include	"Define.h"
 #include	"MyMem.h"
 #include	"CRC16.h"
 #include	"MyTools.h"
 
-#include	"Motor_Fun.h"
+#include	"Motor1_Fun.h"
+#include	"Motor2_Fun.h"
+#include	"Motor3_Fun.h"
 #include	"Quality_Data.h"
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"
@@ -25,6 +26,7 @@
 #include	"Test_Task.h"
 #include	"System_Data.h"
 #include	"DeviceQualityDao.h"
+#include	"CardCheck_Driver.h"
 
 #include	<string.h>
 #include	"stdio.h"
@@ -42,11 +44,9 @@ static void activityFresh(void);
 static void activityHide(void);
 static void activityResume(void);
 static void activityDestroy(void);
-
 static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
-static void checkQRCode(void);
-static void checkCardTestResult(void);
+
 static void showStatus(const char * str);
 static void showThisTestResult(void);
 static void showAllPianCha(void);
@@ -94,14 +94,19 @@ MyRes createQualityActivity(Activity * thizActivity, Intent * pram)
 static void activityStart(void)
 {
 	pageBuffer->deviceQuality = getGB_DeviceQuality();
-	pageBuffer->testIndex = 0;
-	pageBuffer->canTestNow = false;
-	pageBuffer->isTestting = false;
+	pageBuffer->testCnt = 0;
+	pageBuffer->testStep = 0;
 	pageBuffer->resultSum = 0.0;
+	pageBuffer->motorAction.motorActionName = WaitPutInCard;
+	pageBuffer->motorAction.motorActionParm = 1;
+	StartMotorAction(&pageBuffer->motorAction);
+	pageBuffer->isStartted = false;
+	
+	timer_SetAndStart(&pageBuffer->cardTimer, 99999);
 	
 	clearPageText();
 	
-	showStatus("请插入试剂卡\0");
+	showStatus("请等待\0");
 	SelectPage(158);
 }
 
@@ -129,16 +134,19 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//提交
 	else if(pageBuffer->lcdinput[0] == 0x3401)
 	{
-		memcpy(&(pageBuffer->deviceQuality->dateTime), &(getSystemRunTimeData()->systemDateTime), DateTimeStructSize);
-		pageBuffer->deviceQuality->crc = CalModbusCRC16Fun(pageBuffer->deviceQuality, DeviceQualityStructCrcSize, NULL);
-		
-		if(My_Pass == writeDeviceQualityToFile(pageBuffer->deviceQuality))
+		if(pageBuffer->testCnt > 0)
 		{
-			deleteGB_DeviceQuality();
-			backToActivity(SystemSetActivityName);
+			memcpy(&(pageBuffer->deviceQuality->dateTime), &(getSystemRunTimeData()->systemDateTime), DateTimeStructSize);
+			pageBuffer->deviceQuality->crc = CalModbusCRC16Fun(pageBuffer->deviceQuality, DeviceQualityStructCrcSize, NULL);
+			
+			if(My_Pass == writeDeviceQualityToFile(pageBuffer->deviceQuality))
+			{
+				deleteGB_DeviceQuality();
+				backToActivity(SystemSetActivityName);
+			}
+			else
+				SendKeyCode(2);
 		}
-		else
-			SendKeyCode(2);
 	}
 	//设置标准值
 	else if(pageBuffer->lcdinput[0] == 0x3410)
@@ -147,21 +155,18 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		showAllPianCha();
 	}
 	//结果
-	else if(pageBuffer->lcdinput[0] == 0x3302)
+	else if(pageBuffer->lcdinput[0] == 0x3402)
 	{
-		/*数据*/
 		pageBuffer->lcdinput[1] = pbuf[7];
 		pageBuffer->lcdinput[1] = (pageBuffer->lcdinput[1]<<8) + pbuf[8];
 			
-		/*自动获取ip*/
 		if(pageBuffer->lcdinput[1] == 0x8000)
 			pageBuffer->deviceQuality->isOk = true;
-		/*使用设置的ip*/
 		else if(pageBuffer->lcdinput[1] == 0x0000)
 			pageBuffer->deviceQuality->isOk = false;
 	}
 	//维护说明
-	else if(pageBuffer->lcdinput[0] == 0x3310)
+	else if(pageBuffer->lcdinput[0] == 0x3420)
 	{
 		snprintf(pageBuffer->deviceQuality->desc, GetBufLen(&pbuf[7], 2*pbuf[6])+1, "%s",&pbuf[7]);
 	}
@@ -178,28 +183,81 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	//如果没在测试，且卡槽无卡，则现在允许测试
-	if((pageBuffer->isTestting == false) && (MaxLocation == getSystemRunTimeData()->motorData.location) && (CardPinIn == NoCard))
-		pageBuffer->canTestNow = true;
-	
-	//如果现在允许测试，且测试次数未到最大次数，且有卡插入，则开始测试
-	if((pageBuffer->canTestNow) && (pageBuffer->testIndex < DeviceQualityMaxTestCount) && (CardPinIn == CardIN))
+	if(pageBuffer->testStep == 0 && isMotorActionOver())
 	{
-		pageBuffer->canTestNow = false;
-		pageBuffer->isTestting = true;
-		
-		memset(&(pageBuffer->testData), 0, TestDataStructSize);
-		
-		//第一步扫描二维码
-		StartScanQRCode(&(pageBuffer->testData.qrCode));
-		showStatus("开始扫描二维码\0");
+		if(pageBuffer->testCnt >= DeviceQualityMaxTestCount)
+			showStatus("测试结束\0");
+		else
+			showStatus("请插卡\0");
+		pageBuffer->testStep = 1;
 	}
 	
-	if(pageBuffer->isTestting)
+	if(pageBuffer->testStep == 1 && readCaedCheckStatus() == ON)
 	{
-		checkQRCode();
+		StartScanQRCode(&(pageBuffer->testData.qrCode));
+		pageBuffer->testStep = 2;
+		showStatus("读取二维码\0");
+	}
+	
+	if(pageBuffer->testStep == 2 && My_Pass == TakeScanQRCodeResult(&pageBuffer->cardScanResult))
+	{
+		if(pageBuffer->cardScanResult == CardCodeScanOK)
+		{
+			pageBuffer->testStep = 3;
+			pageBuffer->motorAction.motorActionName = MoveToStartTestLocation;
+			pageBuffer->motorAction.motorActionParm = 5;
+			StartMotorAction(&pageBuffer->motorAction);
+			showStatus("开始测试\0");
+		}
+		else
+		{
+			showStatus("错误，请更换");
+			pageBuffer->testStep = 7;
+		}
+	}
+	
+	if(pageBuffer->testStep == 3 && isMotorActionOver())
+	{
+		pageBuffer->testStep = 4;
+		StartTest(&pageBuffer->testData);
+	}
+	
+	if(pageBuffer->testStep == 4 && My_Pass == TakeTestResult(&pageBuffer->testData.testResultDesc))
+	{
+		pageBuffer->motorAction.motorActionName = OutOutCard;
+		StartMotorAction(&pageBuffer->motorAction);
+		pageBuffer->testStep = 5;
 		
-		checkCardTestResult();
+		if(pageBuffer->testData.testResultDesc == ResultIsOK)
+		{
+			pageBuffer->testCnt++;
+			
+			//保存测试结果
+			pageBuffer->deviceQuality->testValue[pageBuffer->testCnt-1] = pageBuffer->testData.testSeries.BasicResult;
+			showThisTestResult();
+
+			showStatus("当前测试完成\0");
+		}
+		else
+		{
+			showStatus("错误，请更换");
+		}
+	}
+	
+	if(pageBuffer->testStep == 5 && isMotorActionOver())
+	{
+		pageBuffer->testStep = 8;
+	}
+	
+	if(pageBuffer->testStep == 7 && OFF == readCaedCheckStatus())
+		pageBuffer->testStep = 8;
+	
+	if(pageBuffer->testStep == 8)
+	{
+		pageBuffer->motorAction.motorActionName = WaitPutInCard;
+		pageBuffer->motorAction.motorActionParm = 1;
+		StartMotorAction(&pageBuffer->motorAction);
+		pageBuffer->testStep = 0;
 	}
 }
 
@@ -287,92 +345,6 @@ static void activityBufferFree(void)
 	pageBuffer = NULL;
 }
 
-
-static void checkQRCode(void)
-{
-	if(My_Pass == TakeScanQRCodeResult(&(pageBuffer->cardScanResult)))
-	{
-		//不支持的品种
-		if(pageBuffer->cardScanResult == CardUnsupported)
-		{
-			showStatus("不支持此项目\0");
-			MotorMoveTo(MaxLocation, 1);
-			SendKeyCode(6);
-			pageBuffer->isTestting = false;
-		}
-		//过期
-		else if(pageBuffer->cardScanResult == CardCodeTimeOut)
-		{
-			showStatus("过期\0");
-			MotorMoveTo(MaxLocation, 1);
-			SendKeyCode(4);
-			pageBuffer->isTestting = false;
-		}
-		//读取成功
-		else if(pageBuffer->cardScanResult == CardCodeScanOK)
-		{
-			//读取校准参数
-			memcpy(pageBuffer->testData.adjustData.ItemName, pageBuffer->testData.qrCode.ItemName, ItemNameLen);
-			getAdjPram(getGBSystemSetData(), &(pageBuffer->testData.adjustData));
-			
-			//保存质控项目名称
-			if(strlen(pageBuffer->deviceQuality->itemName) == 0)
-			{
-				showStatus("开始扫描试剂卡\0");
-				memcpy(pageBuffer->deviceQuality->itemName, pageBuffer->testData.qrCode.ItemName, ItemNameLen);
-				StartTest(&(pageBuffer->testData));
-			}
-			else if(CheckStrIsSame(pageBuffer->deviceQuality->itemName, pageBuffer->testData.qrCode.ItemName, ItemNameLen))
-			{
-				showStatus("开始扫描试剂卡\0");
-				StartTest(&(pageBuffer->testData));
-			}
-			else
-			{
-				showStatus("项目错误，请更换\0");
-				MotorMoveTo(MaxLocation, 1);
-				pageBuffer->isTestting = false;
-			}
-		}
-		/*其他错误：CardCodeScanFail, CardCodeCardOut, CardCodeScanTimeOut, CardCodeCRCError*/
-		else
-		{
-			showStatus("二维码错误\0");
-			MotorMoveTo(MaxLocation, 1);
-			SendKeyCode(1);
-			pageBuffer->isTestting = false;
-		}
-	}
-}
-
-static void checkCardTestResult(void)
-{
-	if(My_Pass == TakeTestResult(&(pageBuffer->testData.testResultDesc)))
-	{
-		if(pageBuffer->testData.testResultDesc == NoSample)
-		{
-			showStatus("未加样\0");
-		}
-		else if(pageBuffer->testData.testResultDesc == PeakError)
-		{
-			showStatus("错误\0");
-		}
-		else if(pageBuffer->testData.testResultDesc == ResultIsOK)
-		{
-			//保存测试结果
-			pageBuffer->deviceQuality->testValue[pageBuffer->testIndex] = pageBuffer->testData.testSeries.AdjustResult;
-			showThisTestResult();
-			
-			pageBuffer->testIndex++;
-			
-			showStatus("当前测试完成\0");
-		}
-		
-		MotorMoveTo(MaxLocation, 1);
-		pageBuffer->isTestting = false;
-	}
-}
-
 static void showStatus(const char * str)
 {
 	snprintf(pageBuffer->tempBuf, 50, "%s", str);
@@ -381,31 +353,14 @@ static void showStatus(const char * str)
 
 static void showThisTestResult(void)
 {
+	pageBuffer->tempValue1 = pageBuffer->deviceQuality->testValue[pageBuffer->testCnt-1];
 	//显示当前测试结果
-	snprintf(pageBuffer->tempBuf, 15, "%.*f", pageBuffer->testData.qrCode.itemConstData.pointNum, pageBuffer->testData.testSeries.AdjustResult);
-	DisText(0x3430+(pageBuffer->testIndex*0x05), pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
+	snprintf(pageBuffer->tempBuf, 15, "%.*f", pageBuffer->testData.qrCode.itemConstData.pointNum, pageBuffer->tempValue1);
+	DisText(0x3430+((pageBuffer->testCnt-1)*0x05), pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
 	
-	pageBuffer->resultSum += pageBuffer->testData.testSeries.AdjustResult;
+	pageBuffer->resultSum += pageBuffer->tempValue1;
 	
-	if(pageBuffer->deviceQuality->standardValue != 0)
-	{
-		//显示当前测试偏差率	
-		pageBuffer->tempValue1 = (pageBuffer->testData.testSeries.AdjustResult - pageBuffer->deviceQuality->standardValue) 
-					/ pageBuffer->deviceQuality->standardValue;
-		pageBuffer->tempValue1 *= 100;
-			
-		snprintf(pageBuffer->tempBuf, 15, "%.2f%%", pageBuffer->tempValue1);
-		DisText(0x3465+(pageBuffer->testIndex*0x05), pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
-		
-		//更新平均偏差
-		pageBuffer->tempValue2 = pageBuffer->resultSum / (pageBuffer->testIndex+1);
-		pageBuffer->tempValue2 = (pageBuffer->tempValue2 - pageBuffer->deviceQuality->standardValue)/pageBuffer->deviceQuality->standardValue;
-			
-		pageBuffer->tempValue1 = pageBuffer->tempValue2*100;
-				
-		snprintf(pageBuffer->tempBuf, 15, "%.2f%%", pageBuffer->tempValue1);
-		DisText(0x349a, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
-	}
+	showAllPianCha();
 }
 
 static void showAllPianCha(void)
@@ -413,7 +368,7 @@ static void showAllPianCha(void)
 	unsigned char i=0;
 	if(pageBuffer->deviceQuality->standardValue != 0)
 	{
-		for(i=0; i<pageBuffer->testIndex; i++)
+		for(i=0; i<pageBuffer->testCnt; i++)
 		{
 			pageBuffer->tempValue1 = 
 				(pageBuffer->deviceQuality->testValue[i] - pageBuffer->deviceQuality->standardValue) 
@@ -426,9 +381,9 @@ static void showAllPianCha(void)
 		}
 		
 		//更新平均偏差率
-		if(pageBuffer->testIndex > 0)
+		if(pageBuffer->testCnt > 0)
 		{
-			pageBuffer->tempValue2 = pageBuffer->resultSum / pageBuffer->testIndex;
+			pageBuffer->tempValue2 = pageBuffer->resultSum / pageBuffer->testCnt;
 			pageBuffer->tempValue2 = (pageBuffer->tempValue2 - pageBuffer->deviceQuality->standardValue)/pageBuffer->deviceQuality->standardValue;
 			
 			pageBuffer->tempValue1 = pageBuffer->tempValue2*100;

@@ -77,15 +77,12 @@ Intent * createIntent(void * data, unsigned short datalen)
 *Author: xsx
 *Date: 2016Äê12ÔÂ21ÈÕ14:24:39
 ***************************************************************************************************/
-void readIntent(Intent * intent, void * data, unsigned short datalen)
+void readIntent(Intent * intent, void * data)
 {
 	if((NULL == intent) || (NULL == data))
 		return;
 	
-	if(datalen > intent->datalen)
-		datalen = intent->datalen;
-	
-	memcpy(data, intent->data, datalen);
+	memcpy(data, intent->data, intent->datalen);
 	
 	MyFree(intent->data);
 	MyFree(intent);

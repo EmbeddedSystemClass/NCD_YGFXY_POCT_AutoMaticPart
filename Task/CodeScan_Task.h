@@ -6,7 +6,7 @@
 
 char StartCodeScanTask(void);
 MyRes StartScanQRCode(QRCode * parm);
-ScanCodeResult getScanResult(void);
+MyRes TakeScanQRCodeResult(ScanCodeResult *scanresult);
 
 #endif
 

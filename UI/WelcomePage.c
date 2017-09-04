@@ -11,6 +11,7 @@
 #include	"Test_Task.h"
 #include	"CodeScan_Task.h"
 #include	"Paidui_Task.h"
+#include 	"netconf.h"
 
 #include	<string.h>
 #include	"stdio.h"
@@ -145,6 +146,8 @@ static void activityFresh(void)
 			
 			//开始排队任务
 			StartPaiduiTask();
+			
+			StartEthernet();
 					
 			destroyTopActivity();
 			startActivity(createLunchActivity, NULL, NULL);
@@ -152,7 +155,7 @@ static void activityFresh(void)
 			return;
 		}
 		//加载数据错误，说明sd异常
-		else if(SystemData_ERROR == page->selfTestStatus)
+		else if(SD_ERROR == page->selfTestStatus)
 		{
 			SelectPage(81);
 				

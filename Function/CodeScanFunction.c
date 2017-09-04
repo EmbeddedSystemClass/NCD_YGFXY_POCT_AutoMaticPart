@@ -9,6 +9,7 @@
 #include	"ItemConst_Data.h"
 #include	"Motor2_Fun.h"
 #include	"Motor4_Fun.h"
+#include	"Motor_Data.h"
 #include 	"Usart3_Driver.h"
 #include	"CardCheck_Driver.h"
 
@@ -52,13 +53,12 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 		readQRCodeBuffer->cardQR = cardQR;
 		memset(readQRCodeBuffer->cardQR, 0, QRCodeStructSize);
 		
-		motor4MoveTo(Motor4_CardLocation, 5000);
-		motor2MoveTo(Motor2_WaitCardLocation, 10000);
+		motor4MoveTo(Motor4_CardLocation, true);
+		motor2MoveTo(Motor2_WaitCardLocation, true);
 		
 		OpenCodeScanner();
 	
-		while(pdPASS == ReceiveDataFromQueue(GetUsart3RXQueue(), NULL, readQRCodeBuffer->originalcode , MAX_QR_CODE_LENGHT, NULL, 1, 10 / portTICK_RATE_MS, 10 / portTICK_RATE_MS))
-			;
+		xQueueReset(GetUsart3RXQueue());
 		
 		//设置定时器
 		timer_SetAndStart(&(readQRCodeBuffer->timer), MAX_SCAN_QR_TIME);
@@ -76,12 +76,11 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 				readQRCodeBuffer->motorDir++;
 				
 				if(readQRCodeBuffer->motorDir%2 == 0)
-					motor2MoveTo(55000, 1000);
+					motor2MoveTo(55000, true);
 				else
-					motor2MoveTo(48000, 1000);
+					motor2MoveTo(Motor2_PutDownCardLocation, true);
 				
-				if(readQRCodeBuffer->motorLocation % 50 == 0)
-					ReadBasicCodeData(readQRCodeBuffer);
+				ReadBasicCodeData(readQRCodeBuffer);
 
 				vTaskDelay(2 / portTICK_RATE_MS);
 				
@@ -95,6 +94,19 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 	
 	scanResult = readQRCodeBuffer->scanResult;
 	
+	//二维码读取正确
+	if(scanResult == CardCodeScanOK)
+	{
+		motor2MoveTo(Motor2_PutDownCardLocation, true);
+		motor4MoveTo(Motor4_OpenLocation, true);
+		motor2MoveTo(Motor2_MidLocation, true);
+	}
+	else
+	{
+		motor4MoveTo(Motor4_OpenLocation, true);
+		motor2MoveTo(Motor2_WaitCardLocation, true);
+	}
+		
 	MyFree(readQRCodeBuffer);
 	
 	return scanResult;
@@ -110,9 +122,6 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 ***************************************************************************************************/
 static void ReadBasicCodeData(ReadQRCodeBuffer * readQRCodeBuffer)
 {
-	if(readQRCodeBuffer == NULL)
-		return;
-	
 	memset(readQRCodeBuffer->originalcode, 0, MAX_QR_CODE_LENGHT);
 	ReceiveDataFromQueue(GetUsart3RXQueue(), NULL, readQRCodeBuffer->originalcode , MAX_QR_CODE_LENGHT, &(readQRCodeBuffer->originalCodeLen), 1, 10 / portTICK_RATE_MS
 		, 10 / portTICK_RATE_MS);
@@ -135,10 +144,7 @@ static void ReadBasicCodeData(ReadQRCodeBuffer * readQRCodeBuffer)
 static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 {
 	unsigned char i=0;
-	
-	if(readQRCodeBuffer == NULL)
-		return;
-	
+
 	/*清空二维码空间*/
 	memset(readQRCodeBuffer->decryptcode, 0, MAX_QR_CODE_LENGHT);
 

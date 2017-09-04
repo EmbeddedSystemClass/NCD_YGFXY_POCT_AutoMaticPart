@@ -71,11 +71,9 @@ static void activityStart(void)
 }
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	/*ÃüÁî*/
 	page->lcdinput[0] = pbuf[4];
 	page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
-		
-	/*ÉèÖÃ*/
+
 	if(page->lcdinput[0] == 0x1D70)
 	{
 		backToFatherActivity();

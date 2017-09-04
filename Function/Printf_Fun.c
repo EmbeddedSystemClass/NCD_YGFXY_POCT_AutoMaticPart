@@ -63,17 +63,17 @@ void PrintfData(TestData * testd2)
 		sprintf(printfbuf, "测试项目: %s\n\0", tempTestData->qrCode.ItemName);
 		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 		
-		tempvalue = tempTestData->testSeries.AdjustResult;
+		tempvalue = tempTestData->testSeries.BasicResult;
 		if(tempTestData->testResultDesc != ResultIsOK)
 			sprintf(printfbuf, "测试结果: ERROR\n\0");
 		else if(IsShowRealValue() == true)
-			sprintf(printfbuf, "测试结果: %.*f %-8.8s\n\0", tempTestData->qrCode.itemConstData.pointNum, tempTestData->testSeries.AdjustResult, tempTestData->qrCode.itemConstData.itemMeasure);
+			sprintf(printfbuf, "测试结果: %.*f %-8.8s\n\0", tempTestData->qrCode.itemConstData.pointNum, tempTestData->testSeries.BasicResult, tempTestData->qrCode.itemConstData.itemMeasure);
 		else if(tempvalue <= tempTestData->qrCode.itemConstData.lowstResult)
 			sprintf(printfbuf, "测试结果: <%.*f %-8.8s\n\0", tempTestData->qrCode.itemConstData.pointNum, tempTestData->qrCode.itemConstData.lowstResult, tempTestData->qrCode.itemConstData.itemMeasure);
 		else if(tempvalue >= tempTestData->qrCode.itemConstData.highestResult)
 			sprintf(printfbuf, "测试结果: >%.*f %-8.8s\n\0", tempTestData->qrCode.itemConstData.pointNum, tempTestData->qrCode.itemConstData.highestResult, tempTestData->qrCode.itemConstData.itemMeasure);
 		else
-			sprintf(printfbuf, "测试结果: %.*f %-8.8s\n\0", tempTestData->qrCode.itemConstData.pointNum, tempTestData->testSeries.AdjustResult, tempTestData->qrCode.itemConstData.itemMeasure);
+			sprintf(printfbuf, "测试结果: %.*f %-8.8s\n\0", tempTestData->qrCode.itemConstData.pointNum, tempTestData->testSeries.BasicResult, tempTestData->qrCode.itemConstData.itemMeasure);
 		
 		SendDataToQueue(GetUsart3TXQueue(), NULL, printfbuf, strlen(printfbuf), sizeof(unsigned char), 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart3TXInterrupt);
 		

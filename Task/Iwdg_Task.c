@@ -15,7 +15,7 @@
 /******************************************************************************************/
 /*****************************************局部变量声明*************************************/
 
-#define vIwdgTask_PRIORITY			( ( unsigned portBASE_TYPE ) 1U )
+#define vIwdgTask_PRIORITY		1
 const char * IwdgTaskName = "vIwdgTask";		//看门狗任务名
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
@@ -60,7 +60,7 @@ static void vIwdgTask( void *pvParameters )
 	while(1)
 	{
 		IWDG_Feed();
-		vTaskDelay(500 * portTICK_RATE_MS);
+		vTaskDelay(500 / portTICK_RATE_MS);
 	}
 }
 

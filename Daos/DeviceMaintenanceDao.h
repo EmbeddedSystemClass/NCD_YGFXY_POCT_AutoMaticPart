@@ -6,8 +6,8 @@
 #include	"DeviceMaintenance.h"
 
 MyRes writeDeviceMaintenanceToFile(DeviceMaintenance * deviceMaintenance);
-MyRes readDeviceMaintenanceFromFile(DeviceMaintenanceReadPackge * deviceMaintenanceReadPackge);
-MyRes plusDeviceMaintenanceHeaderuserUpLoadIndexToFile(unsigned int index);
+MyRes readDeviceMaintenanceFromFileByPageRequest(PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, Page * page);
+MyRes plusDeviceMaintenanceHeaderUpLoadIndexToFile(unsigned char userIndexPlusNum, unsigned char ncdIndexPlusNum);
 MyRes deleteDeviceMaintenanceFile(void);
 
 #endif

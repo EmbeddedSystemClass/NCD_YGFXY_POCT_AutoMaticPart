@@ -63,7 +63,7 @@ void motor1Reset(void)
 *Author: xsx
 *Date: 2017Äê8ÔÂ10ÈÕ 14:12:21
 ***************************************************************************************************/
-void motor1MoveToNum(unsigned char num, unsigned short waitTime)
+void motor1MoveToNum(unsigned char num, bool isWait)
 {
 	unsigned char tempv = 0;
 	motor1 = getMotor(Motor_1);
@@ -90,8 +90,6 @@ void motor1MoveToNum(unsigned char num, unsigned short waitTime)
 			else
 				motor1->isFront = false;
 		}
-		
-		
 	}
 
 	if(motor1->isFront)
@@ -105,9 +103,9 @@ void motor1MoveToNum(unsigned char num, unsigned short waitTime)
 	motor1->parm2 = true;
 	motor1->moveStepNum = 65000;
 	
-	while(waitTime-- && (motor1->motorLocation != motor1->motorTargetLocation))
+	while(isWait && motor1->motorLocation != motor1->motorTargetLocation)
 	{
-		vTaskDelay(1 / portTICK_RATE_MS);
+		vTaskDelay(100 / portTICK_RATE_MS);
 	}
 }
 /****************************************end of file************************************************/

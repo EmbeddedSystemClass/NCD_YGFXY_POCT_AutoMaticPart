@@ -6,18 +6,16 @@
 
 
 typedef struct QualityRecordPageBuffer_tag {
-
-	unsigned char selectindex;							//选中的索引
-	unsigned int pageindex;							//页面索引
-	unsigned int maxpagenum;
+	PageRequest pageRequest;							//请求参数
+	DeviceRecordHeader deviceRecordHeader;				//测试数据头信息
+	Page page;											//读取的数据信息
+	DeviceQuality deviceQuality[DeviceQualityRecordPageShowNum];		//读取到的测试数据
 	
-	DeviceQualityReadPackge deviceQualityReadPackge;		//读取数据
+	unsigned int i;
 	
 	char buf[100];										//临时缓冲区
-	char tempBuf[100];										//临时缓冲区
 	unsigned int tempvalue1;
-	unsigned int tempvalue2;
-	DeviceQuality *tempDeviceQuality;
+	DeviceQuality * tempDeviceQuality;
 	unsigned short lcdinput[100];
 }QualityRecordPageBuffer;
 

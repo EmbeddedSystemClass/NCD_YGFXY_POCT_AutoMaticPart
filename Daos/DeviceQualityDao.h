@@ -5,9 +5,9 @@
 #include	"Define.h"
 #include	"DeviceQuality.h"
 
-MyRes writeDeviceQualityToFile(DeviceQuality * deviceQuality);
-MyRes readDeviceQualityFromFile(DeviceQualityReadPackge * readPackge);
-MyRes plusDeviceQualityHeaderuserUpLoadIndexToFile(unsigned int index);
+MyRes writeDeviceQualityToFile(DeviceQuality * DeviceQuality);
+MyRes readDeviceQualityFromFileByPageRequest(PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, Page * page);
+MyRes plusDeviceQualityHeaderUpLoadIndexToFile(unsigned char userIndexPlusNum, unsigned char ncdIndexPlusNum);
 MyRes deleteDeviceQualityFile(void);
 
 #endif

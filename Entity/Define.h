@@ -16,8 +16,8 @@
 #define		UnlockLCDPassWord			"201307\0"								//解锁屏幕一次
 
 /*V1.0.03*/
-#define	GB_SoftVersion	(unsigned short)500
-#define	GB_SoftVersion_Build	"Build17050101\0"
+#define	GB_SoftVersion	(unsigned short)2000
+#define	GB_SoftVersion_Build	"Build17090401\0"
 
 /*服务器信息*/
 #define	NCD_ServerIp_1		116
@@ -85,6 +85,9 @@ typedef struct
 	UINT bw;
 	FRESULT res;
 	FSIZE_t size;
+	unsigned int tempValue1;
+	unsigned short i;
+	unsigned char *tempPoint;
 }FatfsFileInfo_Def; 
 
 #define	MyFileStructSize sizeof(FatfsFileInfo_Def)
@@ -198,10 +201,9 @@ typedef enum
 //读取请求信息
 #pragma pack(1)
 typedef struct PageRequest_tag {
-	unsigned int startElementIndex;											//起始读取索引，0为第一个
-	unsigned int pageSize;													//每页的数目
+	unsigned int pageIndex;											//起始读取索引，0为第一个
+	unsigned char pageSize;													//每页的数目
 	OrderByEnum orderType;													//排序方式
-	unsigned short crc;
 }PageRequest;
 #pragma pack()
 
@@ -214,6 +216,7 @@ typedef struct
 	unsigned int itemSize;
 	unsigned int userUpLoadIndex;
 	unsigned int ncdUpLoadIndex;
+	unsigned char parm[20];								//not used
 	unsigned short crc;
 }DeviceRecordHeader;
 #pragma pack()
@@ -221,7 +224,17 @@ typedef struct
 #define	DeviceRecordHeaderStructSize		sizeof(DeviceRecordHeader)								//最多保存的用户数目
 #define	DeviceRecordHeaderStructCrcSize		DeviceRecordHeaderStructSize - 2						//最多保存的用户数目
 
+#pragma pack(1)
+typedef struct
+{
+	unsigned int totalPageSize;
+	unsigned int totalItemSize;
+	unsigned int readItemSize;
+	void * content[10];
+}Page;
+#pragma pack()
 
+#define	PageStructSize		sizeof(Page)
 
 /**********************************************************************************************************/
 /**********************************************************************************************************/
@@ -247,7 +260,6 @@ typedef struct Point_tag {
 	unsigned short x;
 }Point;
 #pragma pack()
-
 
 #endif
 

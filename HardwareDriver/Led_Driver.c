@@ -38,7 +38,7 @@
 void Led_GPIOInit(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	RCC_AHB1PeriphClockCmd(Led_Rcc, ENABLE); /*使能LED灯使用的GPIO时钟*/
+	RCC_AHB1PeriphClockCmd(Led_Rcc, ENABLE);
 
   	GPIO_InitStructure.GPIO_Pin = Led_Pin; 
   	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;

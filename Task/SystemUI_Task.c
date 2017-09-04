@@ -10,25 +10,30 @@
 /***************************************************************************************************/
 
 #include	"SystemUI_Task.h"
-#include	"LCDInputFun.h"
+#include	"LCD_Driver.h"
+
+#include	"DateTime.h"
 #include	"UI_Data.h"
+#include	"System_Data.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
 
-
+#include	<string.h>
+#include	"stdio.h"
 /***************************************************************************************************/
 /**************************************局部变量声明*************************************************/
 /***************************************************************************************************/
+#define SystemUITask_PRIORITY			2
+const char * SystemUITaskName = "vSystemUITask";
 
-#define SystemUITask_PRIORITY			2			//看门狗任务优先级
-const char * SystemUITaskName = "vSystemUITask";		//看门狗任务名
+static DateTime S_dateTime;
+static char tempBuf[30];
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
-
-static void vSystemUITask( void *pvParameters );	//看门狗任务
-
+static void vSystemUITask( void *pvParameters );
+static void displaySystemDateTime(void);
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************正文********************************************************/
@@ -58,11 +63,28 @@ char StartvSystemUITask(void)
 *Data：2015年8月26日16:58:46
 ***************************************************************************************************/
 static void vSystemUITask( void *pvParameters )
-{	
+{
+	unsigned short cnt = 0;
+	
 	while(1)
 	{
 		activityFreshFunction();
+		
+		if(cnt % 3 == 0)
+			displaySystemDateTime();
+		
+		cnt++;
 
 		vTaskDelay(100 / portTICK_RATE_MS);
 	}
+}
+
+static void displaySystemDateTime(void)
+{
+	getSystemTime(&S_dateTime);
+	
+	snprintf(tempBuf, 30, "       20%02d-%02d-%02d %02d:%02d:%02d", S_dateTime.year, S_dateTime.month, S_dateTime.day,
+		S_dateTime.hour, S_dateTime.min, S_dateTime.sec);
+		
+	DisText(0x1000, tempBuf, 28);
 }

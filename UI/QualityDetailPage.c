@@ -10,14 +10,12 @@
 /***************************************************************************************************/
 #include	"QualityDetailPage.h"
 
-#include	"CardLimit_Driver.h"
 #include	"LCD_Driver.h"
 #include	"Define.h"
 #include	"MyMem.h"
 #include	"CRC16.h"
 #include	"MyTools.h"
 
-#include	"Motor_Fun.h"
 #include	"Quality_Data.h"
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"
@@ -72,7 +70,7 @@ MyRes createQualityDetailActivity(Activity * thizActivity, Intent * pram)
 		InitActivity(thizActivity, QualityDetailRecordActivityName, activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
 		
 		if(pram != NULL)
-			readIntent(pram, &(pageBuffer->deviceQuality), DeviceQualityStructSize);
+			readIntent(pram, &pageBuffer->deviceQuality);
 		
 		return My_Pass;
 	}

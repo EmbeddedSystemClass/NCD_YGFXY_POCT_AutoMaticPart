@@ -3,7 +3,7 @@
 #define	_RX8025_D_H_H
 
 #include	"stm32f4xx_gpio.h"
-
+#include	"stm32f4xx_rcc.h"
 #include	"Define.h"
 #include	"DateTime.h"
 

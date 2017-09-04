@@ -2,7 +2,9 @@
 #ifndef	MOTOR2_F_H
 #define MOTOR2_F_H
 
-void motor2MoveTo(unsigned short location, unsigned short waitTime);
+#include	"Motor_Data.h"
+
+void motor2MoveTo(unsigned short location, bool isWait);
 
 #endif
 

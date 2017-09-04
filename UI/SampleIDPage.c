@@ -145,7 +145,8 @@ static void activityFresh(void)
 	if(ReadBarCodeFunction((char *)(S_SampleIDPage->tempbuf), 100) > 0)
 	{
 		memcpy(S_SampleIDPage->currenttestdata->testData.sampleid, S_SampleIDPage->tempbuf, MaxSampleIDLen);
-		RefreshSampleID();
+
+		startActivity(createWaittingCardActivity, NULL, NULL);
 	}
 }
 

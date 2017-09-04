@@ -43,8 +43,8 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 		.itemName = "cTnI\0",
 		.itemCode = "cTnI\0",
 		.icoIndex = 2,
-		.pointNum = 2,
-		.lowstResult = 0.1,
+		.pointNum = 3,
+		.lowstResult = 0.001,
 		.highestResult = 30,
 		.normalResult = {"<=0.3 ng/mL\0"},
 		.itemMeasure = {"ng/mL\0"}

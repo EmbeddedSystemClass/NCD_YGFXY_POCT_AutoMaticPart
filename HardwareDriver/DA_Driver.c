@@ -51,7 +51,7 @@ void DA_GPIOInit(void)
 	DAC_InitType.DAC_Trigger = DAC_Trigger_None;
 	DAC_InitType.DAC_WaveGeneration = DAC_WaveGeneration_None;
 	DAC_InitType.DAC_LFSRUnmask_TriangleAmplitude = DAC_LFSRUnmask_Bit0;
-	DAC_InitType.DAC_OutputBuffer = DAC_OutputBuffer_Disable;
+	DAC_InitType.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
 	DAC_Init(DA_Led_Channel, &DAC_InitType);
 	DAC_Init(DA_Line_Channel, &DAC_InitType);
 
@@ -75,10 +75,13 @@ void SetLedVol(unsigned short volNum)
 {
 	float temp = volNum;
 
-	temp *= 4096.2f;
-	temp /= 3300.1f;
+	if(temp > 1500)
+		temp = 1500;
 	
-	DAC_SetChannel1Data(DAC_Align_8b_R, temp);
+	temp /= 3300.0f;
+	temp *= 4095.0f;
+
+	DAC_SetChannel1Data(DAC_Align_12b_R, temp);
 }
 
 /***************************************************************************************************
@@ -94,9 +97,9 @@ void SetLineVol(unsigned short volNum)
 {
 	float temp = volNum;
 
-	temp *= 4096.2f;
-	temp /= 3300.1f;
-	
+	temp /= 3300.0f;
+	temp *= 4095.0f;
+
 	DAC_SetChannel2Data(DAC_Align_12b_R, temp);
 }
 /****************************************end of file************************************************/

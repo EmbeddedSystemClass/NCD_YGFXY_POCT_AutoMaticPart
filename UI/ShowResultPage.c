@@ -11,7 +11,6 @@
 #include	"MyTest_Data.h"
 #include	"System_Data.h"
 #include	"Define.h"
-#include	"SDFunction.h"
 #include	"Printf_Fun.h"
 #include	"RecordPage.h"
 #include	"SleepPage.h"
@@ -69,7 +68,7 @@ MyRes createShowResultActivity(Activity * thizActivity, Intent * pram)
 		//如果传入参数，
 		if(pram)
 		{
-			readIntent(pram, &(S_ShowPageBuffer->testdata), sizeof(TestData));
+			readIntent(pram, &S_ShowPageBuffer->testdata);
 		}
 		
 		return My_Pass;
@@ -89,15 +88,11 @@ MyRes createShowResultActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_ShowPageBuffer)
-	{
-
-		RefreshText();
+	RefreshText();
 			
-		DspLine();
+	DspLine();
 			
-		dspIco();
-	}
+	dspIco();
 	
 	SelectPage(147);
 }
@@ -145,10 +140,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(S_ShowPageBuffer)
-	{
 
-	}
 }
 
 /***************************************************************************************************
@@ -176,11 +168,6 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	if(S_ShowPageBuffer)
-	{
-
-	}
-	
 	SelectPage(147);
 }
 
@@ -243,43 +230,39 @@ static void activityBufferFree(void)
 
 static void RefreshText(void)
 {
-	if(S_ShowPageBuffer)
-	{
-		sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.qrCode.ItemName);
-		DisText(0x2310, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
+	sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.qrCode.ItemName);
+	DisText(0x2310, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
+
+	sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.sampleid);
+	DisText(0x2320, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
 				
-		sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.sampleid);
-		DisText(0x2320, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
-				
-		sprintf(S_ShowPageBuffer->tempbuf, "%2.1f ℃\0", S_ShowPageBuffer->testdata.temperature.O_Temperature);
-		DisText(0x2330, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
+	sprintf(S_ShowPageBuffer->tempbuf, "%2.1f ℃\0", S_ShowPageBuffer->testdata.temperature.O_Temperature);
+	DisText(0x2330, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
 		
-		sprintf(S_ShowPageBuffer->tempbuf, "%s-%s\0", S_ShowPageBuffer->testdata.qrCode.PiHao,
-			S_ShowPageBuffer->testdata.qrCode.piNum);
-		DisText(0x2340, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
+	sprintf(S_ShowPageBuffer->tempbuf, "%s-%s\0", S_ShowPageBuffer->testdata.qrCode.PiHao,
+		S_ShowPageBuffer->testdata.qrCode.piNum);
+	DisText(0x2340, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
 		
-		if(S_ShowPageBuffer->testdata.testResultDesc != ResultIsOK)
-			sprintf(S_ShowPageBuffer->tempbuf, "Error\0");
-		else if(IsShowRealValue() == true)
-			sprintf(S_ShowPageBuffer->tempbuf, "%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum,
-				S_ShowPageBuffer->testdata.testSeries.AdjustResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
-		else if(S_ShowPageBuffer->testdata.testSeries.AdjustResult <= S_ShowPageBuffer->testdata.qrCode.itemConstData.lowstResult)
-			sprintf(S_ShowPageBuffer->tempbuf, "<%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
-				S_ShowPageBuffer->testdata.qrCode.itemConstData.lowstResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
-		else if(S_ShowPageBuffer->testdata.testSeries.AdjustResult >= S_ShowPageBuffer->testdata.qrCode.itemConstData.highestResult)
-			sprintf(S_ShowPageBuffer->tempbuf, ">%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
-				S_ShowPageBuffer->testdata.qrCode.itemConstData.highestResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
-		else
-			sprintf(S_ShowPageBuffer->tempbuf, "%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
-				S_ShowPageBuffer->testdata.testSeries.AdjustResult,S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
+	if(S_ShowPageBuffer->testdata.testResultDesc != ResultIsOK)
+		sprintf(S_ShowPageBuffer->tempbuf, "Error\0");
+	else if(IsShowRealValue() == true)
+		sprintf(S_ShowPageBuffer->tempbuf, "%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum,
+			S_ShowPageBuffer->testdata.testSeries.BasicResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
+	else if(S_ShowPageBuffer->testdata.testSeries.BasicResult <= S_ShowPageBuffer->testdata.qrCode.itemConstData.lowstResult)
+		sprintf(S_ShowPageBuffer->tempbuf, "<%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
+			S_ShowPageBuffer->testdata.qrCode.itemConstData.lowstResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
+	else if(S_ShowPageBuffer->testdata.testSeries.BasicResult >= S_ShowPageBuffer->testdata.qrCode.itemConstData.highestResult)
+		sprintf(S_ShowPageBuffer->tempbuf, ">%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
+			S_ShowPageBuffer->testdata.qrCode.itemConstData.highestResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
+	else
+		sprintf(S_ShowPageBuffer->tempbuf, "%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
+			S_ShowPageBuffer->testdata.testSeries.BasicResult,S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
 
-		DisText(0x2338, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
+	DisText(0x2338, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
 		
-		sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.normalResult);
+	sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.normalResult);
 
-		DisText(0x2350, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
-
-	}
+	DisText(0x2350, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
 }
 
 static void DspLine(void)
@@ -338,8 +321,8 @@ static void dspIco(void)
 	{
 		//在曲线上标记出T,C,基线
 		S_ShowPageBuffer->myico[0].ICO_ID = 22;
-		S_ShowPageBuffer->myico[0].X = 574+S_ShowPageBuffer->testdata.testSeries.T_Point[1]-12;
-		tempvalue = S_ShowPageBuffer->testdata.testSeries.T_Point[0];
+		S_ShowPageBuffer->myico[0].X = 574+S_ShowPageBuffer->testdata.testSeries.T_Point.x-12;
+		tempvalue = S_ShowPageBuffer->testdata.testSeries.T_Point.y;
 		tempvalue /= S_ShowPageBuffer->lineinfo.Y_Scale*2;
 		tempvalue = 1-tempvalue;
 		tempvalue *= 302;										//曲线窗口宽度
@@ -347,8 +330,8 @@ static void dspIco(void)
 		S_ShowPageBuffer->myico[0].Y = (unsigned short)tempvalue - 11;
 		
 		S_ShowPageBuffer->myico[1].ICO_ID = 22;
-		S_ShowPageBuffer->myico[1].X = 574+S_ShowPageBuffer->testdata.testSeries.C_Point[1]-12;
-		tempvalue = S_ShowPageBuffer->testdata.testSeries.C_Point[0];
+		S_ShowPageBuffer->myico[1].X = 574+S_ShowPageBuffer->testdata.testSeries.C_Point.x-12;
+		tempvalue = S_ShowPageBuffer->testdata.testSeries.C_Point.y;
 		tempvalue /= S_ShowPageBuffer->lineinfo.Y_Scale*2;
 		tempvalue = 1-tempvalue;
 		tempvalue *= 302;										//曲线窗口宽度
@@ -356,8 +339,8 @@ static void dspIco(void)
 		S_ShowPageBuffer->myico[1].Y = (unsigned short)tempvalue - 11;
 		
 		S_ShowPageBuffer->myico[2].ICO_ID = 22;
-		S_ShowPageBuffer->myico[2].X = 574+S_ShowPageBuffer->testdata.testSeries.B_Point[1]-12;
-		tempvalue = S_ShowPageBuffer->testdata.testSeries.B_Point[0];
+		S_ShowPageBuffer->myico[2].X = 574+S_ShowPageBuffer->testdata.testSeries.B_Point.x-12;
+		tempvalue = S_ShowPageBuffer->testdata.testSeries.B_Point.y;
 		tempvalue /= S_ShowPageBuffer->lineinfo.Y_Scale*2;
 		tempvalue = 1-tempvalue;
 		tempvalue *= 302;										//曲线窗口宽度

@@ -127,15 +127,98 @@ MyRes writeRecordDataToFile(const char * fileName, void * recordData, unsigned i
 *Author:  xsx
 *Date: 2017年7月3日 16:14:55
 ***************************************************************************************************/
-MyRes readRecordDataFromFile(const char * fileName, PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, 
-	void * recordData1, void * recordData2, unsigned short recordItemSize)
+MyRes readRecordDataFromFileByPageRequest(const char * fileName, PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, 
+	Page * page, unsigned short ItemByteSize)
 {
 	FatfsFileInfo_Def * myfile = NULL;
 	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(MyFileStructSize);
 
-	if(myfile && fileName && deviceRecordHeader)
+	if(myfile && fileName && pageRequest && deviceRecordHeader && page)
+	{
+		memset(myfile, 0, MyFileStructSize);
+		memset(deviceRecordHeader, 0, DeviceRecordHeaderStructSize);
+		page->totalPageSize = 0;
+		page->totalItemSize = 0;
+		page->readItemSize = 0;
+		
+		myfile->res = f_open(&(myfile->file), fileName, FA_READ);
+		
+		if(FR_OK == myfile->res)
+		{
+			myfile->size = f_size(&(myfile->file));
+			
+			f_lseek(&(myfile->file), 0);
+			
+			//读取数据头
+			myfile->res = f_read(&(myfile->file), deviceRecordHeader, DeviceRecordHeaderStructSize, &(myfile->br));
+			if(deviceRecordHeader->crc != CalModbusCRC16Fun(deviceRecordHeader, DeviceRecordHeaderStructCrcSize, NULL))
+				goto Finally;
+			else
+			{
+				page->totalItemSize = deviceRecordHeader->itemSize;
+				page->totalPageSize = ((page->totalItemSize % pageRequest->pageSize) == 0) ? (page->totalItemSize / pageRequest->pageSize)
+					: ((page->totalItemSize / pageRequest->pageSize)+1);
+				
+				if(pageRequest->pageIndex < page->totalPageSize)
+				{
+					
+					myfile->tempValue1 = pageRequest->pageIndex;
+					myfile->tempValue1 *= pageRequest->pageSize;
+					
+					//可读数据数目为0
+					if(myfile->tempValue1 >= page->totalItemSize)
+						goto Finally;
+					else if(pageRequest->pageSize > (page->totalItemSize - myfile->tempValue1))
+						page->readItemSize = page->totalItemSize - myfile->tempValue1;
+					else
+						page->readItemSize = pageRequest->pageSize;
+					
+					if(pageRequest->orderType == ASC)
+					{
+						myfile->tempValue1 += page->readItemSize;
+						myfile->tempValue1 = page->totalItemSize - myfile->tempValue1;
+					}
+
+					myfile->tempValue1 *= ItemByteSize;
+					myfile->tempValue1 += DeviceRecordHeaderStructSize;
+					
+					myfile->res = f_lseek(&(myfile->file), myfile->tempValue1);
+					for(myfile->i=0; myfile->i<page->readItemSize; myfile->i++)
+					{
+						if(pageRequest->orderType == ASC)
+							myfile->tempPoint = page->content[page->readItemSize - myfile->i - 1];
+						else
+							myfile->tempPoint = page->content[myfile->i];
+						myfile->res = f_read(&(myfile->file), myfile->tempPoint, ItemByteSize, &(myfile->br));
+						
+						if(myfile->res != FR_OK)
+							break;
+					}
+				}
+			}
+			
+			statues = My_Pass;
+			
+			Finally:
+				f_close(&(myfile->file));
+		}
+	}
+	MyFree(myfile);
+	
+	return statues;
+}
+/*
+MyRes readRecordDataFromFileByIndex(const char * fileName, PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, 
+	Page * page)
+{
+	FatfsFileInfo_Def * myfile = NULL;
+	MyRes statues = My_Fail;
+	
+	myfile = MyMalloc(MyFileStructSize);
+
+	if(myfile && fileName && pageRequest && deviceRecordHeader && page)
 	{
 		memset(myfile, 0, MyFileStructSize);
 		memset(deviceRecordHeader, 0, DeviceRecordHeaderStructSize);
@@ -196,7 +279,7 @@ MyRes readRecordDataFromFile(const char * fileName, PageRequest * pageRequest, D
 	
 	return statues;
 }
-
+*/
 /***************************************************************************************************
 *FunctionName:  plusRecordDataHeaderUpLoadIndexToFile
 *Description:  增加上传索引：在原数据上加上一个数字

@@ -19,7 +19,8 @@
 const char * CodeScanTaskName = "vCodeScanTask";
 
 static xQueueHandle xStartScanQueue = NULL ;			//扫描二维码数据空间地址的队列，如果接受到空间地址则启动扫描二维码任务
-static QRCode * cardQR;							//扫描二维码数据空间地址
+static xQueueHandle xScanResultQueue = NULL;			//发送扫描结果队列
+static QRCode * cardQR;									//扫描二维码数据空间地址
 static ScanCodeResult scanResult;						//扫码二维码的结果
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
@@ -47,7 +48,9 @@ char StartCodeScanTask(void)
 {
 	xStartScanQueue = xQueueCreate(1, sizeof(void *));
 	
-	return xTaskCreate( vCodeScanTask, CodeScanTaskName, configMINIMAL_STACK_SIZE+100, NULL, vCodeScanTask_PRIORITY, NULL );
+	xScanResultQueue = xQueueCreate(1, sizeof(ScanCodeResult));
+	
+	return xTaskCreate( vCodeScanTask, CodeScanTaskName, configMINIMAL_STACK_SIZE*2, NULL, vCodeScanTask_PRIORITY, NULL );
 }
 
 /************************************************************************
@@ -65,10 +68,10 @@ static void vCodeScanTask( void *pvParameters )
 	while(1)
 	{
 		if(pdPASS == xQueueReceive( xStartScanQueue, &cardQR, portMAX_DELAY))
-		{			
+		{	
 			scanResult = ScanCodeFun(cardQR);										//读取二维码
-			
-			vTaskDelay(10 / portTICK_RATE_MS);
+
+			xQueueSend( xScanResultQueue, &scanResult, 100/portTICK_RATE_MS );
 		}
 	}
 }
@@ -76,7 +79,7 @@ static void vCodeScanTask( void *pvParameters )
 
 MyRes StartScanQRCode(QRCode * parm)
 {
-	scanResult = CardCodeScanning;
+	while((pdPASS == xQueueReceive( xScanResultQueue, &scanResult,  10/portTICK_RATE_MS)));
 	
 	if(pdPASS == xQueueSend( xStartScanQueue, &parm, 10*portTICK_RATE_MS))
 		return My_Pass;
@@ -84,8 +87,11 @@ MyRes StartScanQRCode(QRCode * parm)
 		return My_Fail;	
 }
 
-ScanCodeResult getScanResult(void)
+MyRes TakeScanQRCodeResult(ScanCodeResult *scanresult)
 {
-	return scanResult;
+	if(pdPASS == xQueueReceive( xScanResultQueue, scanresult,  0/portTICK_RATE_MS))
+		return My_Pass;
+	else
+		return My_Fail;
 }
 

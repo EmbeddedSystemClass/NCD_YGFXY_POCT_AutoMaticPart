@@ -6,8 +6,8 @@
 #include	"DeviceAdjust.h"
 
 MyRes writeDeviceAdjustToFile(DeviceAdjust * deviceAdjust);
-MyRes readDeviceAdjustFromFile(DeviceAdjustReadPackge * deviceAdjustReadPackge);
-MyRes plusDeviceAdjustHeaderuserUpLoadIndexToFile(unsigned int index);
+MyRes readDeviceAdjustFromFileByPageRequest(PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, Page * page);
+MyRes plusDeviceAdjustHeaderUpLoadIndexToFile(unsigned char userIndexPlusNum, unsigned char ncdIndexPlusNum);
 MyRes deleteDeviceAdjustFile(void);
 
 #endif

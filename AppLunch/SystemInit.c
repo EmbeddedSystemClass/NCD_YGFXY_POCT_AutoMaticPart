@@ -29,6 +29,7 @@
 #include	"Ads8325_Driver.h"
 #include	"Channel_Driver.h"
 #include	"LedCheck_Driver.h"
+#include	"RX8025_Driver.h"
 
 #include	"Delay.h"
 /***************************************************************************************************/
@@ -109,10 +110,13 @@ void MySystemBSPInit(void)
 	
 	LedCheck_GPIO_Init();
 	delay_ms(1);
+	
+	RTC_BSPInit();
+	delay_ms(1);
 
 	Timer3_Init();						//定时器初始化
 	delay_ms(1);
-	
-	IWDG_Init(3, 3000);					//看门狗初始化,超时时间2S
+
+//	IWDG_Init(3, 3000);					//看门狗初始化,超时时间2S
 	delay_ms(500);
 }

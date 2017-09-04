@@ -17,6 +17,9 @@
 #include	"Test_Task.h"
 #include	"LunchPage.h"
 #include	"Printf_Fun.h"
+#include	"Motor1_Fun.h"
+#include	"Motor2_Fun.h"
+#include	"Motor4_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -90,6 +93,8 @@ static void activityStart(void)
 {
 	/*获取当前测试数据的地址*/
 	S_TestPageBuffer->currenttestdata = GetCurrentTestItem();
+	S_TestPageBuffer->canExit = false;
+	S_TestPageBuffer->motorAction.motorActionName = OutOutCard;
 		
 	InitCurve();
 		
@@ -113,45 +118,26 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_TestPageBuffer)
-	{
-		/*命令*/
-		S_TestPageBuffer->lcdinput[0] = pbuf[4];
-		S_TestPageBuffer->lcdinput[0] = (S_TestPageBuffer->lcdinput[0]<<8) + pbuf[5];
+	S_TestPageBuffer->lcdinput[0] = pbuf[4];
+	S_TestPageBuffer->lcdinput[0] = (S_TestPageBuffer->lcdinput[0]<<8) + pbuf[5];
 		
-		/*退出*/
-		if(0x1801 == S_TestPageBuffer->lcdinput[0])
-		{
-			if(S_TestPageBuffer->currenttestdata)
-			{
-				if(S_TestPageBuffer->currenttestdata->testData.testResultDesc != NoResult)
-				{
-					DeleteCurrentTest();
-					S_TestPageBuffer->currenttestdata = NULL;
-										
-					backToActivity(lunchActivityName);
+	/*退出*/
+	if(0x1801 == S_TestPageBuffer->lcdinput[0])
+	{
+		if(S_TestPageBuffer->canExit)
+		{							
+			backToActivity(lunchActivityName);
 					
-					if(IsPaiDuiTestting())
-						startActivity(createPaiDuiActivity, NULL, NULL);					
-				}
-				//正在测试不允许退出
-				else
-					SendKeyCode(4);
-			}
-			else
-			{
-				backToActivity(lunchActivityName);
-				
-				if(IsPaiDuiTestting())
-					startActivity(createPaiDuiActivity, NULL, NULL);
-			}
+			if(IsPaiDuiTestting())
+				startActivity(createPaiDuiActivity, NULL, NULL);
 		}
-		/*打印数据*/
-		else if(0x1800 == S_TestPageBuffer->lcdinput[0])
-		{
-			printfTestData();
-		}
+		//正在测试不允许退出
+		else
+			SendKeyCode(4);
 	}
+	/*打印数据*/
+	else if(0x1800 == S_TestPageBuffer->lcdinput[0])
+		printfTestData();
 }
 
 /***************************************************************************************************
@@ -165,11 +151,20 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(S_TestPageBuffer->currenttestdata && (S_TestPageBuffer->currenttestdata->testData.testResultDesc == NoResult))
+	if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == NoResult)
 		RefreshCurve();
-	else
+	else if(isMotorActionOver())
 	{
+		S_TestPageBuffer->canExit = true;
+		DeleteCurrentTest();
+		S_TestPageBuffer->currenttestdata = NULL;
+	}
+	
+	if(S_TestPageBuffer->canExit && S_TestPageBuffer->isPrintfData == false && IsPaiDuiTestting())
+	{
+		backToActivity(lunchActivityName);
 
+		startActivity(createPaiDuiActivity, NULL, NULL);
 	}
 }
 
@@ -317,6 +312,8 @@ static void RefreshCurve(void)
 	 
 	if(My_Pass == TakeTestResult(&(S_TestPageBuffer->currenttestdata->testData.testResultDesc)))
 	{
+		StartMotorAction(&S_TestPageBuffer->motorAction);
+		
 		memcpy(&(S_TestPageBuffer->currenttestdata->testData.testDateTime), &(getSystemRunTimeData()->systemDateTime), sizeof(DateTime));
 
 		//保留一份数据给打印机打印
@@ -329,7 +326,7 @@ static void RefreshCurve(void)
 		
 		if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == ResultIsOK)
 		{
-			if((S_TestPageBuffer->systemSetData.isAutoPrint == true) && (S_TestPageBuffer->isPrintfData == 0))
+			if((S_TestPageBuffer->systemSetData.isAutoPrint == true) && (S_TestPageBuffer->isPrintfData == false))
 				printfTestData();
 		}
 		else if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == PeakError)
@@ -354,16 +351,16 @@ static void RefreshPageText(void)
 			sprintf(S_TestPageBuffer->buf, "Error\0");
 		else if(IsShowRealValue() == true)
 			sprintf(S_TestPageBuffer->buf, "%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum,
-				S_TestPageBuffer->currenttestdata->testData.testSeries.AdjustResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
-		else if(S_TestPageBuffer->currenttestdata->testData.testSeries.AdjustResult <= S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.lowstResult)
+				S_TestPageBuffer->currenttestdata->testData.testSeries.BasicResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
+		else if(S_TestPageBuffer->currenttestdata->testData.testSeries.BasicResult <= S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.lowstResult)
 			sprintf(S_TestPageBuffer->buf, "<%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum, 
 				S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.lowstResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
-		else if(S_TestPageBuffer->currenttestdata->testData.testSeries.AdjustResult >= S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.highestResult)
+		else if(S_TestPageBuffer->currenttestdata->testData.testSeries.BasicResult >= S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.highestResult)
 			sprintf(S_TestPageBuffer->buf, ">%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum, 
 				S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.highestResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
 		else
 			sprintf(S_TestPageBuffer->buf, "%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum, 
-				S_TestPageBuffer->currenttestdata->testData.testSeries.AdjustResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
+				S_TestPageBuffer->currenttestdata->testData.testSeries.BasicResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
 		
 		DisText(0x1838, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);
 	}
@@ -457,13 +454,13 @@ static void printfTestData(void)
 {
 	if(S_TestPageBuffer->testDataForPrintf.testResultDesc != NoResult)
 	{
-		if(S_TestPageBuffer->isPrintfData == 0)
+		if(S_TestPageBuffer->isPrintfData == false)
 		{
-			S_TestPageBuffer->isPrintfData = 1;
+			S_TestPageBuffer->isPrintfData = true;
 			SendKeyCode(6);
 			PrintfData(&(S_TestPageBuffer->testDataForPrintf));
 			SendKeyCode(16);
-			S_TestPageBuffer->isPrintfData = 0;
+			S_TestPageBuffer->isPrintfData = false;
 		}
 	}
 	else

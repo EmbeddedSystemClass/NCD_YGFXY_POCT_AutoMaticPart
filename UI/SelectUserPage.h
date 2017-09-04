@@ -11,7 +11,7 @@
 typedef struct UserPage_tag {
 	Device device;													//设备信息
 	Operator * tempOperator;										//临时指针
-	PaiduiUnitData * currentTestDataBuffer;							//当前测试数据地址
+	Operator * targetOperator;										//选择操作人后目标缓存
 	unsigned short lcdinput[100];									//lcd输入解析
 	char tempBuf[20];
 	unsigned short tempV1;

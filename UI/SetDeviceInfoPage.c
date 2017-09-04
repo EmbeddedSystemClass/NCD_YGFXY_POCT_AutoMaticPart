@@ -75,7 +75,7 @@ static void activityStart(void)
 {
 	page->myDeviceLock = getMyDeviceLock();
 	page->isLocked = false;
-	timer_set(&(page->timer), 1);
+	timer_SetAndStart(&page->timer, 1);
 	
 	clearDeviceInfoText();
 	
@@ -177,7 +177,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(TimeOut == timer_expired(&(page->timer)))
+	if(TimerOut == timer_expired(&page->timer))
 	{
 		//先给设备信息文件上锁，防止其他线程修改数据
 		if((page->isLocked == false) && (My_Pass == LockObject(page->myDeviceLock, &page, 1)))
@@ -290,22 +290,22 @@ static void showDeviceInfoText(void)
 	snprintf(page->tempBuf, 50, "%s", page->device.operator.name);
 	DisText(0x1b10, page->tempBuf, strlen(page->tempBuf)+1);
 
-	snprintf(page->tempBuf, 50, "%s\0", page->device.operator.age);
+	snprintf(page->tempBuf, 5, "%s", page->device.operator.age);
 	DisText(0x1b20, page->tempBuf, strlen(page->tempBuf)+1);
 
-	snprintf(page->tempBuf, 50, "%s\0", page->device.operator.sex);
+	snprintf(page->tempBuf, 6, "%s", page->device.operator.sex);
 	DisText(0x1b30, page->tempBuf, strlen(page->tempBuf)+1);
 
-	snprintf(page->tempBuf, 50, "%s\0", page->device.operator.phone);
+	snprintf(page->tempBuf, 15, "%s", page->device.operator.phone);
 	DisText(0x1b40, page->tempBuf, strlen(page->tempBuf)+1);
 	
-	snprintf(page->tempBuf, 50, "%s\0", page->device.operator.job);
+	snprintf(page->tempBuf, 20, "%s", page->device.operator.job);
 	DisText(0x1b50, page->tempBuf, strlen(page->tempBuf)+1);
 
-	snprintf(page->tempBuf, 50, "%s\0", page->device.operator.department);
+	snprintf(page->tempBuf, 50, "%s", page->device.operator.department);
 	DisText(0x1b60, page->tempBuf, strlen(page->tempBuf)+1);
 	
-	snprintf(page->tempBuf, 100, "%s-%s", page->device.department, page->device.addr);
+	snprintf(page->tempBuf, 100, "%s", page->device.addr);
 	DisText(0x1b70, page->tempBuf, strlen(page->tempBuf)+1);
 }
 

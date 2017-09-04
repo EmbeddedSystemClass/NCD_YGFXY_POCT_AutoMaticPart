@@ -3,9 +3,8 @@
 #define MOTOR4_F_H
 
 #include	"Motor_Data.h"
-#include	"Motor.h"
 
-void motor4MoveTo(unsigned short location, unsigned short waitTime);
+void motor4MoveTo(unsigned short location, bool isWait);
 #endif
 
 /****************************************end of file************************************************/

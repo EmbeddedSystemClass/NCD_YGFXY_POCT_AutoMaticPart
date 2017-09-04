@@ -6,8 +6,8 @@
 #include	"DeviceError.h"
 
 MyRes writeDeviceErrorToFile(DeviceError * deviceError);
-MyRes readDeviceErrorFromFile(DeviceErrorReadPackge * deviceErrorReadPackge);
-MyRes plusDeviceErrorHeaderuserUpLoadIndexToFile(unsigned int index);
+MyRes readDeviceErrorFromFileByPageRequest(PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, Page * page);
+MyRes plusDeviceErrorHeaderUpLoadIndexToFile(unsigned char userIndexPlusNum, unsigned char ncdIndexPlusNum);
 MyRes deleteDeviceErrorFile(void);
 
 #endif

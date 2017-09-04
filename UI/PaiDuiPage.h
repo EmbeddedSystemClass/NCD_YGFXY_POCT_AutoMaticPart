@@ -4,6 +4,7 @@
 #include	"Define.h"
 #include	"MyTest_Data.h"
 #include	"UI_Data.h"
+#include	"Motor_Task.h"
 
 typedef struct PaiDuiPageBuffer_tag {
 	TestData tempd;
@@ -23,6 +24,7 @@ typedef struct PaiDuiPageBuffer_tag {
 	unsigned char step;												//¥¥Ω®≤Ω÷Ë
 	unsigned int count;
 	bool pageisbusy;
+	MotorAction motorAction;
 }PaiDuiPageBuffer;
 
 

@@ -10,15 +10,6 @@ typedef enum
 	Link_Up = 1
 }LinkStatus;
 
-
-
-/*ip获取方式*/
-typedef enum
-{
-	Dynamic_IP = 1,														//自动获取动态ip
-	Static_IP = 2														//用户设置ip
-}IPMode;
-
 #pragma pack(1)
 typedef struct ip_Tag
 {
@@ -42,7 +33,7 @@ typedef struct
 typedef struct
 {
 	IP staticIP;														//静态IP
-	IPMode ipMode;														//ip获取方式
+	bool isStaticIp;													//ip获取方式
 }WireNetSet; 
 #pragma pack()
 

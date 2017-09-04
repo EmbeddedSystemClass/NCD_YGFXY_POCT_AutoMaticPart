@@ -124,7 +124,7 @@ static void low_level_init(struct netif *netif)
   netif->hwaddr[4] =  (i>>8)&0xff;
   netif->hwaddr[5] =  i&0xff;
 
-	//setSystemWireMac(netif->hwaddr);
+	setSystemWireMac(netif->hwaddr);
   /* set netif maximum transfer unit */
   netif->mtu = 1500;
 

@@ -6,19 +6,13 @@
 #include	"LCD_Driver.h"
 #include	"Define.h"
 #include	"MyMem.h"
-#include	"Usart2_Driver.h"
-#include	"Motor1_Fun.h"
-#include	"Motor2_Fun.h"
-#include	"Motor4_Fun.h"
 
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"
 #include	"SampleIDPage.h"
 #include	"PaiDuiPage.h"
-
-
-
-#include	"QueueUnits.h"
+#include	"RecordPage.h"
+#include	"SleepPage.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -85,7 +79,7 @@ MyRes createLunchActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	timer_SetAndStart(&page->timer, 2);//getGBSystemSetData()->ledSleepTime);
+	timer_SetAndStart(&page->timer, getGBSystemSetData()->ledSleepTime);
 	
 	SelectPage(82);
 	
@@ -119,7 +113,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//查看数据
 	else if(page->lcdinput[0] == 0x1102)
 	{
-		//startActivity(createRecordActivity, NULL, NULL);
+		startActivity(createRecordActivity, NULL, NULL);
 	}
 	//常规测试
 	else if(page->lcdinput[0] == 0x1100)
@@ -130,13 +124,13 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	else if(page->lcdinput[0] == 0x1101)
 	{
 		page->error = CreateANewTest(&page->currentTestDataBuffer);
-		page->step = 0;
 		//创建成功
 		if(Error_OK == page->error)
 		{
-			page->step = 1;
-			motor4MoveTo(Motor4_OpenLocation, 1);
-			//startActivity(createSelectUserActivity, NULL, createSampleActivity);
+			page->tempOperator = &page->currentTestDataBuffer->testData.operator;
+			page->motorAction.motorActionName = WaitPutInCard;
+			page->motorAction.motorActionParm = page->currentTestDataBuffer->testlocation;
+			StartMotorAction(&page->motorAction);
 		}
 		//创建失败
 		else if(Error_PaiduiFull == page->error)
@@ -145,7 +139,6 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		{
 			SendKeyCode(2);
 		}
-		
 	}
 }
 
@@ -160,36 +153,12 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if((page->step == 1) && (Motor4_OpenLocation == getMotorxLocation(Motor_4)))
-	{
-		motor2MoveTo(Motor2_MidLocation, 1);
-		page->step = 2;
-	}
-	
-	if((page->step == 2) && (Motor2_MidLocation == getMotorxLocation(Motor_2)))
-	{
-		page->step = 3;
-		motor1MoveToNum(page->currentTestDataBuffer->testlocation, 1);
-	}
-	
-	if((page->step == 3) && (page->currentTestDataBuffer->testlocation == getMotorxLocation(Motor_1)))
-	{
-		page->step = 4;
-		motor2MoveTo(Motor2_WaitCardLocation, 1);
-	}
-		
-	if((page->step == 4) && (Motor2_WaitCardLocation == getMotorxLocation(Motor_2)))
-	{
-		page->step = 0;
-		startActivity(createSelectUserActivity, NULL, createSampleActivity);
-	}
+	if(isMotorActionOver())
+		startActivity(createSelectUserActivity, createIntent(&(page->tempOperator), 4), createSampleActivity);
 	
 	if(TimerOut == timer_expired(&(page->timer)))
 	{
-		SendDataToQueue(GetUsart6TXQueue(), NULL, page->buf, 100, 1, 100/portTICK_RATE_MS, 0, EnableUsart6TXInterrupt);
-		SendDataToQueue(GetUsart6TXQueue(), NULL, page->buf, 100, 1, 100/portTICK_RATE_MS, 0, EnableUsart6TXInterrupt);
-		SendDataToQueue(GetUsart6TXQueue(), NULL, page->buf, 100, 1, 100/portTICK_RATE_MS, 0, EnableUsart6TXInterrupt);
-		timer_restart(&(page->timer));
+		startActivity(createSleepActivity, NULL, NULL);
 	}
 }
 
@@ -292,12 +261,7 @@ static void activityBufferFree(void)
 ***************************************************************************************************/
 static void DspPageText(void)
 {
-	unsigned char i=0;
-	for(i=0; i<100; i++)
-		page->buf[i] = 0x11;
-	//sprintf(page->buf, "V%d.%d.%02d", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100);
-	
-	//for(i=0; i<40; i++)
-	//	DisText(0x1110, page->buf, 50);
+	sprintf(page->buf, "V%d.%d.%02d", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100);
+	DisText(0x1110, page->buf, strlen(page->buf)+1);
 }
 

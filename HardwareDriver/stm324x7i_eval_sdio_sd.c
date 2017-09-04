@@ -415,9 +415,11 @@ SD_Error SD_Init(void)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_Init(&NVIC_InitStructure);
   /* SDIO Peripheral Low Level Init */
-   SD_LowLevel_Init();
+   SDIO_DeInit();
+	
+	SD_LowLevel_Init();
   
-  SDIO_DeInit();
+//  
 
   errorstatus = SD_PowerON();
 
@@ -538,6 +540,7 @@ SD_Error SD_PowerON(void)
   __IO SD_Error errorstatus = SD_OK;
   uint32_t response = 0, count = 0, validvoltage = 0;
   uint32_t SDType = SD_STD_CAPACITY;
+	unsigned char i=0;
 
   /*!< Power ON Sequence -----------------------------------------------------*/
   /*!< Configure the SDIO peripheral */
@@ -565,9 +568,15 @@ SD_Error SD_PowerON(void)
   SDIO_CmdInitStructure.SDIO_Response = SDIO_Response_No;
   SDIO_CmdInitStructure.SDIO_Wait = SDIO_Wait_No;
   SDIO_CmdInitStructure.SDIO_CPSM = SDIO_CPSM_Enable;
-  SDIO_SendCommand(&SDIO_CmdInitStructure);
-
-  errorstatus = CmdError();
+ // SDIO_SendCommand(&SDIO_CmdInitStructure);
+	
+//  errorstatus = CmdError();
+  
+	for(i=0; i < 74; i++)
+	{
+		SDIO_SendCommand(&SDIO_CmdInitStructure);
+		errorstatus = CmdError();
+	}
 
   if (errorstatus != SD_OK)
   {

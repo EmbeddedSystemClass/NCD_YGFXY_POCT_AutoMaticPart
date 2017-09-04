@@ -35,7 +35,6 @@ static void activityBufferFree(void);
 
 static void SetGB_Time(char *buf, unsigned char len);
 static void showPrintfIco(void);
-static void showMuteIco(void);
 static void showLcdLightNum(void);
 static void showLcdSleepTime(void);
 /******************************************************************************************/
@@ -80,13 +79,9 @@ MyRes createOtherSetActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_OtherSetPageBuffer)
-	{
-		showPrintfIco();
-		showMuteIco();
-		showLcdLightNum();
-		showLcdSleepTime();
-	}
+	showPrintfIco();
+	showLcdLightNum();
+	showLcdSleepTime();
 
 	SelectPage(122);
 }
@@ -127,7 +122,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		else if(S_OtherSetPageBuffer->lcdinput[0] == 0x2402)
 		{
 			//如果当前是自动打印，则禁止，否则打开
-			memcpy(&(S_OtherSetPageBuffer->tempSystemSetData), getGBSystemSetData, SystemSetDataStructSize);
+			memcpy(&(S_OtherSetPageBuffer->tempSystemSetData), getGBSystemSetData(), SystemSetDataStructSize);
 			if(S_OtherSetPageBuffer->tempSystemSetData.isAutoPrint)
 				S_OtherSetPageBuffer->tempSystemSetData.isAutoPrint = false;
 			else
@@ -147,35 +142,19 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		//静音
 		else if(S_OtherSetPageBuffer->lcdinput[0] == 0x2403)
 		{
-			//如果当前是自动打印，则禁止，否则打开
-			memcpy(&(S_OtherSetPageBuffer->tempSystemSetData), getGBSystemSetData, SystemSetDataStructSize);
-			if(S_OtherSetPageBuffer->tempSystemSetData.isMute)
-				S_OtherSetPageBuffer->tempSystemSetData.isMute = false;
-			else
-				S_OtherSetPageBuffer->tempSystemSetData.isMute = true;
-			
-			if(My_Pass == SaveSystemSetData(&(S_OtherSetPageBuffer->tempSystemSetData)))
-			{
-				SendKeyCode(1);
-			}
-			else
-			{
-				SendKeyCode(2);
-			}
-			
-			showMuteIco();
+
 		}
 		//进入休眠时间
 		else if((S_OtherSetPageBuffer->lcdinput[0] >= 0x2407) && (S_OtherSetPageBuffer->lcdinput[0] <= 0x240a))
 		{
-			S_OtherSetPageBuffer->tempvalue = S_OtherSetPageBuffer->lcdinput[0] - 0x2407;
+			S_OtherSetPageBuffer->tempValue = S_OtherSetPageBuffer->lcdinput[0] - 0x2407;
 			
-			memcpy(&(S_OtherSetPageBuffer->tempSystemSetData), getGBSystemSetData, SystemSetDataStructSize);
-			if(S_OtherSetPageBuffer->tempvalue == 0)
+			memcpy(&(S_OtherSetPageBuffer->tempSystemSetData), getGBSystemSetData(), SystemSetDataStructSize);
+			if(S_OtherSetPageBuffer->tempValue == 0)
 				S_OtherSetPageBuffer->tempSystemSetData.ledSleepTime = 60;
-			else if(S_OtherSetPageBuffer->tempvalue == 1)
+			else if(S_OtherSetPageBuffer->tempValue == 1)
 				S_OtherSetPageBuffer->tempSystemSetData.ledSleepTime = 180;
-			else if(S_OtherSetPageBuffer->tempvalue == 2)
+			else if(S_OtherSetPageBuffer->tempValue == 2)
 				S_OtherSetPageBuffer->tempSystemSetData.ledSleepTime = 300;
 			else
 				S_OtherSetPageBuffer->tempSystemSetData.ledSleepTime = 60000;
@@ -194,12 +173,12 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		//进入屏幕亮度
 		else if(S_OtherSetPageBuffer->lcdinput[0] == 0x240b)
 		{	
-			memcpy(&(S_OtherSetPageBuffer->tempSystemSetData), getGBSystemSetData, SystemSetDataStructSize);
+			memcpy(&(S_OtherSetPageBuffer->tempSystemSetData), getGBSystemSetData(), SystemSetDataStructSize);
 			S_OtherSetPageBuffer->tempSystemSetData.ledLightIntensity = pbuf[8];
 	
 			if(My_Pass == SaveSystemSetData(&(S_OtherSetPageBuffer->tempSystemSetData)))
 			{
-				SetLEDLight(S_OtherSetPageBuffer->systemSetData.ledLightIntensity);
+				SetLEDLight(S_OtherSetPageBuffer->tempSystemSetData.ledLightIntensity);
 			}
 			else
 			{
@@ -222,10 +201,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(S_OtherSetPageBuffer)
-	{
 
-	}
 }
 
 /***************************************************************************************************
@@ -253,11 +229,6 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	if(S_OtherSetPageBuffer)
-	{
-
-	}
-	
 	SelectPage(122);
 }
 
@@ -326,83 +297,52 @@ static void activityBufferFree(void)
 
 static void SetGB_Time(char *buf, unsigned char len)
 {
-	short temp = 0;
+	if(len < 14)
+		goto END;
+
+	snprintf(S_OtherSetPageBuffer->buf, 5, "%s", buf);
+	S_OtherSetPageBuffer->tempValue = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
+	if(S_OtherSetPageBuffer->tempValue < 2016 || S_OtherSetPageBuffer->tempValue > 2099)
+		goto END;
+	S_OtherSetPageBuffer->temptime.year = S_OtherSetPageBuffer->tempValue - 2000;
 	
-	if(S_OtherSetPageBuffer)
-	{
-		if(len < 14)
-		{
-			SendKeyCode(3);
-			return;
-		}
-		
-		memset(S_OtherSetPageBuffer->buf, 0, 50);
-		memcpy(S_OtherSetPageBuffer->buf, buf, 4);
-		temp = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
-		if((temp < 2016)||(temp > 2100))
-		{
-			SendKeyCode(3);
-			return;
-		}
-		S_OtherSetPageBuffer->temptime.year = temp - 2000;
-		
-		memset(S_OtherSetPageBuffer->buf, 0, 50);
-		memcpy(S_OtherSetPageBuffer->buf, buf+4, 2);
-		temp = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
-		if((temp < 1)||(temp > 12))
-		{
-			SendKeyCode(3);
-			return;
-		}
-		S_OtherSetPageBuffer->temptime.month = temp;
-		
-		memset(S_OtherSetPageBuffer->buf, 0, 50);
-		memcpy(S_OtherSetPageBuffer->buf, buf+6, 2);
-		temp = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
-		if((temp < 1)||(temp > 31))
-		{
-			SendKeyCode(3);
-			return;
-		}
-		S_OtherSetPageBuffer->temptime.day = temp;
-		
-		memset(S_OtherSetPageBuffer->buf, 0, 50);
-		memcpy(S_OtherSetPageBuffer->buf, buf+8, 2);
-		temp = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
-		if((temp < 0)||(temp > 23))
-		{
-			SendKeyCode(3);
-			return;
-		}
-		S_OtherSetPageBuffer->temptime.hour = temp;
-		
-		memset(S_OtherSetPageBuffer->buf, 0, 50);
-		memcpy(S_OtherSetPageBuffer->buf, buf+10, 2);
-		temp = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
-		if((temp < 0)||(temp > 59))
-		{
-			SendKeyCode(3);
-			return;
-		}
-		S_OtherSetPageBuffer->temptime.min = temp;
-		
-		memset(S_OtherSetPageBuffer->buf, 0, 50);
-		memcpy(S_OtherSetPageBuffer->buf, buf+12, 2);
-		temp = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
-		if((temp < 0)||(temp > 59))
-		{
-			SendKeyCode(3);
-			return;
-		}
-		S_OtherSetPageBuffer->temptime.sec = temp;
-		
-		if(My_Pass == RTC_SetTimeData(&(S_OtherSetPageBuffer->temptime)))
-			/*修改成功*/
-			SendKeyCode(1);
-		else
-			/*修改失败*/
-			SendKeyCode(2);
-	}
+	snprintf(S_OtherSetPageBuffer->buf, 3, "%s", buf+4);
+	S_OtherSetPageBuffer->tempValue = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
+	if(S_OtherSetPageBuffer->tempValue < 1 || S_OtherSetPageBuffer->tempValue > 12)
+		goto END;
+	S_OtherSetPageBuffer->temptime.month = S_OtherSetPageBuffer->tempValue;
+	
+	snprintf(S_OtherSetPageBuffer->buf, 3, "%s", buf+6);
+	S_OtherSetPageBuffer->tempValue = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
+	if(S_OtherSetPageBuffer->tempValue < 1 || S_OtherSetPageBuffer->tempValue > 31)
+		goto END;
+	S_OtherSetPageBuffer->temptime.day = S_OtherSetPageBuffer->tempValue;
+	
+	snprintf(S_OtherSetPageBuffer->buf, 3, "%s", buf+8);
+	S_OtherSetPageBuffer->tempValue = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
+	if(S_OtherSetPageBuffer->tempValue > 23)
+		goto END;
+	S_OtherSetPageBuffer->temptime.hour = S_OtherSetPageBuffer->tempValue;
+	
+	snprintf(S_OtherSetPageBuffer->buf, 3, "%s", buf+10);
+	S_OtherSetPageBuffer->tempValue = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
+	if(S_OtherSetPageBuffer->tempValue > 59)
+		goto END;
+	S_OtherSetPageBuffer->temptime.min = S_OtherSetPageBuffer->tempValue;
+	
+	snprintf(S_OtherSetPageBuffer->buf, 3, "%s", buf+12);
+	S_OtherSetPageBuffer->tempValue = strtol(S_OtherSetPageBuffer->buf, NULL, 10);
+	if(S_OtherSetPageBuffer->tempValue > 59)
+		goto END;
+	S_OtherSetPageBuffer->temptime.sec = S_OtherSetPageBuffer->tempValue;
+	
+	if(My_Pass == RTC_SetTimeData(&(S_OtherSetPageBuffer->temptime)))
+		SendKeyCode(1);
+	else
+		SendKeyCode(2);
+			
+	END:
+		SendKeyCode(3);
 }
 
 static void showPrintfIco(void)
@@ -417,19 +357,6 @@ static void showPrintfIco(void)
 		BasicUI(0x2440 ,0x1807 , 0, &(S_OtherSetPageBuffer->ico) , sizeof(Basic_ICO));
 }
 
-
-static void showMuteIco(void)
-{
-	S_OtherSetPageBuffer->ico.ICO_ID = 23;
-	S_OtherSetPageBuffer->ico.X = 738;
-	S_OtherSetPageBuffer->ico.Y = 185;
-			
-	if(getGBSystemSetData()->isMute)
-		BasicUI(0x2450 ,0x1807 , 1, &(S_OtherSetPageBuffer->ico) , sizeof(Basic_ICO));
-	else
-		BasicUI(0x2450 ,0x1807 , 0, &(S_OtherSetPageBuffer->ico) , sizeof(Basic_ICO));
-}
-
 static void showLcdLightNum(void)
 {
 	DspNum(0x240b, getGBSystemSetData()->ledLightIntensity, 2);
@@ -441,20 +368,20 @@ static void showLcdSleepTime(void)
 	S_OtherSetPageBuffer->ico.X = 385;
 	S_OtherSetPageBuffer->ico.Y = 312;
 
-	S_OtherSetPageBuffer->tempvalue = getGBSystemSetData()->ledSleepTime;
-	if(S_OtherSetPageBuffer->tempvalue == 60)
+	S_OtherSetPageBuffer->tempValue = getGBSystemSetData()->ledSleepTime;
+	if(S_OtherSetPageBuffer->tempValue == 60)
 		BasicUI(0x2420 ,0x1807 , 1, &(S_OtherSetPageBuffer->ico) , sizeof(Basic_ICO));
-	else if(S_OtherSetPageBuffer->tempvalue == 180)
+	else if(S_OtherSetPageBuffer->tempValue == 180)
 	{
 		S_OtherSetPageBuffer->ico.X = 490;
 		BasicUI(0x2420 ,0x1807 , 1, &(S_OtherSetPageBuffer->ico) , sizeof(Basic_ICO));
 	}
-	else if(S_OtherSetPageBuffer->tempvalue == 300)
+	else if(S_OtherSetPageBuffer->tempValue == 300)
 	{
 		S_OtherSetPageBuffer->ico.X = 595;
 		BasicUI(0x2420 ,0x1807 , 1, &(S_OtherSetPageBuffer->ico) , sizeof(Basic_ICO));
 	}
-	else if(S_OtherSetPageBuffer->tempvalue == 60000)
+	else if(S_OtherSetPageBuffer->tempValue == 60000)
 	{
 		S_OtherSetPageBuffer->ico.X = 700;
 		BasicUI(0x2420 ,0x1807 , 1, &(S_OtherSetPageBuffer->ico) , sizeof(Basic_ICO));

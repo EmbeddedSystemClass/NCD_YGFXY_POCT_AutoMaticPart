@@ -9,7 +9,8 @@ typedef struct NetSetPageBuffer_tag {
 	WireNetSet wireNetSet;
 	SystemSetData systemSetData;
 	char buf[100];
-	unsigned char ischanged;
+	char * tempBuf;
+	unsigned int tempValue;
 	unsigned short lcdinput[100];
 }NetSetPageBuffer;
 

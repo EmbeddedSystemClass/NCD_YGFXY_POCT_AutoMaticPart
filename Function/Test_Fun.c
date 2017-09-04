@@ -120,8 +120,7 @@ MyRes TakeTestPointData(void * data)
 ***************************************************************************************************/
 ResultState TestFunction(PaiduiUnitData * parm)
 {
-	unsigned short steps = Motor2_StartTestLocation - Motor2_EndTestLocation;
-	unsigned short i = 0, j=0;
+	unsigned short i = 0;
 	unsigned short index;
 	TempCalData * S_TempCalData = NULL;															//测试过程中使用的变量
 	ResultState S_ResultState = NoResult;
@@ -132,8 +131,8 @@ ResultState TestFunction(PaiduiUnitData * parm)
 	/*初始化测试曲线队列*/
 	if(InitTestFunData() == My_Fail)
 		return MemError;
-	while(My_Pass == TakeTestPointData(&i))
-		;
+
+	xQueueReset(xTestCurveQueue);
 	
 	S_TempCalData = MyMalloc(sizeof(TempCalData));
 	
@@ -156,10 +155,10 @@ ResultState TestFunction(PaiduiUnitData * parm)
 			S_TempCalData->tempvalue1 = 0;
 			S_TempCalData->motorLocation = Motor2_StartTestLocation;
 			
-			for(i=1; i<= steps; i++)
+			for(i=1; i<= TestStep; i++)
 			{
-				S_TempCalData->motorLocation -= 3;
-				motor2MoveTo(S_TempCalData->motorLocation, 10000);
+				S_TempCalData->motorLocation += 3;
+				motor2MoveTo(S_TempCalData->motorLocation, true);
 				
 				vTaskDelay(1 / portTICK_RATE_MS);				
 				S_TempCalData->tempvalue1 += ADS8325();
@@ -195,9 +194,7 @@ ResultState TestFunction(PaiduiUnitData * parm)
 			MyFree(S_TempCalData);
 
 			SetLedVol(0);
-			
-			vTaskDelay(1500/portTICK_RATE_MS);
-			
+
 			return S_ResultState;
 	}
 	else
@@ -406,30 +403,18 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 
 		if(S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult < 0)
 			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult = 0;
-		
-		if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IT1705-01", 9))
-		{
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult *= 0.6666;
-		}
-		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IK1705-01", 9))
-		{
-			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult /= 2.3;
-		}
 
 		S_TempCalData->resultstatues = ResultIsOK;
-		S_TempCalData->paiduiUnitData->testData.testSeries.AdjustResult =  S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult * S_TempCalData->paiduiUnitData->testData.adjustData.parm;
 		return;
 		
 		END1:
 			S_TempCalData->resultstatues = NoSample;
 			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult = 0;
-			S_TempCalData->paiduiUnitData->testData.testSeries.AdjustResult =  0;
 			return;
 		
 		END2:
 			S_TempCalData->resultstatues = PeakError;
 			S_TempCalData->paiduiUnitData->testData.testSeries.BasicResult = 0;
-			S_TempCalData->paiduiUnitData->testData.testSeries.AdjustResult =  0;
 			return;
 }
 

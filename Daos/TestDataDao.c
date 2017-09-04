@@ -47,15 +47,19 @@ MyRes writeTestDataToFile(TestData * testData)
 	return My_Fail;
 }
 
-MyRes readTestDataFromFile(PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, 
-	void * recordData1, void * recordData2)
+MyRes readTestDataFromFileByPageRequest(PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, Page * page)
 {
-	return readRecordDataFromFile(TestDataFileName, pageRequest, deviceRecordHeader, recordData1, recordData2, TestDataStructSize);
+	return readRecordDataFromFileByPageRequest(TestDataFileName, pageRequest, deviceRecordHeader, page, TestDataStructSize);
 }
 
-MyRes plusTestDataHeaderuserUpLoadIndexToFile(unsigned char userIndexPlusNum, unsigned char ncdIndexPlusNum)
+MyRes plusTestDataHeaderUpLoadIndexToFile(unsigned char userIndexPlusNum, unsigned char ncdIndexPlusNum)
 {
 	return plusRecordDataHeaderUpLoadIndexToFile(TestDataFileName, userIndexPlusNum, ncdIndexPlusNum);
+}
+
+MyRes deleteTestDataFile(void)
+{
+	return deleteRecordDataFile(TestDataFileName);
 }
 
 /****************************************end of file************************************************/

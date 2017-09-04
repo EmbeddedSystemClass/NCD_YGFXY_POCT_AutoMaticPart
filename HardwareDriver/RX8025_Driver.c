@@ -69,7 +69,7 @@ static void RX_SDA_IN(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
 	GPIO_Init(RX_SDA_Group, &GPIO_InitStructure);
 }
 /***************************************************************************************************
@@ -88,8 +88,21 @@ static void RX_SDA_OUT(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 	GPIO_Init(RX_SDA_Group, &GPIO_InitStructure);
+}
+
+static unsigned char BCD2HEX(unsigned char bcd_data)  
+{   
+    unsigned char temp;   
+    temp=(bcd_data>>4)*10 + (bcd_data&0x0f);
+    return temp;
+}
+static unsigned char HEX2BCD(unsigned char hex_data)  
+{   
+    unsigned char temp; 
+    temp=((hex_data/10)<<4) + (hex_data%10);
+    return temp; 	
 }
 
 /***************************************************************************************************
@@ -104,8 +117,8 @@ static void RX_IIC_Start(void)
 {
 	RX_SDA_OUT();
 	
-	RX_SCK_H();
 	RX_SDA_H();
+	RX_SCK_H();
 	delay_us(RX_DelayTime);
 	
 	RX_SDA_L();
@@ -143,10 +156,6 @@ static unsigned char RX_IIC_Wait_Ack(void)
 	unsigned char errortime = 0;
 	
 	RX_SDA_IN();
-	
-	RX_SDA_H();
-	delay_us(RX_DelayTime);
-	
 	RX_SCK_H();
 	delay_us(RX_DelayTime);
 	
@@ -160,7 +169,7 @@ static unsigned char RX_IIC_Wait_Ack(void)
 			return 0;
 		}
 	}
-	
+	delay_us(RX_DelayTime);
 	RX_SCK_L();
 	return 1;
 }
@@ -177,6 +186,7 @@ void RX_IIC_Ack(void)
 	RX_SCK_H();
 	delay_us(RX_DelayTime);
 	RX_SCK_L();
+	delay_us(RX_DelayTime);
 }
 //不产生ACK应答		    
 void RX_IIC_NAck(void)
@@ -189,6 +199,7 @@ void RX_IIC_NAck(void)
 	RX_SCK_H();
 	delay_us(RX_DelayTime);
 	RX_SCK_L();
+	delay_us(RX_DelayTime);
 }
 
 static unsigned char RX_IIC_WriteByte(unsigned char data)
@@ -198,7 +209,7 @@ static unsigned char RX_IIC_WriteByte(unsigned char data)
 	RX_SDA_OUT();
 	
 	RX_SCK_L();
-	
+	delay_us(RX_DelayTime);
 	for(i=0; i<8; i++)
 	{		
 		if(data&0x80)
@@ -318,27 +329,6 @@ static unsigned char RX8025_Read(unsigned char addr, unsigned char *pdata, unsig
 	return 1;
 }
 
-static unsigned char BCD2HEX(unsigned char bcd_data)  
-{   
-    unsigned char temp;   
-    temp=(bcd_data>>4)*10 + (bcd_data&0x0f);
-    return temp;
-}
-
-/*******************************************************************************
-* 函数名	: HEX2BCD
-* 描述  	: HEX转为BCD  
-* 参数  	: -hex_data:传入十六进制格式的数据
-* 返回值	: BCD码
-*******************************************************************************/
-static unsigned char HEX2BCD(unsigned char hex_data)  
-{   
-    unsigned char temp; 
-    temp=((hex_data/10)<<4) + (hex_data%10);
-    return temp; 	
-}
-
-
 /***************************************************************************************************
 *FunctionName: RTC_SetTimeData
 *Description: 设置rtc时间
@@ -370,13 +360,13 @@ MyRes RTC_SetTimeData(DateTime * data)
 
 MyRes RTC_GetTimeData(DateTime * time)
 {
-	unsigned char buf[7];
+	unsigned char buf[16];
 	unsigned char tempV = 0;
 	
-	RX8025_Read(0, buf, 7);
+	RX8025_Read(0, buf, 16);
 	
 	tempV = BCD2HEX(buf[6]);
-	if((tempV >= 16) && (tempV <= 100))
+	if((tempV >= 16) && (tempV <= 99))
 		time->year = tempV;  
 	else
 		return My_Fail;
@@ -413,4 +403,5 @@ MyRes RTC_GetTimeData(DateTime * time)
 	
 	return My_Pass;
 }
+
 /****************************************end of file************************************************/

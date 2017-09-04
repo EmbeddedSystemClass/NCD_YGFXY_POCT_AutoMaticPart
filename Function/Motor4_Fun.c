@@ -38,7 +38,7 @@ static Motor * motor4 = NULL;
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-void motor4MoveTo(unsigned short location, unsigned short waitTime)
+void motor4MoveTo(unsigned short location, bool isWait)
 {
 	motor4 = getMotor(Motor_4);
 	
@@ -63,9 +63,9 @@ void motor4MoveTo(unsigned short location, unsigned short waitTime)
 	motor4->motorTargetLocation = location;
 	motor4->moveStepNum = 65000;
 	
-	while(waitTime-- && (motor4->motorLocation != motor4->motorTargetLocation))
+	while(isWait && motor4->motorLocation != motor4->motorTargetLocation)
 	{
-		vTaskDelay(1 / portTICK_RATE_MS);
+		vTaskDelay(100 / portTICK_RATE_MS);
 	}
 }
 

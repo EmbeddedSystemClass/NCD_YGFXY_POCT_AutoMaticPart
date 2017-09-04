@@ -3,19 +3,25 @@
 
 #include	"UI_Data.h"
 #include	"DeviceQuality.h"
+#include	"Timer.h"
+#include	"Motor_Task.h"
 
 typedef struct QualityPageBuffer_tag {
 	unsigned short lcdinput[100];
 	char tempBuf[50];
 	DeviceQuality * deviceQuality;
-	bool canTestNow;										//现在能否进行测试
-	bool isTestting;										//是否正在进行一次测试
-	unsigned char testIndex;								//测试次数索引
+	unsigned char testStep;
+	unsigned char testCnt;								//测试次数索引
 	ResultState cardTestResult;								//测试结果
 	ScanCodeResult cardScanResult;							//扫码结果
 	TestData  testData;										//测试数据缓存
-	float tempValue1;
 	double resultSum;										//有效测试结果和
+	Timer cardTimer;										//插卡等待时间
+	
+	MotorAction motorAction;
+	bool isStartted;
+	unsigned char testCardIndex2;
+	double tempValue1;
 	double tempValue2;
 }QualityPageBuffer;
 

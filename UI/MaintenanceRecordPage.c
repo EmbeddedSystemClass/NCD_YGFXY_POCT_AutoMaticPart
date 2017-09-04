@@ -32,7 +32,7 @@ static void activityDestroy(void);
 static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
-static MyRes ShowRecord(unsigned char pageindex);
+static void ShowRecord(void);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -75,9 +75,14 @@ MyRes createMaintenanceRecordActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	pageBuffer->selectindex = 0;
-	pageBuffer->pageindex = 1;
-	ShowRecord(pageBuffer->pageindex);
+	pageBuffer->pageRequest.pageIndex = 0;
+	pageBuffer->pageRequest.pageSize = DeviceMaintenanceRecordPageShowNum;
+	pageBuffer->pageRequest.orderType = ASC;
+	
+	for(pageBuffer->i=0; pageBuffer->i<DeviceMaintenanceRecordPageShowNum ; pageBuffer->i++)
+		pageBuffer->page.content[pageBuffer->i] = &pageBuffer->deviceMaintenance[pageBuffer->i];
+	
+	ShowRecord();
 	
 	SelectPage(155);
 }
@@ -105,45 +110,46 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	/*上一页*/
 	else if(pageBuffer->lcdinput[0] == 0x3102)
 	{
-		if(pageBuffer->pageindex > 1)
-			pageBuffer->pageindex -= 1;
-		else
-			pageBuffer->pageindex = pageBuffer->maxpagenum;
+		if(pageBuffer->page.totalPageSize > 0)
+		{
+			if(pageBuffer->pageRequest.pageIndex >= 1)
+				pageBuffer->pageRequest.pageIndex -= 1;
+			else
+				pageBuffer->pageRequest.pageIndex = pageBuffer->page.totalPageSize - 1;
 				
-		ShowRecord(pageBuffer->pageindex);
+			ShowRecord();
+		}
 	}
 	/*下一页*/
 	else if(pageBuffer->lcdinput[0] == 0x3103)
 	{
-		if(pageBuffer->pageindex < pageBuffer->maxpagenum)
-			pageBuffer->pageindex += 1;
-		else
-			pageBuffer->pageindex = 1;
+		if(pageBuffer->page.totalPageSize > 0)
+		{
+			if((pageBuffer->pageRequest.pageIndex + 1) >= pageBuffer->page.totalPageSize)
+				pageBuffer->pageRequest.pageIndex = 0;
+			else
+				pageBuffer->pageRequest.pageIndex += 1;
 				
-		ShowRecord(pageBuffer->pageindex);
+			ShowRecord();
+		}
 	}
 	//选择数据
 	else if((pageBuffer->lcdinput[0] >= 0x3104)&&(pageBuffer->lcdinput[0] <= 0x310b))
 	{
-		pageBuffer->tempvalue1 = pageBuffer->lcdinput[0] - 0x3104 + 1;
-		
-		if(pageBuffer->tempvalue1 <= pageBuffer->deviceMaintenanceReadPackge.readTotalNum)
-		{
-			pageBuffer->selectindex = pageBuffer->tempvalue1;
-			BasicPic(0x3120, 1, 137, 11, 355, 940, 392, 38, 149+(pageBuffer->selectindex - 1)*40);
-		}
+		pageBuffer->tempvalue1 = pageBuffer->lcdinput[0] - 0x3104;
+			
+		if(pageBuffer->tempvalue1 < pageBuffer->page.readItemSize)
+			BasicPic(0x3120, 1, 137, 11, 355, 940, 392, 38, 149+(pageBuffer->tempvalue1)*40);
 	}
 	//跳页
 	else if(pageBuffer->lcdinput[0] == 0x3110)
 	{
 		pageBuffer->tempvalue1 = strtol((char *)(&pbuf[7]), NULL, 10);
-		if( (pageBuffer->tempvalue1 > 0) && (pageBuffer->tempvalue1 <= pageBuffer->maxpagenum))
+		if( (pageBuffer->tempvalue1 > 0) && (pageBuffer->tempvalue1 <= pageBuffer->page.totalPageSize))
 		{
-			pageBuffer->pageindex = pageBuffer->tempvalue1;
-		
-			pageBuffer->selectindex = 0;
+			pageBuffer->pageRequest.pageIndex = pageBuffer->tempvalue1;
 
-			ShowRecord(pageBuffer->pageindex);
+			ShowRecord();
 		}
 	}
 }
@@ -253,75 +259,66 @@ static void activityBufferFree(void)
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-static MyRes ShowRecord(unsigned char pageindex)
+static void ShowRecord(void)
 {
-	unsigned short i=0;
-		
-	//设置分页读取信息
-	pageBuffer->tempvalue1 = pageindex-1;
-	pageBuffer->tempvalue1 *= DeviceMaintenanceRecordPageShowNum;
-	pageBuffer->deviceMaintenanceReadPackge.pageRequest.startElementIndex = pageBuffer->tempvalue1;
-	pageBuffer->deviceMaintenanceReadPackge.pageRequest.pageSize = DeviceMaintenanceRecordPageShowNum;
-	pageBuffer->deviceMaintenanceReadPackge.pageRequest.orderType = ASC;
-	pageBuffer->deviceMaintenanceReadPackge.pageRequest.crc = CalModbusCRC16Fun(&pageBuffer->deviceMaintenanceReadPackge.pageRequest, PageRequestStructCrcSize, NULL);
-		
 	//读取数据
-	readDeviceMaintenanceFromFile(&(pageBuffer->deviceMaintenanceReadPackge));
-	
-	pageBuffer->maxpagenum = ((pageBuffer->deviceMaintenanceReadPackge.deviceRecordHeader.itemSize % DeviceMaintenanceRecordPageShowNum) == 0)
-		? (pageBuffer->deviceMaintenanceReadPackge.deviceRecordHeader.itemSize / DeviceMaintenanceRecordPageShowNum)
-		: ((pageBuffer->deviceMaintenanceReadPackge.deviceRecordHeader.itemSize / DeviceMaintenanceRecordPageShowNum)+1);
+	memset(pageBuffer->deviceMaintenance, 0, DeviceMaintenanceRecordPageShowNum * DeviceMaintenanceStructSize);
+	readDeviceMaintenanceFromFileByPageRequest(&(pageBuffer->pageRequest), &(pageBuffer->deviceRecordHeader), &pageBuffer->page);
 		
-	BasicPic(0x3120, 0, 100, 11, 90, 940, 127, 39, 140+(pageBuffer->selectindex)*36);
+	BasicPic(0x3120, 0, 100, 11, 142, 940, 179, 39, 140);
 	
 	vTaskDelay(10 / portTICK_RATE_MS);
 
-	pageBuffer->tempDeviceMaintenance = &(pageBuffer->deviceMaintenanceReadPackge.deviceMaintenance[pageBuffer->deviceMaintenanceReadPackge.readTotalNum - 1]);
-	for(i=0; i<pageBuffer->deviceMaintenanceReadPackge.readTotalNum; i++)
+	for(pageBuffer->i=0; pageBuffer->i<DeviceMaintenanceRecordPageShowNum; pageBuffer->i++)
 	{
-		//显示索引
-		snprintf(pageBuffer->buf, 20, "%d", (pageindex-1)*DeviceMaintenanceRecordPageShowNum+i+1);
-		DisText(0x3130+(i)*0x30, pageBuffer->buf, strlen(pageBuffer->buf)+1);
-			
-		//显示结果
-		if(pageBuffer->tempDeviceMaintenance->isOk)
-			snprintf(pageBuffer->buf, 10, "OK");
+		pageBuffer->tempDeviceMaintenance = &pageBuffer->deviceMaintenance[pageBuffer->i];
+		pageBuffer->tempvalue1 = pageBuffer->i*0x30;
+		
+		if(pageBuffer->tempDeviceMaintenance->crc == CalModbusCRC16Fun(pageBuffer->tempDeviceMaintenance, DeviceMaintenanceStructCrcSize, NULL))
+		{
+			//显示索引
+			if(pageBuffer->pageRequest.orderType == ASC)
+				snprintf(pageBuffer->buf, 10, "%d", pageBuffer->page.totalItemSize - pageBuffer->pageRequest.pageIndex*DeviceMaintenanceRecordPageShowNum-pageBuffer->i);
+			else
+				snprintf(pageBuffer->buf, 10, "%d", pageBuffer->pageRequest.pageIndex*DeviceMaintenanceRecordPageShowNum+pageBuffer->i+1);
+			DisText(0x3130+pageBuffer->tempvalue1, pageBuffer->buf, strlen(pageBuffer->buf)+1);
+				
+			//显示结果
+			if(pageBuffer->tempDeviceMaintenance->isOk)
+				snprintf(pageBuffer->buf, 10, "OK");
+			else
+				snprintf(pageBuffer->buf, 10, "ERROR");
+			DisText(0x3135+pageBuffer->tempvalue1, pageBuffer->buf, strlen(pageBuffer->buf)+1);
+				
+			//显示备注
+			if(strlen(pageBuffer->tempDeviceMaintenance->desc) <= 22)
+				snprintf(pageBuffer->buf, 50, "%s", pageBuffer->tempDeviceMaintenance->desc);
+			else
+				snprintf(pageBuffer->buf, 50, "%.22s ...", pageBuffer->tempDeviceMaintenance->desc);
+			DisText(0x313a+pageBuffer->tempvalue1, pageBuffer->buf, strlen(pageBuffer->buf)+1);
+				
+			//显示时间
+			snprintf(pageBuffer->buf, 30, "%02d-%02d-%02d %02d:%02d", pageBuffer->tempDeviceMaintenance->dateTime.year, 
+				pageBuffer->tempDeviceMaintenance->dateTime.month, pageBuffer->tempDeviceMaintenance->dateTime.day,
+				pageBuffer->tempDeviceMaintenance->dateTime.hour, pageBuffer->tempDeviceMaintenance->dateTime.min);
+			DisText(0x314a+pageBuffer->tempvalue1, pageBuffer->buf, strlen(pageBuffer->buf)+1);
+
+			//显示操作人
+			snprintf(pageBuffer->buf, 30, "%s", pageBuffer->tempDeviceMaintenance->operator.name);
+			DisText(0x3155+pageBuffer->tempvalue1, pageBuffer->buf, strlen(pageBuffer->buf)+1);
+
+			pageBuffer->tempDeviceMaintenance--;
+		}
 		else
-			snprintf(pageBuffer->buf, 10, "ERROR");
-		DisText(0x3135+(i)*0x30, pageBuffer->buf, strlen(pageBuffer->buf)+1);
-			
-		//显示备注
-		if(strlen(pageBuffer->tempDeviceMaintenance->desc) <= 22)
-			snprintf(pageBuffer->buf, 50, "%s", pageBuffer->tempDeviceMaintenance->desc);
-		else
-			snprintf(pageBuffer->buf, 50, "%.22s ...", pageBuffer->tempDeviceMaintenance->desc);
-		DisText(0x313a+(i)*0x30, pageBuffer->buf, strlen(pageBuffer->buf)+1);
-			
-		//显示时间
-		snprintf(pageBuffer->buf, 30, "%02d-%02d-%02d %02d:%02d", pageBuffer->tempDeviceMaintenance->dateTime.year, 
-			pageBuffer->tempDeviceMaintenance->dateTime.month, pageBuffer->tempDeviceMaintenance->dateTime.day,
-			pageBuffer->tempDeviceMaintenance->dateTime.hour, pageBuffer->tempDeviceMaintenance->dateTime.min);
-		DisText(0x314a+(i)*0x30, pageBuffer->buf, strlen(pageBuffer->buf)+1);
-
-		//显示操作人
-		snprintf(pageBuffer->buf, 30, "%s", pageBuffer->tempDeviceMaintenance->operator.name);
-		DisText(0x3155+(i)*0x30, pageBuffer->buf, strlen(pageBuffer->buf)+1);
-
-		pageBuffer->tempDeviceMaintenance--;
-		vTaskDelay(10 / portTICK_RATE_MS);
-	}
-
-	for(i=pageBuffer->deviceMaintenanceReadPackge.readTotalNum; i<DeviceMaintenanceRecordPageShowNum; i++)
-	{
-		ClearText(0x3130+(i)*0x30);
-		ClearText(0x3135+(i)*0x30);
-		ClearText(0x313a+(i)*0x30);
-		ClearText(0x314a+(i)*0x30);
-		ClearText(0x3155+(i)*0x30);
+		{
+			ClearText(0x3130+pageBuffer->tempvalue1);
+			ClearText(0x3135+pageBuffer->tempvalue1);
+			ClearText(0x313a+pageBuffer->tempvalue1);
+			ClearText(0x314a+pageBuffer->tempvalue1);
+			ClearText(0x3155+pageBuffer->tempvalue1);
+		}
 		
 		vTaskDelay(10 / portTICK_RATE_MS);
 	}
-	
-	return My_Pass;
 }
 

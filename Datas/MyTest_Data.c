@@ -23,6 +23,8 @@
 static PaiduiUnitData * (PaiduiTestDataBuffer[PaiDuiWeiNum]);
 
 static PaiduiUnitData * CurrentTestDataBuffer;
+
+static Operator * lastOperator = NULL;
 /***************************************************************************************************/
 /**************************************内部函数*************************************************/
 /***************************************************************************************************/
@@ -62,6 +64,12 @@ CreateTestErrorType CreateANewTest(PaiduiUnitData ** TestDataBuffer)
 				CurrentTestDataBuffer = PaiduiTestDataBuffer[i];
 				memset(CurrentTestDataBuffer, 0, PaiduiUnitDataStructSize);
 				CurrentTestDataBuffer->testlocation = i + 1;
+				
+				//保存最新的操作人
+				if(lastOperator != NULL)
+					memcpy(&CurrentTestDataBuffer->testData.operator, lastOperator, OneOperatorStructSize);
+
+				lastOperator = &CurrentTestDataBuffer->testData.operator;	
 				
 				if(TestDataBuffer)
 					*TestDataBuffer = CurrentTestDataBuffer;

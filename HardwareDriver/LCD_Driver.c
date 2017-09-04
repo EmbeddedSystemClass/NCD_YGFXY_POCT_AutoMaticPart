@@ -366,32 +366,6 @@ void getLcdInputData(void * myBuffer, void * lcdData)
 	}
 }
 
-void DspTimeAndTempData(void)
-{
-	DateTime * time = NULL;
-	char *buftime = NULL;
-	
-	buftime = MyMalloc(200);
-	time = MyMalloc(sizeof(DateTime));
-	
-	if(buftime && time)
-	{
-		memset(time, 0, sizeof(DateTime));
-		
-		/*获取当前时间*/
-		memcpy(time, &(getSystemRunTimeData()->systemDateTime), sizeof(DateTime));
-		
-		/*显示时间*/
-		sprintf(buftime, "       20%02d-%02d-%02d %02d:%02d:%02d \0", time->year, time->month, time->day,
-			time->hour, time->min, time->sec);
-		
-		DisText(0x1000, buftime, strlen(buftime)+1);
-	}
-
-	MyFree(time);
-	MyFree(buftime);
-}
-
 /************************************************************************
 ** 函数名:
 ** 功  能:

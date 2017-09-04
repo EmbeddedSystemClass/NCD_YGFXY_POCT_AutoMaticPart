@@ -70,7 +70,7 @@ MyRes SaveSystemSetData(SystemSetData * systemSetData)
 				status = My_Pass;
 				
 				//保存成功后，更新内存中的数据
-				//upDateSystemSetData(systemSetData);
+				upDateSystemSetData(systemSetData);
 			}
 				
 			f_close(&(myfile->file));

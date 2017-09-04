@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_proj.xsd">
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_projx.xsd">
 
-  <SchemaVersion>1.1</SchemaVersion>
+  <SchemaVersion>2.1</SchemaVersion>
 
   <Header>### uVision Project, (C) Keil Software</Header>
 
@@ -10,26 +10,30 @@
       <TargetName>NCD_YGFXY_AutoMatic</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
+      <pCCUsed>5060528::V5.06 update 5 (build 528)::ARMCC</pCCUsed>
+      <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32F407VG</Device>
+          <Device>STM32F407VGTx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <Cpu>IROM(0x08000000,0x100000) IRAM(0x20000000,0x20000) IRAM2(0x10000000,0x10000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
+          <PackID>Keil.STM32F4xx_DFP.2.11.0</PackID>
+          <PackURL>http://www.keil.com/pack</PackURL>
+          <Cpu>IRAM(0x20000000,0x20000) IRAM2(0x10000000,0x10000) IROM(0x08000000,0x100000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
-          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F4xx_1024 -FS08000000 -FL0100000 -FP0($$Device:STM32F407VG$Flash\STM32F4xx_1024.FLM))</FlashDriverDll>
-          <DeviceId>6103</DeviceId>
-          <RegisterFile>$$Device:STM32F407VG$Device\Include\stm32f4xx.h</RegisterFile>
+          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F4xx_1024 -FS08000000 -FL0100000 -FP0($$Device:STM32F407VGTx$CMSIS\Flash\STM32F4xx_1024.FLM))</FlashDriverDll>
+          <DeviceId>0</DeviceId>
+          <RegisterFile>$$Device:STM32F407VGTx$Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
           <Asm></Asm>
           <Linker></Linker>
           <OHString></OHString>
           <InfinionOptionDll></InfinionOptionDll>
-          <SLE66CMisc>-DSTM32F40_41xxx</SLE66CMisc>
+          <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32F407VG$SVD\STM32F40x.svd</SFDFile>
+          <SFDFile>$$Device:STM32F407VGTx$CMSIS\SVD\STM32F40x.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -48,7 +52,7 @@
           <OutputName>NCD_YGFXY_AutoMatic</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>0</CreateHexFile>
+          <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\List\</ListingPath>
@@ -78,10 +82,12 @@
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>D:\Program Files\Keil\ARM\ARMCC\bin\fromelf.exe --bin -o "$L@L.bin" "#L"</UserProg1Name>
+            <UserProg1Name>D:\Program Files\MDK5\ARM\ARMCC\bin\fromelf.exe --bin -o "$L@L.bin" "#L"</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
+            <nStopA1X>0</nStopA1X>
+            <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
@@ -104,11 +110,11 @@
         </CommonProperty>
         <DllOption>
           <SimDllName>SARMCM3.DLL</SimDllName>
-          <SimDllArguments>-MPU -REMAP</SimDllArguments>
+          <SimDllArguments> -REMAP -MPU</SimDllArguments>
           <SimDlgDll>DCM.DLL</SimDlgDll>
           <SimDlgDllArguments>-pCM4</SimDlgDllArguments>
           <TargetDllName>SARMCM3.DLL</TargetDllName>
-          <TargetDllArguments>-MPU</TargetDllArguments>
+          <TargetDllArguments> -MPU</TargetDllArguments>
           <TargetDlgDll>TCM.DLL</TargetDlgDll>
           <TargetDlgDllArguments>-pCM4</TargetDlgDllArguments>
         </DllOption>
@@ -120,48 +126,6 @@
             <HexOffset>0</HexOffset>
             <Oh166RecLen>16</Oh166RecLen>
           </OPTHX>
-          <Simulator>
-            <UseSimulator>0</UseSimulator>
-            <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
-            <RunToMain>1</RunToMain>
-            <RestoreBreakpoints>1</RestoreBreakpoints>
-            <RestoreWatchpoints>1</RestoreWatchpoints>
-            <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
-            <RestoreFunctions>1</RestoreFunctions>
-            <RestoreToolbox>1</RestoreToolbox>
-            <LimitSpeedToRealTime>0</LimitSpeedToRealTime>
-            <RestoreSysVw>1</RestoreSysVw>
-          </Simulator>
-          <Target>
-            <UseTarget>1</UseTarget>
-            <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
-            <RunToMain>1</RunToMain>
-            <RestoreBreakpoints>1</RestoreBreakpoints>
-            <RestoreWatchpoints>1</RestoreWatchpoints>
-            <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
-            <RestoreFunctions>0</RestoreFunctions>
-            <RestoreToolbox>1</RestoreToolbox>
-            <RestoreTracepoints>1</RestoreTracepoints>
-            <RestoreSysVw>1</RestoreSysVw>
-            <UsePdscDebugDescription>1</UsePdscDebugDescription>
-          </Target>
-          <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>6</TargetSelection>
-          <SimDlls>
-            <CpuDll></CpuDll>
-            <CpuDllArguments></CpuDllArguments>
-            <PeripheralDll></PeripheralDll>
-            <PeripheralDllArguments></PeripheralDllArguments>
-            <InitializationFile></InitializationFile>
-          </SimDlls>
-          <TargetDlls>
-            <CpuDll></CpuDll>
-            <CpuDllArguments></CpuDllArguments>
-            <PeripheralDll></PeripheralDll>
-            <PeripheralDllArguments></PeripheralDllArguments>
-            <InitializationFile></InitializationFile>
-            <Driver>Segger\JL2CM3.dll</Driver>
-          </TargetDlls>
         </DebugOption>
         <Utilities>
           <Flash1>
@@ -169,12 +133,12 @@
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
-            <Capability>0</Capability>
-            <DriverSelection>-1</DriverSelection>
+            <Capability>1</Capability>
+            <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -226,8 +190,9 @@
             <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
+            <nSecure>0</nSecure>
             <RoSelD>3</RoSelD>
-            <RwSelD>3</RwSelD>
+            <RwSelD>4</RwSelD>
             <CodeSel>0</CodeSel>
             <OptFeed>0</OptFeed>
             <NoZi1>0</NoZi1>
@@ -360,6 +325,13 @@
             <uSurpInc>0</uSurpInc>
             <uC99>1</uC99>
             <useXO>0</useXO>
+            <v6Lang>1</v6Lang>
+            <v6LangP>1</v6LangP>
+            <vShortEn>1</vShortEn>
+            <vShortWch>1</vShortWch>
+            <v6Lto>0</v6Lto>
+            <v6WtE>0</v6WtE>
+            <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define></Define>
@@ -377,6 +349,7 @@
             <NoWarn>0</NoWarn>
             <uSurpInc>0</uSurpInc>
             <useXO>0</useXO>
+            <uClangAs>0</uClangAs>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define></Define>
@@ -408,14 +381,14 @@
           <GroupName>User</GroupName>
           <Files>
             <File>
-              <FileName>stm32f4xx_it.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\AppLunch\stm32f4xx_it.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\AppLunch\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_it.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\AppLunch\stm32f4xx_it.c</FilePath>
             </File>
             <File>
               <FileName>SystemInit.c</FileName>
@@ -428,9 +401,19 @@
           <GroupName>Drivers</GroupName>
           <Files>
             <File>
+              <FileName>ADS8325_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\ADS8325_Driver.c</FilePath>
+            </File>
+            <File>
               <FileName>CardCheck_Driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\CardCheck_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>Channel_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\Channel_Driver.c</FilePath>
             </File>
             <File>
               <FileName>CodeScanner_Driver.c</FileName>
@@ -438,14 +421,29 @@
               <FilePath>..\HardwareDriver\CodeScanner_Driver.c</FilePath>
             </File>
             <File>
+              <FileName>DA_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\DA_Driver.c</FilePath>
+            </File>
+            <File>
               <FileName>Iwdg_Driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\Iwdg_Driver.c</FilePath>
             </File>
             <File>
+              <FileName>LCD_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\LCD_Driver.c</FilePath>
+            </File>
+            <File>
               <FileName>Led_Driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\Led_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>LedCheck_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\LedCheck_Driver.c</FilePath>
             </File>
             <File>
               <FileName>Motor1_Driver.c</FileName>
@@ -466,6 +464,26 @@
               <FileName>Motor4_Driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\Motor4_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>RX8025_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\RX8025_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>SDIO_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\SDIO_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm324x7i_eval_sdio_sd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\stm324x7i_eval_sdio_sd.c</FilePath>
+            </File>
+            <File>
+              <FileName>TempleteFile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\TempleteFile.c</FilePath>
             </File>
             <File>
               <FileName>Timer3_Driver.c</FileName>
@@ -502,46 +520,6 @@
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\Usart6_Driver.c</FilePath>
             </File>
-            <File>
-              <FileName>SDIO_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\SDIO_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm324x7i_eval_sdio_sd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\stm324x7i_eval_sdio_sd.c</FilePath>
-            </File>
-            <File>
-              <FileName>Channel_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\Channel_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>ADS8325_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\ADS8325_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>DA_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\DA_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>RX8025_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\RX8025_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>LCD_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\LCD_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>LedCheck_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\LedCheck_Driver.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -551,6 +529,11 @@
               <FileName>CodeScanFunction.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Function\CodeScanFunction.c</FilePath>
+            </File>
+            <File>
+              <FileName>LCDInputFun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\LCDInputFun.c</FilePath>
             </File>
             <File>
               <FileName>Motor1_Fun.c</FileName>
@@ -588,24 +571,24 @@
               <FilePath>..\Function\ReadBarCode_Fun.c</FilePath>
             </File>
             <File>
-              <FileName>Universal_Fun.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Function\Universal_Fun.c</FilePath>
-            </File>
-            <File>
               <FileName>SelfTest_Fun.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Function\SelfTest_Fun.c</FilePath>
             </File>
             <File>
-              <FileName>LCDInputFun.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Function\LCDInputFun.c</FilePath>
-            </File>
-            <File>
               <FileName>Test_Fun.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Function\Test_Fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>Universal_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\Universal_Fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>Motor_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\Motor_Fun.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -623,24 +606,9 @@
               <FilePath>..\Task\Iwdg_Task.c</FilePath>
             </File>
             <File>
-              <FileName>SystemStart_Task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Task\SystemStart_Task.c</FilePath>
-            </File>
-            <File>
-              <FileName>Universal_Task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Task\Universal_Task.c</FilePath>
-            </File>
-            <File>
               <FileName>LcdInput_Task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Task\LcdInput_Task.c</FilePath>
-            </File>
-            <File>
-              <FileName>SystemUI_Task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Task\SystemUI_Task.c</FilePath>
             </File>
             <File>
               <FileName>Paidui_Task.c</FileName>
@@ -648,9 +616,44 @@
               <FilePath>..\Task\Paidui_Task.c</FilePath>
             </File>
             <File>
+              <FileName>SystemStart_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Task\SystemStart_Task.c</FilePath>
+            </File>
+            <File>
+              <FileName>SystemUI_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Task\SystemUI_Task.c</FilePath>
+            </File>
+            <File>
               <FileName>Test_Task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Task\Test_Task.c</FilePath>
+            </File>
+            <File>
+              <FileName>Universal_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Task\Universal_Task.c</FilePath>
+            </File>
+            <File>
+              <FileName>LwipCom_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Task\LwipCom_Task.c</FilePath>
+            </File>
+            <File>
+              <FileName>LwipDHCP_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Task\LwipDHCP_Task.c</FilePath>
+            </File>
+            <File>
+              <FileName>Motor_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Task\Motor_Task.c</FilePath>
+            </File>
+            <File>
+              <FileName>BasicWEB_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Task\BasicWEB_Task.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -658,14 +661,14 @@
           <GroupName>UI</GroupName>
           <Files>
             <File>
-              <FileName>LunchPage.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\UI\LunchPage.c</FilePath>
-            </File>
-            <File>
               <FileName>WelcomePage.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\UI\WelcomePage.c</FilePath>
+            </File>
+            <File>
+              <FileName>LunchPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\LunchPage.c</FilePath>
             </File>
             <File>
               <FileName>SelectUserPage.c</FileName>
@@ -717,6 +720,101 @@
               <FileType>1</FileType>
               <FilePath>..\UI\AboutUsPage.c</FilePath>
             </File>
+            <File>
+              <FileName>RecordPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\RecordPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>ShowResultPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\ShowResultPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>OtherSetPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\OtherSetPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>NetPreSetPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\NetPreSetPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>NetSetPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\NetSetPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>ServerSetPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\ServerSetPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>NetInfoPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\NetInfoPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>ShowDeviceInfoPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\ShowDeviceInfoPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>SetDeviceInfoPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\SetDeviceInfoPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>SetDeviceIDPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\SetDeviceIDPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>ReTestPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\ReTestPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>MaintenancePage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\MaintenancePage.c</FilePath>
+            </File>
+            <File>
+              <FileName>MaintenanceRecordPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\MaintenanceRecordPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>AdjustRecordPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\AdjustRecordPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>ErrorRecordPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\ErrorRecordPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>QualityDetailPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\QualityDetailPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>QualityRecordPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\QualityRecordPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>QualityPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\QualityPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>SleepPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\SleepPage.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -733,39 +831,9 @@
               <FilePath>..\Entity\Define.h</FilePath>
             </File>
             <File>
-              <FileName>ItemConstData.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Entity\ItemConstData.h</FilePath>
-            </File>
-            <File>
-              <FileName>Motor.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Entity\Motor.h</FilePath>
-            </File>
-            <File>
-              <FileName>PaiduiUnitData.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Entity\PaiduiUnitData.h</FilePath>
-            </File>
-            <File>
-              <FileName>QRCode.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Entity\QRCode.h</FilePath>
-            </File>
-            <File>
-              <FileName>Temperature.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Entity\Temperature.h</FilePath>
-            </File>
-            <File>
               <FileName>Device.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Entity\Device.h</FilePath>
-            </File>
-            <File>
-              <FileName>NetWork.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Entity\NetWork.h</FilePath>
             </File>
             <File>
               <FileName>DeviceAdjust.h</FileName>
@@ -788,9 +856,34 @@
               <FilePath>..\Entity\DeviceQuality.h</FilePath>
             </File>
             <File>
+              <FileName>ItemConstData.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\ItemConstData.h</FilePath>
+            </File>
+            <File>
+              <FileName>Motor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\Motor.h</FilePath>
+            </File>
+            <File>
+              <FileName>NetWork.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\NetWork.h</FilePath>
+            </File>
+            <File>
               <FileName>Operator.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Entity\Operator.h</FilePath>
+            </File>
+            <File>
+              <FileName>PaiduiUnitData.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\PaiduiUnitData.h</FilePath>
+            </File>
+            <File>
+              <FileName>QRCode.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\QRCode.h</FilePath>
             </File>
             <File>
               <FileName>RemoteSoftInfo.h</FileName>
@@ -798,19 +891,14 @@
               <FilePath>..\Entity\RemoteSoftInfo.h</FilePath>
             </File>
             <File>
-              <FileName>ReTestData.h</FileName>
+              <FileName>Temperature.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\Entity\ReTestData.h</FilePath>
+              <FilePath>..\Entity\Temperature.h</FilePath>
             </File>
             <File>
               <FileName>TestData.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Entity\TestData.h</FilePath>
-            </File>
-            <File>
-              <FileName>AdjustData.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Entity\AdjustData.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -828,6 +916,16 @@
               <FilePath>..\Datas\Motor_Data.c</FilePath>
             </File>
             <File>
+              <FileName>MyTest_Data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Datas\MyTest_Data.c</FilePath>
+            </File>
+            <File>
+              <FileName>RemoteSoft_Data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Datas\RemoteSoft_Data.c</FilePath>
+            </File>
+            <File>
               <FileName>System_Data.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Datas\System_Data.c</FilePath>
@@ -843,9 +941,14 @@
               <FilePath>..\Datas\UI_Data.c</FilePath>
             </File>
             <File>
-              <FileName>MyTest_Data.c</FileName>
+              <FileName>Maintenance_Data.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Datas\MyTest_Data.c</FilePath>
+              <FilePath>..\Datas\Maintenance_Data.c</FilePath>
+            </File>
+            <File>
+              <FileName>Quality_Data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Datas\Quality_Data.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -858,29 +961,9 @@
               <FilePath>..\Daos\AppFileDao.c</FilePath>
             </File>
             <File>
-              <FileName>DeviceAdjustDao.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Daos\DeviceAdjustDao.c</FilePath>
-            </File>
-            <File>
               <FileName>DeviceDao.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Daos\DeviceDao.c</FilePath>
-            </File>
-            <File>
-              <FileName>DeviceErrorDao.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Daos\DeviceErrorDao.c</FilePath>
-            </File>
-            <File>
-              <FileName>DeviceMaintenanceDao.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Daos\DeviceMaintenanceDao.c</FilePath>
-            </File>
-            <File>
-              <FileName>DeviceQualityDao.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Daos\DeviceQualityDao.c</FilePath>
             </File>
             <File>
               <FileName>RecordDataDao.c</FileName>
@@ -901,6 +984,31 @@
               <FileName>TestDataDao.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Daos\TestDataDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>ReTestDataDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\ReTestDataDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceMaintenanceDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceMaintenanceDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceAdjustDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceAdjustDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceErrorDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceErrorDao.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeviceQualityDao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Daos\DeviceQualityDao.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -958,6 +1066,11 @@
               <FilePath>..\COM\Delay.c</FilePath>
             </File>
             <File>
+              <FileName>Intent.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\COM\Intent.c</FilePath>
+            </File>
+            <File>
               <FileName>Md5.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\COM\Md5.c</FilePath>
@@ -978,6 +1091,11 @@
               <FilePath>..\COM\MyMem.c</FilePath>
             </File>
             <File>
+              <FileName>MyStack.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\COM\MyStack.c</FilePath>
+            </File>
+            <File>
               <FileName>MyTools.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\COM\MyTools.c</FilePath>
@@ -991,16 +1109,6 @@
               <FileName>Timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\COM\Timer.c</FilePath>
-            </File>
-            <File>
-              <FileName>MyStack.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\COM\MyStack.c</FilePath>
-            </File>
-            <File>
-              <FileName>Intent.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\COM\Intent.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1023,14 +1131,14 @@
               <FilePath>..\ThirdParty\FreeRTOS\Source\tasks.c</FilePath>
             </File>
             <File>
-              <FileName>port.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ThirdParty\FreeRTOS\Source\portable\RVDS\ARM_CM4F\port.c</FilePath>
-            </File>
-            <File>
               <FileName>heap_4.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ThirdParty\FreeRTOS\Source\portable\MemMang\heap_4.c</FilePath>
+            </File>
+            <File>
+              <FileName>port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\FreeRTOS\Source\portable\RVDS\ARM_CM4F\port.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1078,6 +1186,11 @@
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_exti.c</FilePath>
             </File>
             <File>
+              <FileName>stm32f4xx_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_flash.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32f4xx_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_gpio.c</FilePath>
@@ -1098,21 +1211,6 @@
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_sdio.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_spi.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_syscfg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_syscfg.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_tim.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_tim.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f4xx_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_usart.c</FilePath>
@@ -1122,20 +1220,30 @@
               <FileType>1</FileType>
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_wwdg.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f4xx_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_syscfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_syscfg.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Fatfs</GroupName>
           <Files>
             <File>
-              <FileName>diskio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ThirdParty\Fatfs\src\diskio.c</FilePath>
-            </File>
-            <File>
               <FileName>ff.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ThirdParty\Fatfs\src\ff.c</FilePath>
+            </File>
+            <File>
+              <FileName>diskio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\Fatfs\src\diskio.c</FilePath>
             </File>
             <File>
               <FileName>syscall.c</FileName>
@@ -1186,46 +1294,6 @@
               <FileName>tcpip.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ThirdParty\lwip-1.4.1\src\api\tcpip.c</FilePath>
-            </File>
-            <File>
-              <FileName>autoip.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\autoip.c</FilePath>
-            </File>
-            <File>
-              <FileName>icmp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\icmp.c</FilePath>
-            </File>
-            <File>
-              <FileName>igmp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\igmp.c</FilePath>
-            </File>
-            <File>
-              <FileName>inet.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\inet.c</FilePath>
-            </File>
-            <File>
-              <FileName>inet_chksum.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\inet_chksum.c</FilePath>
-            </File>
-            <File>
-              <FileName>ip.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\ip.c</FilePath>
-            </File>
-            <File>
-              <FileName>ip_addr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\ip_addr.c</FilePath>
-            </File>
-            <File>
-              <FileName>ip_frag.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\ip_frag.c</FilePath>
             </File>
             <File>
               <FileName>def.c</FileName>
@@ -1307,10 +1375,47 @@
               <FileType>1</FileType>
               <FilePath>..\ThirdParty\lwip-1.4.1\src\core\udp.c</FilePath>
             </File>
+            <File>
+              <FileName>autoip.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\autoip.c</FilePath>
+            </File>
+            <File>
+              <FileName>icmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\icmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>igmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\igmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>inet.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\inet.c</FilePath>
+            </File>
+            <File>
+              <FileName>inet_chksum.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\inet_chksum.c</FilePath>
+            </File>
+            <File>
+              <FileName>ip.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\ip.c</FilePath>
+            </File>
+            <File>
+              <FileName>ip_addr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\ip_addr.c</FilePath>
+            </File>
+            <File>
+              <FileName>ip_frag.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ThirdParty\lwip-1.4.1\src\core\ipv4\ip_frag.c</FilePath>
+            </File>
           </Files>
-        </Group>
-        <Group>
-          <GroupName>Cjson</GroupName>
         </Group>
         <Group>
           <GroupName>Doc</GroupName>
@@ -1318,5 +1423,11 @@
       </Groups>
     </Target>
   </Targets>
+
+  <RTE>
+    <apis/>
+    <components/>
+    <files/>
+  </RTE>
 
 </Project>

@@ -75,14 +75,11 @@ MyRes createSetDeviceIDActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	if(S_SetDeviceIDPage)
-	{
-		memcpy(&(S_SetDeviceIDPage->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
+	memcpy(&(S_SetDeviceIDPage->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
 		
-		while(ReadBarCodeFunction((char *)(S_SetDeviceIDPage->tempbuf), 100) > 0)
-			;
-		dspDeviceId(S_SetDeviceIDPage->systemSetData.deviceId);
-	}
+	while(ReadBarCodeFunction((char *)(S_SetDeviceIDPage->tempbuf), 100) > 0)
+		;
+	dspDeviceId(S_SetDeviceIDPage->systemSetData.deviceId);
 	
 	SelectPage(104);
 }
@@ -254,6 +251,6 @@ static void activityBufferFree(void)
 
 static void dspDeviceId(char * idStr)
 {
-	sprintf(S_SetDeviceIDPage->tempbuf, "%s\0", idStr);
+	snprintf(S_SetDeviceIDPage->tempbuf, DeviceIdLen+1, "%s", idStr);
 	DisText(0x1C10, S_SetDeviceIDPage->tempbuf, strlen(S_SetDeviceIDPage->tempbuf)+1);
 }
