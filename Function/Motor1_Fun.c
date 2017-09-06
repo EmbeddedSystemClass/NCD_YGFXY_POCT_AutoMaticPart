@@ -73,37 +73,37 @@ void motor1MoveToNum(unsigned char num, bool isWait)
 	else 
 	{
 		if(motor1->motorLocation == num)
-			return;
-		else if(motor1->motorLocation > num)
 		{
-			tempv = motor1->motorLocation - num;
-			if(tempv <= 4)
-				motor1->isFront = false;
+			if(Motor1Sensor2Triggered)
+				return;
 			else
-				motor1->isFront = true;
-		}
-		else
-		{
-			tempv = num - motor1->motorLocation;
-			if(tempv <= 4)
-				motor1->isFront = true;
-			else
-				motor1->isFront = false;
+				motor1->motorLocation++;
 		}
 	}
-
-	if(motor1->isFront)
-		setMotor1DirGPIO(ON);
-	else
-		setMotor1DirGPIO(OFF);
-	delay_ms(5);
 	
 	motor1->periodCnt = 0;
 	motor1->motorTargetLocation = num;
 	motor1->parm2 = true;
 	motor1->moveStepNum = 65000;
+	motor1->parm3 = 100;
 	
 	while(isWait && motor1->motorLocation != motor1->motorTargetLocation)
+	{
+		vTaskDelay(100 / portTICK_RATE_MS);
+	}
+}
+
+void motor1MoveStep(bool isWait)
+{
+	setMotor1DirGPIO(ON);
+	delay_ms(5);
+	
+	motor1->periodCnt = 0;
+	motor1->motorTargetLocation = motor1->motorLocation + 1;
+	motor1->parm2 = true;
+	motor1->moveStepNum = 1500;
+	
+	while(isWait && motor1->moveStepNum > 0)
 	{
 		vTaskDelay(100 / portTICK_RATE_MS);
 	}

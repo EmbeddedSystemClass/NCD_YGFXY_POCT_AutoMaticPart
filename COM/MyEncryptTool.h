@@ -13,6 +13,8 @@ typedef struct PointBuffer_Tag
 	unsigned short tempV2;
 }PointBuffer;
 
+#define	PointBufferStructSize	sizeof(PointBuffer)
+
 MyRes MyDencrypt(char *source, char *target, unsigned short len);
 
 #endif

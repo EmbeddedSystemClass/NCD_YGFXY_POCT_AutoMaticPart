@@ -135,10 +135,10 @@ MyRes MyDencrypt(char *source, char *target, unsigned short len)
 	PointBuffer * TempPointBuffer = NULL;
 	MyRes statues = My_Fail;
 	
-	TempPointBuffer = MyMalloc(sizeof(PointBuffer));
+	TempPointBuffer = MyMalloc(PointBufferStructSize);
 	if(TempPointBuffer)
 	{
-		memset(TempPointBuffer, 0, sizeof(PointBuffer));
+		memset(TempPointBuffer, 0, PointBufferStructSize);
 		
 		for(TempPointBuffer->i=0; TempPointBuffer->i<len ;TempPointBuffer->i++)
 		{
@@ -160,9 +160,6 @@ MyRes MyDencrypt(char *source, char *target, unsigned short len)
 	}
 	
 	MyFree(TempPointBuffer);
-		
-	if(statues == My_Fail)
-		memset(target, 0, len);
 		
 	return statues;
 }

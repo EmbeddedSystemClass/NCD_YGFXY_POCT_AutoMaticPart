@@ -5,7 +5,7 @@
 #include	"Define.h"
 #include	"Timer.h"
 
-#define	MAX_QR_CODE_LENGHT	300					//二维码最大长度
+#define	MAX_QR_CODE_LENGHT	150					//二维码最大长度
 #define	MAX_SCAN_QR_TIME	10					//扫描二维码时间
 
 typedef struct ReadQRCodeBuffer_tag {

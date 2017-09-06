@@ -32,10 +32,6 @@ void setMotorxDir(Motorx_Def motor, bool value);
 bool getMotorxDir(Motorx_Def motor);
 void toggleMotorxDir(Motorx_Def motor);
 
-void setMotorxSleep(Motorx_Def motor, bool value);
-bool getMotorxSleep(Motorx_Def motor);
-void toggleMotorxSleep(Motorx_Def motor);
-
 void setMotorxMoveStepNum(Motorx_Def motor, unsigned short value);
 unsigned short getMotorxMoveStepNum(Motorx_Def motor);
 void minusMotorxMoveStepNum(Motorx_Def motor);

@@ -152,14 +152,6 @@ void DebugMon_Handler(void)
 
 void EXTI9_5_IRQHandler(void)
 {
-	
-	//电机1，原点传感器触发
-	if(EXTI_GetFlagStatus(Motor1_Sensor1_EXTI_Line) == SET)
-	{
-
-		EXTI_ClearITPendingBit(Motor1_Sensor1_EXTI_Line);
-	}
-	
 	//电机1，排队位传感器触发
 	if(EXTI_GetFlagStatus(Motor1_Sensor2_EXTI_Line) == SET)
 	{
@@ -167,10 +159,7 @@ void EXTI9_5_IRQHandler(void)
 		
 		if((motor->motorLocation != 0) && (motor->parm1 > 2000))
 		{
-			if(motor->isFront)
-				motor->motorLocation++;
-			else
-				motor->motorLocation--;
+			motor->motorLocation++;
 			
 			if(motor->motorLocation <= 0)
 				motor->motorLocation = PaiDuiWeiNum;
@@ -179,7 +168,7 @@ void EXTI9_5_IRQHandler(void)
 		}
 		
 		motor->parm1 = 0;
-		
+
 		if(Motor1Sensor1Triggered)
 			motor->motorLocation = 1;
 		
@@ -199,20 +188,7 @@ void EXTI9_5_IRQHandler(void)
 
 void EXTI15_10_IRQHandler(void)
 {
-	
-	//电机3，中间传感器
-	if(EXTI_GetFlagStatus(Motor2_Sensor2_EXTI_Line) == SET)
-	{
 
-		EXTI_ClearITPendingBit(Motor2_Sensor2_EXTI_Line);
-	}
-	
-	//电机3，最外面传感器
-	if(EXTI_GetFlagStatus(Motor2_Sensor3_EXTI_Line) == SET)
-	{
-		
-		EXTI_ClearITPendingBit(Motor2_Sensor3_EXTI_Line);
-	}
 }
 
 

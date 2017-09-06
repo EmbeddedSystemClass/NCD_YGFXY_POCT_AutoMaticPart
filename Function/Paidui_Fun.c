@@ -71,7 +71,7 @@ void PaiDuiHandler(void)
 					temp->statues = status_timeup;
 					timer_restart(&(temp->timeUp_timer));				//启动超时计时器
 				}
-				else if(tempvalue <= 20)
+				else if(tempvalue <= 5)
 				{
 					if(temp == GetCurrentTestItem())
 					{
@@ -79,7 +79,7 @@ void PaiDuiHandler(void)
 						startActivity(createTimeDownActivity, NULL, NULL);
 					}
 				}
-				else if(tempvalue <= 30)
+				else if(tempvalue <= 10)
 				{
 					if(NULL == GetCurrentTestItem())
 					{

@@ -196,6 +196,7 @@ static MyRes testLed(void)
 ***************************************************************************************************/
 static MyRes testMotol(void)
 {
+	unsigned char i=0;
 	//²âÊÔµç»ú1
 	motor1MoveToNum(1, true);
 	

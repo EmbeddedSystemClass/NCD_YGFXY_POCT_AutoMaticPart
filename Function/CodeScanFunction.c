@@ -7,6 +7,7 @@
 #include	"MyEncryptTool.h"
 #include	"QueueUnits.h"
 #include	"ItemConst_Data.h"
+#include	"Motor1_Fun.h"
 #include	"Motor2_Fun.h"
 #include	"Motor4_Fun.h"
 #include	"Motor_Data.h"
@@ -100,6 +101,7 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 		motor2MoveTo(Motor2_PutDownCardLocation, true);
 		motor4MoveTo(Motor4_OpenLocation, true);
 		motor2MoveTo(Motor2_MidLocation, true);
+		motor1MoveStep(true);
 	}
 	else
 	{
@@ -122,13 +124,14 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 ***************************************************************************************************/
 static void ReadBasicCodeData(ReadQRCodeBuffer * readQRCodeBuffer)
 {
-	memset(readQRCodeBuffer->originalcode, 0, MAX_QR_CODE_LENGHT);
 	ReceiveDataFromQueue(GetUsart3RXQueue(), NULL, readQRCodeBuffer->originalcode , MAX_QR_CODE_LENGHT, &(readQRCodeBuffer->originalCodeLen), 1, 10 / portTICK_RATE_MS
 		, 10 / portTICK_RATE_MS);
 	
 	if(readQRCodeBuffer->originalCodeLen > 0)
 	{
 		readQRCodeBuffer->originalCodeLen -= 1;
+		readQRCodeBuffer->originalcode[readQRCodeBuffer->originalCodeLen] = 0;
+		
 		AnalysisCode(readQRCodeBuffer);
 	}
 }
@@ -145,12 +148,10 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 {
 	unsigned char i=0;
 
-	/*清空二维码空间*/
-	memset(readQRCodeBuffer->decryptcode, 0, MAX_QR_CODE_LENGHT);
-
 	/*数据解密失败*/
 	if(pdFAIL == MyDencrypt(readQRCodeBuffer->originalcode, readQRCodeBuffer->decryptcode, readQRCodeBuffer->originalCodeLen))
 		goto END;
+	readQRCodeBuffer->decryptcode[readQRCodeBuffer->originalCodeLen] = 0;
 	
 	memcpy(readQRCodeBuffer->originalcode, readQRCodeBuffer->decryptcode, readQRCodeBuffer->originalCodeLen);
 	readQRCodeBuffer->pbuf2 = readQRCodeBuffer->originalcode;
@@ -267,15 +268,15 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 	readQRCodeBuffer->pbuf1 = strtok(NULL , "#");
 	if(readQRCodeBuffer->pbuf1)
 	{
-		static char year[10] ,month[10],day[10];
-		memcpy(year, readQRCodeBuffer->pbuf1, 2);
-		readQRCodeBuffer->cardQR->CardBaoZhiQi.year = strtol(year , NULL , 10);
+		readQRCodeBuffer->tempbuf[2] = 0;
+		memcpy(readQRCodeBuffer->tempbuf, readQRCodeBuffer->pbuf1, 2);
+		readQRCodeBuffer->cardQR->CardBaoZhiQi.year = strtol(readQRCodeBuffer->tempbuf , NULL , 10);
 
-		memcpy(month, &readQRCodeBuffer->pbuf1[2], 2);
-		readQRCodeBuffer->cardQR->CardBaoZhiQi.month = (unsigned char)strtod(month , NULL );
+		memcpy(readQRCodeBuffer->tempbuf, &readQRCodeBuffer->pbuf1[2], 2);
+		readQRCodeBuffer->cardQR->CardBaoZhiQi.month = (unsigned char)strtod(readQRCodeBuffer->tempbuf , NULL );
 
-		memcpy(day, &readQRCodeBuffer->pbuf1[4], 2);
-		readQRCodeBuffer->cardQR->CardBaoZhiQi.day = (unsigned char)strtod(day , NULL );
+		memcpy(readQRCodeBuffer->tempbuf, &readQRCodeBuffer->pbuf1[4], 2);
+		readQRCodeBuffer->cardQR->CardBaoZhiQi.day = (unsigned char)strtod(readQRCodeBuffer->tempbuf , NULL );
 	}
 	else
 		goto END;
@@ -293,9 +294,7 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 		goto END;
 	
 	END:
-		if(readQRCodeBuffer->scanResult != CardCodeScanning)
-			return;
-		else if(readQRCodeBuffer->cardQR->CRC16 != CalModbusCRC16Fun(readQRCodeBuffer->pbuf2 , readQRCodeBuffer->originalCodeLen - 
+		if(readQRCodeBuffer->cardQR->CRC16 != CalModbusCRC16Fun(readQRCodeBuffer->pbuf2 , readQRCodeBuffer->originalCodeLen - 
 			readQRCodeBuffer->tempV1, NULL))
 			readQRCodeBuffer->scanResult = CardCodeCRCError;		
 		//else if(My_Fail == CheckCardIsTimeOut(readQRCodeBuffer))

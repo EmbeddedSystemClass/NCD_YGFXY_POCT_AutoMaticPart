@@ -246,7 +246,7 @@ static void CheckQRCode(void)
 			memcpy(&(S_PreReadPageBuffer->currenttestdata->testData.qrCode), &(S_PreReadPageBuffer->temperweima), sizeof(QRCode));
 					
 			//设置倒计时时间
-			timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*5);
+			timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*8);
 				
 			S_PreReadPageBuffer->currenttestdata->statues = status_start;
 			startActivity(createPaiDuiActivity, NULL, NULL);

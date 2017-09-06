@@ -4,6 +4,9 @@
 #include	"stm32f4xx.h"
 #include	"stm32f4xx_gpio.h"
 #include	"stm32f4xx_rcc.h"
+#include	"stm32f4xx_exti.h"
+#include 	"stm32f4xx_syscfg.h"
+#include	"misc.h"
 #include	"Define.h"
 
 #define	Motor1_CLK_Pin					GPIO_Pin_9
@@ -37,7 +40,7 @@
 #define	Motor1_Sensor2_EXTI_IRQ			EXTI9_5_IRQn
 
 #define	Motor1Sensor1Triggered	!GPIO_ReadInputDataBit(Motor1_Sensor1_Group, Motor1_Sensor1_Pin)
-#define	Motor1Sensor2Triggered	GPIO_ReadInputDataBit(Motor1_Sensor2_Group, Motor1_Sensor2_Pin)
+#define	Motor1Sensor2Triggered	!GPIO_ReadInputDataBit(Motor1_Sensor2_Group, Motor1_Sensor2_Pin)
 
 void Motor1_GPIO_Init(void);
 void setMotor1ClkGPIO(MyBitAction myBitAction);

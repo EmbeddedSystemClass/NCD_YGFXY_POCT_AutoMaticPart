@@ -157,10 +157,10 @@ ResultState TestFunction(PaiduiUnitData * parm)
 			
 			for(i=1; i<= TestStep; i++)
 			{
-				S_TempCalData->motorLocation += 3;
+				S_TempCalData->motorLocation += TestMotorStepUp;
 				motor2MoveTo(S_TempCalData->motorLocation, true);
 				
-				vTaskDelay(1 / portTICK_RATE_MS);				
+//				vTaskDelay(1 / portTICK_RATE_MS);				
 				S_TempCalData->tempvalue1 += ADS8325();
 				
 				//Æ½¾ùÖµÂË²¨

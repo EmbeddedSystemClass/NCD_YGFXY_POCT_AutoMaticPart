@@ -82,12 +82,12 @@ void TIM3_IRQHandler(void)
 				setMotorxPeriodCnt(Motor_1, 0);
 				setMotor1ClkGPIO(OFF);
 				minusMotorxMoveStepNum(Motor_1);
-				
+
 				motor->parm1++;
 				
 				if((motor->motorLocation == motor->motorTargetLocation) && (motor->parm2))
 				{
-					motor->moveStepNum = 100;
+					motor->moveStepNum = motor->parm3;
 					motor->parm2 = false;
 				}
 			}
@@ -128,27 +128,6 @@ void TIM3_IRQHandler(void)
 				if(motor->motorLocation == motor->motorTargetLocation)
 					motor->moveStepNum = 0;
 			}
-		}
-	
-		motor = getMotor(Motor_3);
-		if(motor->moveStepNum > 0)
-		{
-			plusMotorxPeriodCnt(Motor_3);
-			
-			if(motor->periodCnt <= motor->highTime)
-				setMotor3ClkGPIO(ON);
-			else if(motor->periodCnt < motor->lowTime)
-				setMotor3ClkGPIO(OFF);
-			else if(motor->periodCnt == motor->lowTime)
-			{
-				setMotorxPeriodCnt(Motor_3, 0);
-				setMotor3ClkGPIO(OFF);
-				minusMotorxMoveStepNum(Motor_3);
-				plusMotorxLocation(Motor_3, 1);
-				
-				if(motor->motorLocation == motor->motorTargetLocation)
-					motor->moveStepNum = 0;
-			}	
 		}
 		
 		motor = getMotor(Motor_4);
