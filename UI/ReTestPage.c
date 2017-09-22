@@ -19,9 +19,7 @@
 #include	"Timer.h"
 #include	"Ads8325_Driver.h"
 #include	"LEDCheck_Driver.h"
-#include	"Motor1_Fun.h"
-#include	"Motor2_Fun.h"
-#include	"Motor4_Fun.h"
+#include	"Motor_Fun.h"
 #include	"System_Data.h"
 #include	"SystemSet_Data.h"
 #include	"CardCheck_Driver.h"
@@ -184,12 +182,10 @@ static void activityFresh(void)
 				if(S_ReTestPageBuffer->qrCode[S_ReTestPageBuffer->i].CRC16 == 0)
 				{
 					S_ReTestPageBuffer->waitCardIndex = S_ReTestPageBuffer->i + 1;
-					dspReTestStatus("ready card", &S_ReTestPageBuffer->waitCardIndex);
+					dspReTestStatus("ready", NULL);
 					
 					S_ReTestPageBuffer->motorStep = 1;
-					S_ReTestPageBuffer->motorAction.motorActionName = WaitPutInCard;
-					S_ReTestPageBuffer->motorAction.motorActionParm = S_ReTestPageBuffer->waitCardIndex;
-					StartMotorAction(&S_ReTestPageBuffer->motorAction);
+					MotorMoveToWaitCardPutIn(S_ReTestPageBuffer->waitCardIndex);
 					break;
 				}
 			}
@@ -200,7 +196,7 @@ static void activityFresh(void)
 			}
 			else
 			{
-				if(S_ReTestPageBuffer->motorStep == 1 && isMotorActionOver())
+				if(S_ReTestPageBuffer->motorStep == 1 && isMotorActionOver(S_ReTestPageBuffer->waitCardIndex, Motor2_WaitCardLocation, Motor4_OpenLocation))
 				{
 					S_ReTestPageBuffer->motorStep = 2;
 					dspReTestStatus("put card", &S_ReTestPageBuffer->waitCardIndex);
@@ -248,10 +244,7 @@ static void activityFresh(void)
 						dspReTestStatus("test card", &S_ReTestPageBuffer->testCardIndex);
 						
 						S_ReTestPageBuffer->testStep = 1;
-						S_ReTestPageBuffer->motorAction.motorActionName = WaitPutInCard;
-						S_ReTestPageBuffer->motorAction.motorActionParm = S_ReTestPageBuffer->testCardIndex;
-						StartMotorAction(&S_ReTestPageBuffer->motorAction);
-
+						MotorMoveToWaitCardPutIn(S_ReTestPageBuffer->testCardIndex);
 						break;
 					}
 				}
@@ -262,7 +255,7 @@ static void activityFresh(void)
 					OneReTestEnd(S_ReTestPageBuffer->resultDesc);
 				}
 				
-				if(S_ReTestPageBuffer->testStep == 1 && isMotorActionOver())
+				if(S_ReTestPageBuffer->testStep == 1 && isMotorActionOver(S_ReTestPageBuffer->testCardIndex, Motor2_WaitCardLocation, Motor4_OpenLocation))
 				{
 					//check card is exist
 					if(OFF == readCaedCheckStatus())
@@ -270,9 +263,7 @@ static void activityFresh(void)
 						sprintf(S_ReTestPageBuffer->resultDesc, "%d not exist\0", S_ReTestPageBuffer->testCardIndex);
 						OneReTestEnd(S_ReTestPageBuffer->resultDesc);
 
-						S_ReTestPageBuffer->motorAction.motorActionName = OriginLocation;
-						S_ReTestPageBuffer->motorAction.motorActionParm = S_ReTestPageBuffer->testCardIndex;
-						StartMotorAction(&S_ReTestPageBuffer->motorAction);
+						MotorMoveToOriginLocation(S_ReTestPageBuffer->testCardIndex);
 						S_ReTestPageBuffer->testStep = 21;
 					}
 					else
@@ -292,21 +283,18 @@ static void activityFresh(void)
 							OneReTestEnd(S_ReTestPageBuffer->resultDesc);
 							
 							S_ReTestPageBuffer->testStep = 21;
-							S_ReTestPageBuffer->motorAction.motorActionName = OriginLocation;
-							S_ReTestPageBuffer->motorAction.motorActionParm = S_ReTestPageBuffer->testCardIndex;
-							StartMotorAction(&S_ReTestPageBuffer->motorAction);
+							MotorMoveToOriginLocation(S_ReTestPageBuffer->testCardIndex);
 						}
 						else
 						{
 							S_ReTestPageBuffer->testStep = 4;
 							
 							S_ReTestPageBuffer->testCardIndex2 = S_ReTestPageBuffer->testCardIndex;
-							S_ReTestPageBuffer->testCardIndex2 += 4;
-							if(S_ReTestPageBuffer->testCardIndex2 > 8)
-								S_ReTestPageBuffer->testCardIndex2 -= 8;
-							S_ReTestPageBuffer->motorAction.motorActionName = MoveToStartTestLocation;
-							S_ReTestPageBuffer->motorAction.motorActionParm = S_ReTestPageBuffer->testCardIndex2;
-							StartMotorAction(&S_ReTestPageBuffer->motorAction);
+							S_ReTestPageBuffer->testCardIndex2 += PaiDuiWeiNum;
+							if(S_ReTestPageBuffer->testCardIndex2 > PaiDuiWeiNum*2)
+								S_ReTestPageBuffer->testCardIndex2 -= PaiDuiWeiNum*2;
+							
+							MotorMoveToStartTestLocation(S_ReTestPageBuffer->testCardIndex2);
 						}
 					}
 					else
@@ -315,13 +303,11 @@ static void activityFresh(void)
 						OneReTestEnd(S_ReTestPageBuffer->resultDesc);
 
 						S_ReTestPageBuffer->testStep = 21;
-						S_ReTestPageBuffer->motorAction.motorActionName = OriginLocation;
-						S_ReTestPageBuffer->motorAction.motorActionParm = S_ReTestPageBuffer->testCardIndex;
-						StartMotorAction(&S_ReTestPageBuffer->motorAction);
+						MotorMoveToOriginLocation(S_ReTestPageBuffer->testCardIndex);
 					}
 				}
 				
-				if((S_ReTestPageBuffer->testStep == 4) && isMotorActionOver())
+				if((S_ReTestPageBuffer->testStep == 4) && isMotorActionOver(S_ReTestPageBuffer->testCardIndex2, Motor2_StartTestLocation, Motor4_CardLocation))
 				{
 					S_ReTestPageBuffer->testStep = 5;
 					StartTest(&S_ReTestPageBuffer->testData);
@@ -329,17 +315,16 @@ static void activityFresh(void)
 
 				if(S_ReTestPageBuffer->testStep == 5 && My_Pass == TakeTestResult(&S_ReTestPageBuffer->testData.testResultDesc))
 				{
-					S_ReTestPageBuffer->result[S_ReTestPageBuffer->testCardIndex-1] = S_ReTestPageBuffer->testCardIndex;//S_ReTestPageBuffer->testData.testSeries.BasicResult;
+					S_ReTestPageBuffer->result[S_ReTestPageBuffer->testCardIndex-1] = S_ReTestPageBuffer->testCardIndex;//S_ReTestPageBuffer->testData.testSeries.result;
 
-					motor2MoveTo(Motor2_PutDownCardLocation2, false);
-					
+					StartMotorAction(Motor_2, Motor2_PutDownCardLocation2, false);
 					S_ReTestPageBuffer->testStep = 6;
 				}
 				
 				if(S_ReTestPageBuffer->testStep == 6 && Motor2_PutDownCardLocation2 == getMotorxLocation(Motor_2))
 				{
-					motor4MoveTo(Motor4_OpenLocation, false);
-					motor2MoveTo(Motor2_MidLocation, false);
+					StartMotorAction(Motor_4, Motor4_OpenLocation, false);
+					StartMotorAction(Motor_2, Motor2_MidLocation, false);
 					S_ReTestPageBuffer->testStep = 7;
 				}
 				
@@ -348,7 +333,7 @@ static void activityFresh(void)
 					S_ReTestPageBuffer->testCardIndex = 0;
 				}
 
-				if(S_ReTestPageBuffer->testStep == 21 && isMotorActionOver())
+				if(S_ReTestPageBuffer->testStep == 21 && isMotorActionOver(S_ReTestPageBuffer->testCardIndex, Motor2_MidLocation, Motor4_OpenLocation))
 				{
 					stopReTest(S_ReTestPageBuffer->resultDesc);
 				}

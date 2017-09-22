@@ -5,7 +5,6 @@
 #include	"MyTest_Data.h"
 #include	"UI_Data.h"
 #include	"SystemSet_Data.h"
-#include	"Motor_Task.h"
 
 typedef struct LunchPageBuffer_tag {
 	Timer timer;
@@ -15,7 +14,6 @@ typedef struct LunchPageBuffer_tag {
 	unsigned short lcdinput[100];
 	CreateTestErrorType error;
 	Operator * tempOperator;
-	MotorAction motorAction;
 }LunchPageBuffer;
 
 MyRes createLunchActivity(Activity * thizActivity, Intent * pram);

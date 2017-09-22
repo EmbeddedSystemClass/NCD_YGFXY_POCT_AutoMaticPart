@@ -12,21 +12,21 @@
 /***************************************************************************************************/
 /******************************************Macro Definition*****************************************/
 /***************************************************************************************************/
-#define	Motor4_CLK_Pin			GPIO_Pin_14
-#define	Motor4_CLK_Group		GPIOD
-#define	Motor4_CLK_RCC			RCC_AHB1Periph_GPIOD
+#define	Motor4_CLK_Pin			GPIO_Pin_15
+#define	Motor4_CLK_Group		GPIOE
+#define	Motor4_CLK_RCC			RCC_AHB1Periph_GPIOE
 
-#define	Motor4_DIR_Pin			GPIO_Pin_13
-#define	Motor4_DIR_Group		GPIOD
-#define	Motor4_DIR_RCC			RCC_AHB1Periph_GPIOD
+#define	Motor4_DIR_Pin			GPIO_Pin_8
+#define	Motor4_DIR_Group		GPIOE
+#define	Motor4_DIR_RCC			RCC_AHB1Periph_GPIOE
 
-#define	Motor4_Sleep_Pin		GPIO_Pin_15
-#define	Motor4_Sleep_Group		GPIOD
-#define	Motor4_Sleep_RCC		RCC_AHB1Periph_GPIOD
+#define	Motor4_Sleep_Pin		GPIO_Pin_9
+#define	Motor4_Sleep_Group		GPIOE
+#define	Motor4_Sleep_RCC		RCC_AHB1Periph_GPIOE
 
-#define	Motor4_Sensor1_Pin		GPIO_Pin_11
-#define	Motor4_Sensor1_Group	GPIOD
-#define	Motor4_Sensor1_RCC		RCC_AHB1Periph_GPIOD
+#define	Motor4_Sensor1_Pin		GPIO_Pin_1
+#define	Motor4_Sensor1_Group	GPIOB
+#define	Motor4_Sensor1_RCC		RCC_AHB1Periph_GPIOB
 
 #define	Motor4Sensor1Triggered	GPIO_ReadInputDataBit(Motor4_Sensor1_Group, Motor4_Sensor1_Pin)
 /***************************************************************************************************/

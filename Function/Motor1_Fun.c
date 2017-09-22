@@ -65,7 +65,7 @@ void motor1Reset(void)
 ***************************************************************************************************/
 void motor1MoveToNum(unsigned char num, bool isWait)
 {
-	unsigned char tempv = 0;
+	unsigned short waitTime = 0;
 	motor1 = getMotor(Motor_1);
 
 	if(motor1->motorLocation == 0)
@@ -87,26 +87,15 @@ void motor1MoveToNum(unsigned char num, bool isWait)
 	motor1->moveStepNum = 65000;
 	motor1->parm3 = 100;
 	
-	while(isWait && motor1->motorLocation != motor1->motorTargetLocation)
+	if(isWait)
+		waitTime = 200;
+	
+	while(waitTime && motor1->motorLocation != motor1->motorTargetLocation)
 	{
 		vTaskDelay(100 / portTICK_RATE_MS);
+		waitTime--;
 	}
 }
 
-void motor1MoveStep(bool isWait)
-{
-	setMotor1DirGPIO(ON);
-	delay_ms(5);
-	
-	motor1->periodCnt = 0;
-	motor1->motorTargetLocation = motor1->motorLocation + 1;
-	motor1->parm2 = true;
-	motor1->moveStepNum = 1500;
-	
-	while(isWait && motor1->moveStepNum > 0)
-	{
-		vTaskDelay(100 / portTICK_RATE_MS);
-	}
-}
 /****************************************end of file************************************************/
 

@@ -456,11 +456,6 @@
               <FilePath>..\HardwareDriver\Motor2_Driver.c</FilePath>
             </File>
             <File>
-              <FileName>Motor3_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\Motor3_Driver.c</FilePath>
-            </File>
-            <File>
               <FileName>Motor4_Driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\Motor4_Driver.c</FilePath>
@@ -469,16 +464,6 @@
               <FileName>RX8025_Driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\RX8025_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>SDIO_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\SDIO_Driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm324x7i_eval_sdio_sd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HardwareDriver\stm324x7i_eval_sdio_sd.c</FilePath>
             </File>
             <File>
               <FileName>TempleteFile.c</FileName>
@@ -520,6 +505,16 @@
               <FileType>1</FileType>
               <FilePath>..\HardwareDriver\Usart6_Driver.c</FilePath>
             </File>
+            <File>
+              <FileName>Ceju_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\Ceju_Driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>SD_SPI_Driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HardwareDriver\SD_SPI_Driver.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -544,11 +539,6 @@
               <FileName>Motor2_Fun.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Function\Motor2_Fun.c</FilePath>
-            </File>
-            <File>
-              <FileName>Motor3_Fun.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Function\Motor3_Fun.c</FilePath>
             </File>
             <File>
               <FileName>Motor4_Fun.c</FileName>
@@ -1229,6 +1219,11 @@
               <FileName>stm32f4xx_syscfg.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_syscfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_spi.c</FilePath>
             </File>
           </Files>
         </Group>

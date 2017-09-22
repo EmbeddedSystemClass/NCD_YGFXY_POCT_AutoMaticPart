@@ -6,7 +6,7 @@
 #include	"stm32f4xx_rcc.h"
 #include	"Define.h"
 
-#define	LedCheck_Pin				GPIO_Pin_2
+#define	LedCheck_Pin				GPIO_Pin_5
 #define	LedCheck_Group				GPIOE
 #define	LedCheck_RCC				RCC_AHB1Periph_GPIOE
 

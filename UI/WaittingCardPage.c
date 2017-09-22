@@ -8,6 +8,7 @@
 #include	"CardCheck_Driver.h"
 #include	"UI_Data.h"
 #include	"MyMem.h"
+#include	"Motor_Fun.h"
 
 #include	"LunchPage.h"
 #include	"SampleIDPage.h"
@@ -90,11 +91,10 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	/*ÃüÁî*/
 	S_WaitPageData->lcdinput[0] = pbuf[4];
 	S_WaitPageData->lcdinput[0] = (S_WaitPageData->lcdinput[0]<<8) + pbuf[5];
 		
-	/*·µ»Ø*/
+	//·µ»Ø
 	if(S_WaitPageData->lcdinput[0] == 0x1303)
 		backToFatherActivity();
 }
@@ -113,6 +113,7 @@ static void activityFresh(void)
 	/*ÊÇ·ñ²å¿¨*/
 	if(readCaedCheckStatus() == ON)
 	{
+		StartMotorAction(Motor_4, Motor4_CardLocation, true);
 		startActivity(createPreReadCardActivity, NULL, NULL);
 		return;
 	}

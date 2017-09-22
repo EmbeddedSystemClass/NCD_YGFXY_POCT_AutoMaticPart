@@ -11,6 +11,7 @@ typedef struct SampleIDPage_tag {
 	unsigned int tempv1;
 	PaiduiUnitData * currenttestdata;												//当前测试数据
 	unsigned short lcdinput[100];
+	bool isMotorOk;
 }SampleIDPage;
 
 MyRes createSampleActivity(Activity * thizActivity, Intent * pram);

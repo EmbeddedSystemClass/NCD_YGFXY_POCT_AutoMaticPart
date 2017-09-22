@@ -55,7 +55,7 @@ static void ConfigUsart5(void)
 	NVIC_InitTypeDef NVIC_InitStructure;
 
 	/* 开启GPIO_D的时钟 */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD, ENABLE);
 	/* 开启串口3的时钟 */
 	RCC_APB2PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE);
 
@@ -63,14 +63,14 @@ static void ConfigUsart5(void)
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_7;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_2;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
 	
-	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_12;
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_UART5);
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_UART5);
+	GPIO_PinAFConfig(GPIOD, GPIO_PinSource2, GPIO_AF_UART5);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource12, GPIO_AF_UART5);
 
 	USART_InitStructure.USART_BaudRate   = 115200;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;

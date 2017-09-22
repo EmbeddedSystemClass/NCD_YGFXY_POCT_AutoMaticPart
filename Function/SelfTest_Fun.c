@@ -196,7 +196,6 @@ static MyRes testLed(void)
 ***************************************************************************************************/
 static MyRes testMotol(void)
 {
-	unsigned char i=0;
 	//测试电机1
 	motor1MoveToNum(1, true);
 	
@@ -204,12 +203,12 @@ static MyRes testMotol(void)
 		return My_Fail;
 	
 	//检测电机2
-	motor2MoveTo(0, true);
-	if(!Motor2Sensor1Triggered)
-		return My_Fail;
+//	motor2MoveTo(0, true);
+//	if(!Motor2Sensor1Triggered)
+//		return My_Fail;
 	
 //	motor2MoveTo(Motor2_StartTestLocation, 20000);
-	motor2MoveTo(Motor2_MidLocation, true);
+//	motor2MoveTo(Motor2_MidLocation, true);
 	
 	//检测电机4
 	motor4MoveTo(0, true);

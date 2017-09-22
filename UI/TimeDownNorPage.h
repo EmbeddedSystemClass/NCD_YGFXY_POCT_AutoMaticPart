@@ -4,12 +4,10 @@
 #include	"Timer.h"
 #include	"MyTest_Data.h"
 #include	"UI_Data.h"
-#include	"Motor_Task.h"
 
 typedef struct TimeDownPage_tag {
 	Timer *S_Timer;
 	PaiduiUnitData * currenttestdata;
-	MotorAction motorAction;
 	unsigned short count;
 	unsigned short time;
 	bool canToTestPage;

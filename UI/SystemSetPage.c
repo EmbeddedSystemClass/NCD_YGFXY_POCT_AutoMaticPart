@@ -168,11 +168,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 				{
 					startActivity(createReTestActivity, NULL, NULL);
 				}
-				/*else if(pdPASS == CheckStrIsSame(&pbuf[7] , CheckQRPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
-				{
-					startActivity(createCheckQRActivity, NULL, NULL);
-				}
-				else if(pdPASS == CheckStrIsSame(&pbuf[7] , AdjLedPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
+				/*else if(pdPASS == CheckStrIsSame(&pbuf[7] , AdjLedPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
 				{
 					startActivity(createAdjustLedActivity, NULL, NULL);
 				}
@@ -182,19 +178,14 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 						SendKeyCode(2);
 					else
 						SendKeyCode(1);
-				}
-				else if(pdPASS == CheckStrIsSame(&pbuf[7] , ChangeValueShowTypePassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
-				{
-					setIsShowRealValue(true);
-					SendKeyCode(2);
-				}
+				}*/
 				else if(pdPASS == CheckStrIsSame(&pbuf[7] , UnlockLCDPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
 				{
 					unLockLCDOneTime();
 					SendKeyCode(2);
 				}
 				else
-					SendKeyCode(1);*/
+					SendKeyCode(1);
 			}
 			else
 				SendKeyCode(1);

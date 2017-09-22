@@ -236,7 +236,7 @@ static void RefreshText(void)
 	sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.sampleid);
 	DisText(0x2320, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
 				
-	sprintf(S_ShowPageBuffer->tempbuf, "%2.1f ¡æ\0", S_ShowPageBuffer->testdata.temperature.O_Temperature);
+	sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.operator.name);
 	DisText(0x2330, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
 		
 	sprintf(S_ShowPageBuffer->tempbuf, "%s-%s\0", S_ShowPageBuffer->testdata.qrCode.PiHao,
@@ -245,19 +245,12 @@ static void RefreshText(void)
 		
 	if(S_ShowPageBuffer->testdata.testResultDesc != ResultIsOK)
 		sprintf(S_ShowPageBuffer->tempbuf, "Error\0");
-	else if(IsShowRealValue() == true)
-		sprintf(S_ShowPageBuffer->tempbuf, "%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum,
-			S_ShowPageBuffer->testdata.testSeries.BasicResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
-	else if(S_ShowPageBuffer->testdata.testSeries.BasicResult <= S_ShowPageBuffer->testdata.qrCode.itemConstData.lowstResult)
-		sprintf(S_ShowPageBuffer->tempbuf, "<%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
+	else if(S_ShowPageBuffer->testdata.testSeries.result <= S_ShowPageBuffer->testdata.qrCode.itemConstData.lowstResult)
+		snprintf(S_ShowPageBuffer->tempbuf, 20, "<%.*f %s", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
 			S_ShowPageBuffer->testdata.qrCode.itemConstData.lowstResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
-	else if(S_ShowPageBuffer->testdata.testSeries.BasicResult >= S_ShowPageBuffer->testdata.qrCode.itemConstData.highestResult)
-		sprintf(S_ShowPageBuffer->tempbuf, ">%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
-			S_ShowPageBuffer->testdata.qrCode.itemConstData.highestResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
 	else
-		sprintf(S_ShowPageBuffer->tempbuf, "%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
-			S_ShowPageBuffer->testdata.testSeries.BasicResult,S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
-
+		sprintf(S_ShowPageBuffer->tempbuf, "%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum,
+			S_ShowPageBuffer->testdata.testSeries.result, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
 	DisText(0x2338, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
 		
 	sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.normalResult);

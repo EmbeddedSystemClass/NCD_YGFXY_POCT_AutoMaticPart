@@ -20,11 +20,11 @@
 /***************************************************************************************************/
 /**************************************变量*************************************************/
 /***************************************************************************************************/
-static PaiduiUnitData * (PaiduiTestDataBuffer[PaiDuiWeiNum]);
+static PaiduiUnitData * (PaiduiTestDataBuffer[PaiDuiWeiNum]);					//测试数据缓存区
 
-static PaiduiUnitData * CurrentTestDataBuffer;
+static PaiduiUnitData * CurrentTestDataBuffer;									//当前测试
 
-static Operator * lastOperator = NULL;
+static Operator * lastOperator = NULL;											//上次选择的操作人
 /***************************************************************************************************/
 /**************************************内部函数*************************************************/
 /***************************************************************************************************/
@@ -61,9 +61,14 @@ CreateTestErrorType CreateANewTest(PaiduiUnitData ** TestDataBuffer)
 				return Error_Mem;
 			else
 			{
-				CurrentTestDataBuffer = PaiduiTestDataBuffer[i];
+				SetCurrentTestItem(PaiduiTestDataBuffer[i]);
 				memset(CurrentTestDataBuffer, 0, PaiduiUnitDataStructSize);
-				CurrentTestDataBuffer->testlocation = i + 1;
+				CurrentTestDataBuffer->index = i;
+				CurrentTestDataBuffer->cardLocation = 2*i + 1;
+				CurrentTestDataBuffer->testLocation = CurrentTestDataBuffer->cardLocation;
+				CurrentTestDataBuffer->testLocation += PaiDuiWeiNum;
+				if(CurrentTestDataBuffer->testLocation > PaiDuiWeiNum*2)
+					CurrentTestDataBuffer->testLocation -= PaiDuiWeiNum*2;
 				
 				//保存最新的操作人
 				if(lastOperator != NULL)
@@ -84,6 +89,9 @@ CreateTestErrorType CreateANewTest(PaiduiUnitData ** TestDataBuffer)
 
 PaiduiUnitData * GetTestItemByIndex(unsigned char index)
 {
+	if(index >= PaiDuiWeiNum)
+		return NULL;
+	
 	return PaiduiTestDataBuffer[index];
 }
 
@@ -167,11 +175,11 @@ MyRes DeleteCurrentTest(void)
 {
 	if(CurrentTestDataBuffer)
 	{
-		PaiduiTestDataBuffer[CurrentTestDataBuffer->testlocation-1] = NULL;
+		PaiduiTestDataBuffer[CurrentTestDataBuffer->index] = NULL;
 
 		MyFree(CurrentTestDataBuffer);
 		
-		CurrentTestDataBuffer = NULL;
+		SetCurrentTestItem(NULL);
 	}
 	return My_Pass;
 }

@@ -15,6 +15,7 @@
 #include	"SelectUserPage.h"
 #include	"WaittingCardPage.h"
 #include	"ReadBarCode_Fun.h"
+#include	"Motor_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -81,6 +82,7 @@ MyRes createSampleActivity(Activity * thizActivity, Intent * pram)
 static void activityStart(void)
 {
 	S_SampleIDPage->currenttestdata = GetCurrentTestItem();
+	S_SampleIDPage->isMotorOk = false;
 	
 	while(ReadBarCodeFunction((char *)(S_SampleIDPage->tempbuf), 100) > 0)
 		;
@@ -101,32 +103,33 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_SampleIDPage)
+	S_SampleIDPage->lcdinput[0] = pbuf[4];
+	S_SampleIDPage->lcdinput[0] = (S_SampleIDPage->lcdinput[0]<<8) + pbuf[5];
+		
+	//返回
+	if(S_SampleIDPage->lcdinput[0] == 0x1300)
 	{
-		/*命令*/
-		S_SampleIDPage->lcdinput[0] = pbuf[4];
-		S_SampleIDPage->lcdinput[0] = (S_SampleIDPage->lcdinput[0]<<8) + pbuf[5];
-		
-		/*返回*/
-		if(S_SampleIDPage->lcdinput[0] == 0x1300)
+		if(checkFatherActivityIs(paiduiActivityName))
 		{
-			backToFatherActivity();
+			StartMotorAction(Motor_4, Motor4_OpenLocation, false);
+			StartMotorAction(Motor_2, Motor2_MidLocation, true);
+			DeleteCurrentTest();
 		}
-		
-		/*确定*/
-		else if(S_SampleIDPage->lcdinput[0] == 0x1301)
-		{
-			if(strlen(S_SampleIDPage->currenttestdata->testData.sampleid) == 0)
-				SendKeyCode(1);
-			else
-				startActivity(createWaittingCardActivity, NULL, NULL);
-		}
-		/*获取输入的id*/
-		else if(S_SampleIDPage->lcdinput[0] == 0x1310)
-		{
-			memset(S_SampleIDPage->currenttestdata->testData.sampleid, 0, MaxSampleIDLen);
-			memcpy(S_SampleIDPage->currenttestdata->testData.sampleid, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-		}
+		backToFatherActivity();
+	}
+	//确定
+	else if(S_SampleIDPage->lcdinput[0] == 0x1301)
+	{
+		if(strlen(S_SampleIDPage->currenttestdata->testData.sampleid) > 0 && S_SampleIDPage->isMotorOk)
+			startActivity(createWaittingCardActivity, NULL, NULL);
+		else
+			SendKeyCode(1);
+	}
+	//获取输入的id
+	else if(S_SampleIDPage->lcdinput[0] == 0x1310)
+	{
+		memset(S_SampleIDPage->currenttestdata->testData.sampleid, 0, MaxSampleIDLen);
+		memcpy(S_SampleIDPage->currenttestdata->testData.sampleid, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
 	}
 }
 
@@ -141,12 +144,13 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
+	if(isMotorActionOver(S_SampleIDPage->currenttestdata->cardLocation, Motor2_WaitCardLocation, Motor4_OpenLocation))
+		S_SampleIDPage->isMotorOk = true;
+	
 	//从条码枪读取样品编号
 	if(ReadBarCodeFunction((char *)(S_SampleIDPage->tempbuf), 100) > 0)
 	{
 		memcpy(S_SampleIDPage->currenttestdata->testData.sampleid, S_SampleIDPage->tempbuf, MaxSampleIDLen);
-
-		startActivity(createWaittingCardActivity, NULL, NULL);
 	}
 }
 

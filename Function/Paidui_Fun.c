@@ -11,8 +11,7 @@
 #include	"Paidui_Fun.h"
 
 #include	"PaiDuiPage.h"
-#include	"TimeDownNorPage.h"
-
+#include	"Motor_Fun.h"
 #include	"PaiduiUnitData.h"
 #include	"UI_Data.h"
 
@@ -71,20 +70,12 @@ void PaiDuiHandler(void)
 					temp->statues = status_timeup;
 					timer_restart(&(temp->timeUp_timer));				//启动超时计时器
 				}
-				else if(tempvalue <= 5)
-				{
-					if(temp == GetCurrentTestItem())
-					{
-						temp->statues = status_testting;
-						startActivity(createTimeDownActivity, NULL, NULL);
-					}
-				}
 				else if(tempvalue <= 10)
 				{
 					if(NULL == GetCurrentTestItem())
 					{
 						SetCurrentTestItem(temp);
-						temp->statues = status_waitTest;
+						temp->statues = status_testting;
 					}
 				}
 				//时间>30秒
@@ -103,7 +94,6 @@ void PaiDuiHandler(void)
 				{
 					SetCurrentTestItem(temp);
 					temp->statues = status_testting;
-					startActivity(createTimeDownActivity, NULL, NULL);
 				}
 			}
 		}

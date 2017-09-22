@@ -12,6 +12,7 @@
 #include	<string.h>
 #include	"System_Data.h"
 #include 	"tcpip.h"
+#include	"Ceju_Driver.h"
 
 
 /*! Standard GET response. */
@@ -26,7 +27,7 @@
 "<html>\
 <head>\
 </head>\
-<BODY onLoad=\"window.setTimeout(&quot;location.href='index.html'&quot;,1000)\"  bgcolor=\"#FFFFFF\" text=\"#2477E6\">\
+<BODY onLoad=\"window.setTimeout(&quot;location.href='index.html'&quot;,5000)\"  bgcolor=\"#FFFFFF\" text=\"#2477E6\">\
 "
 
 #define webHTML_END \
@@ -112,7 +113,10 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 				
 				strcpy( cDynamicPage, webHTML_START );
 				
-				sprintf(buf, "内存余量:%d<br>", MyGetFreeHeapSize());
+				sprintf(buf, "内存余量:%d<br>\0", MyGetFreeHeapSize());
+				strcat(cDynamicPage, buf);
+				
+				sprintf(buf, "%.3f<br>\0", ChangeValueToVol());
 				strcat(cDynamicPage, buf);
 				
 				strcat( cDynamicPage, "<p><pre>Task            State   Priority    Stack	#<br>************************************************<br>" );

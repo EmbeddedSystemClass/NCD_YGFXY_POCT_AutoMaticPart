@@ -30,6 +30,7 @@
 #include	"Channel_Driver.h"
 #include	"LedCheck_Driver.h"
 #include	"RX8025_Driver.h"
+#include	"Ceju_Driver.h"
 
 #include	"Delay.h"
 /***************************************************************************************************/
@@ -58,7 +59,7 @@ extern void SystemInit(void);
 void MySystemBSPInit(void)
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-	delay_ms(500);
+	delay_ms(1000);
 	
 	Led_GPIOInit();						//系统指示灯初始化
 	delay_ms(1);
@@ -113,6 +114,8 @@ void MySystemBSPInit(void)
 	
 	RTC_BSPInit();
 	delay_ms(1);
+	
+	CejuADC_Init();
 
 	Timer3_Init();						//定时器初始化
 	delay_ms(1);

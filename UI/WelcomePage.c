@@ -137,7 +137,7 @@ static void activityFresh(void)
 		//×Ô¼ìÍê³É
 		if(SelfTest_OK == page->selfTestStatus)
 		{					
-			SetLEDLight(getGBSystemSetData()->ledLightIntensity);
+			//SetLEDLight(getGBSystemSetData()->ledLightIntensity);
 			
 			StartvTestTask();
 				

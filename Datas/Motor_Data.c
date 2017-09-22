@@ -13,7 +13,7 @@
 /******************************************Static Variables*****************************************/
 /***************************************************************************************************/
 //定义4个电机
-static Motor GB_Motors[4] = 
+static Motor GB_Motors[3] = 
 {
 	//电机1，转盘
 	{
@@ -39,17 +39,6 @@ static Motor GB_Motors[4] =
 		.motorLocation = 60000,									//电机当前位置
 		.motorTargetLocation = 0,							//电机目标位置
 		.motorMaxLocation = 65000,
-	},
-	//电机3，退卡
-	{
-		.highTime = 1,										//高电平时间，*100us
-		.lowTime = 2,										//低电平时间，*100us
-		.periodCnt = 0,
-		.isFront = true,									//是否前进
-		.moveStepNum = 0,									//运动步数
-		.motorLocation = 0,									//电机当前位置
-		.motorTargetLocation = 0,							//电机目标位置
-		.motorMaxLocation = 60000,
 	},
 	//电机4，爪子捏合
 	{

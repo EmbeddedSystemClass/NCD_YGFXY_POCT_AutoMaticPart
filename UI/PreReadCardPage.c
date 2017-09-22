@@ -15,8 +15,7 @@
 #include	"MyTools.h"
 #include	"CRC16.h"
 #include	"System_Data.h"
-#include	"Motor2_Fun.h"
-#include	"Motor4_Fun.h"
+#include	"Motor_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -85,11 +84,10 @@ MyRes createPreReadCardActivity(Activity * thizActivity, Intent * pram)
 static void activityStart(void)
 {
 	S_PreReadPageBuffer->currenttestdata = GetCurrentTestItem();
-		
-	clearPageText();
-
 	StartScanQRCode(&(S_PreReadPageBuffer->temperweima));
 	
+	clearPageText();
+
 	SelectPage(92);
 }
 
@@ -143,8 +141,26 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 *Date: 2016年12月21日09:01:16
 ***************************************************************************************************/
 static void activityFresh(void)
-{
+{	
 	CheckQRCode();
+			
+	if(S_PreReadPageBuffer->scancode != CardCodeScanOK && S_PreReadPageBuffer->scancode != CardCodeScanning && isMotorActionOver(S_PreReadPageBuffer->currenttestdata->cardLocation, Motor2_MidLocation,
+		Motor4_OpenLocation))
+	{
+		if(S_PreReadPageBuffer->scancode == CardUnsupported)										//不支持的品种
+			SendKeyCode(6);
+		else if(S_PreReadPageBuffer->scancode == CardCodeTimeOut)									//过期
+			SendKeyCode(4);
+		else
+			SendKeyCode(1);
+	}	
+	
+	if(S_PreReadPageBuffer->scancode == CardCodeScanOK && isMotorActionOver(S_PreReadPageBuffer->currenttestdata->cardLocation+1, Motor2_MidLocation,
+		Motor4_OpenLocation))
+	{
+		S_PreReadPageBuffer->currenttestdata->statues = status_start;
+		startActivity(createPaiDuiActivity, NULL, NULL);
+	}
 }
 
 /***************************************************************************************************
@@ -246,21 +262,13 @@ static void CheckQRCode(void)
 			memcpy(&(S_PreReadPageBuffer->currenttestdata->testData.qrCode), &(S_PreReadPageBuffer->temperweima), sizeof(QRCode));
 					
 			//设置倒计时时间
-			timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*8);
-				
-			S_PreReadPageBuffer->currenttestdata->statues = status_start;
-			startActivity(createPaiDuiActivity, NULL, NULL);
+			timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*3);
+			
+			motorMoveToDisablePutInCard(S_PreReadPageBuffer->currenttestdata->cardLocation+1);
 		}
 		else
 		{
-			if(S_PreReadPageBuffer->scancode == CardUnsupported)										//不支持的品种
-				SendKeyCode(6);
-			
-			else if(S_PreReadPageBuffer->scancode == CardCodeTimeOut)									//过期
-				SendKeyCode(4);
-			//其他错误：CardCodeScanFail, CardCodeCardOut, CardCodeScanTimeOut, CardCodeCRCError
-			else
-				SendKeyCode(1);
+			MotorMoveToWaitCardPutIn(S_PreReadPageBuffer->currenttestdata->cardLocation);
 		}
 	}
 }

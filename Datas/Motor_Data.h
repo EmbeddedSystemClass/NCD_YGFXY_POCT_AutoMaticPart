@@ -8,8 +8,7 @@ typedef enum
 { 
 	Motor_1 = 0x00,
 	Motor_2 = 0x01,
-	Motor_3 = 0x02,
-	Motor_4 = 0x03,
+	Motor_4 = 0x02,
 	Motor_None = 0xff,
 }Motorx_Def;
 
@@ -25,6 +24,8 @@ typedef enum
 #define	Motor4_OpenLocation		0
 #define	Motor4_CardLocation		3700
 #define	Motor4_CloseLocation	4500
+
+#define	MotorLocationNone		0xffff
 
 Motor * getMotor(Motorx_Def motor);
 

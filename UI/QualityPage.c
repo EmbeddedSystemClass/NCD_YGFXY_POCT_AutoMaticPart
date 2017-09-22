@@ -16,9 +16,7 @@
 #include	"CRC16.h"
 #include	"MyTools.h"
 
-#include	"Motor1_Fun.h"
-#include	"Motor2_Fun.h"
-#include	"Motor3_Fun.h"
+#include	"Motor_Fun.h"
 #include	"Quality_Data.h"
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"
@@ -97,10 +95,8 @@ static void activityStart(void)
 	pageBuffer->testCnt = 0;
 	pageBuffer->testStep = 0;
 	pageBuffer->resultSum = 0.0;
-	pageBuffer->motorAction.motorActionName = WaitPutInCard;
-	pageBuffer->motorAction.motorActionParm = 1;
-	StartMotorAction(&pageBuffer->motorAction);
-	pageBuffer->isStartted = false;
+	
+	MotorMoveToWaitCardPutIn(1);
 	
 	timer_SetAndStart(&pageBuffer->cardTimer, 99999);
 	
@@ -160,7 +156,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		pageBuffer->lcdinput[1] = pbuf[7];
 		pageBuffer->lcdinput[1] = (pageBuffer->lcdinput[1]<<8) + pbuf[8];
 			
-		if(pageBuffer->lcdinput[1] == 0x8000)
+		if(pageBuffer->lcdinput[1] == 1)
 			pageBuffer->deviceQuality->isOk = true;
 		else if(pageBuffer->lcdinput[1] == 0x0000)
 			pageBuffer->deviceQuality->isOk = false;
@@ -183,7 +179,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(pageBuffer->testStep == 0 && isMotorActionOver())
+	if(pageBuffer->testStep == 0 && isMotorActionOver(1, Motor2_WaitCardLocation, Motor4_OpenLocation))
 	{
 		if(pageBuffer->testCnt >= DeviceQualityMaxTestCount)
 			showStatus("测试结束\0");
@@ -204,9 +200,8 @@ static void activityFresh(void)
 		if(pageBuffer->cardScanResult == CardCodeScanOK)
 		{
 			pageBuffer->testStep = 3;
-			pageBuffer->motorAction.motorActionName = MoveToStartTestLocation;
-			pageBuffer->motorAction.motorActionParm = 5;
-			StartMotorAction(&pageBuffer->motorAction);
+			memcpy(pageBuffer->deviceQuality->itemName, pageBuffer->testData.qrCode.ItemName, ItemNameLen);
+			MotorMoveToStartTestLocation(5);
 			showStatus("开始测试\0");
 		}
 		else
@@ -216,7 +211,7 @@ static void activityFresh(void)
 		}
 	}
 	
-	if(pageBuffer->testStep == 3 && isMotorActionOver())
+	if(pageBuffer->testStep == 3 && isMotorActionOver(5, Motor2_StartTestLocation, Motor4_CardLocation))
 	{
 		pageBuffer->testStep = 4;
 		StartTest(&pageBuffer->testData);
@@ -224,8 +219,8 @@ static void activityFresh(void)
 	
 	if(pageBuffer->testStep == 4 && My_Pass == TakeTestResult(&pageBuffer->testData.testResultDesc))
 	{
-		pageBuffer->motorAction.motorActionName = OutOutCard;
-		StartMotorAction(&pageBuffer->motorAction);
+		PutCardOutOfDevice();
+		
 		pageBuffer->testStep = 5;
 		
 		if(pageBuffer->testData.testResultDesc == ResultIsOK)
@@ -233,7 +228,7 @@ static void activityFresh(void)
 			pageBuffer->testCnt++;
 			
 			//保存测试结果
-			pageBuffer->deviceQuality->testValue[pageBuffer->testCnt-1] = pageBuffer->testData.testSeries.BasicResult;
+			pageBuffer->deviceQuality->testValue[pageBuffer->testCnt-1] = pageBuffer->testData.testSeries.result;
 			showThisTestResult();
 
 			showStatus("当前测试完成\0");
@@ -244,7 +239,7 @@ static void activityFresh(void)
 		}
 	}
 	
-	if(pageBuffer->testStep == 5 && isMotorActionOver())
+	if(pageBuffer->testStep == 5 && isMotorActionOver(MotorLocationNone, Motor2_MidLocation, Motor4_OpenLocation))
 	{
 		pageBuffer->testStep = 8;
 	}
@@ -254,9 +249,7 @@ static void activityFresh(void)
 	
 	if(pageBuffer->testStep == 8)
 	{
-		pageBuffer->motorAction.motorActionName = WaitPutInCard;
-		pageBuffer->motorAction.motorActionParm = 1;
-		StartMotorAction(&pageBuffer->motorAction);
+		MotorMoveToWaitCardPutIn(1);
 		pageBuffer->testStep = 0;
 	}
 }

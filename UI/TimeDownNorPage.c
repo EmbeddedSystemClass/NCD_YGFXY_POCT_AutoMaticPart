@@ -12,8 +12,6 @@
 #include	"MyMem.h"
 #include	"MyTest_Data.h"
 #include	"Motor_Fun.h"
-#include	"Motor2_Fun.h"
-#include	"Motor4_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -84,17 +82,7 @@ static void activityStart(void)
 	
 	S_TimeDownPageData->S_Timer = &(S_TimeDownPageData->currenttestdata->timeDown_timer);
 	
-	S_TimeDownPageData->cardNum = S_TimeDownPageData->currenttestdata->testlocation;
-	S_TimeDownPageData->cardNum += 4;
-	if(S_TimeDownPageData->cardNum > 8)
-		S_TimeDownPageData->cardNum -= 8;
-	S_TimeDownPageData->motorAction.motorActionName = MoveToStartTestLocation;
-	S_TimeDownPageData->motorAction.motorActionParm = S_TimeDownPageData->cardNum;
-	StartMotorAction(&S_TimeDownPageData->motorAction);
-	
 	SelectPage(95);
-
-	S_TimeDownPageData->canToTestPage = false;
 }
 
 /***************************************************************************************************
@@ -127,14 +115,10 @@ static void activityFresh(void)
 		RefreshTimeText();
 		if(TimerOut == timer_expired(S_TimeDownPageData->S_Timer))
 		{
-			if(S_TimeDownPageData->canToTestPage)
-				startActivity(createTestActivity, NULL, NULL);
+			startActivity(createTestActivity, NULL, NULL);
 		}
 	}
-	
-	if(isMotorActionOver())
-		S_TimeDownPageData->canToTestPage = true;
-	
+
 	S_TimeDownPageData->count++;
 }
 

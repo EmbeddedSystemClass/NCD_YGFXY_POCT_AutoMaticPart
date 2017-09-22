@@ -36,8 +36,7 @@ void Motor2_GPIO_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	RCC_AHB1PeriphClockCmd(Motor2_CLK_RCC | Motor2_DIR_RCC | Motor2_Sleep_RCC | Motor2_Sensor1_RCC | 
-		Motor2_Sensor2_RCC | Motor2_Sensor3_RCC, ENABLE);
+	RCC_AHB1PeriphClockCmd(Motor2_CLK_RCC | Motor2_DIR_RCC | Motor2_Sleep_RCC | Motor2_Sensor2_RCC, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	
   	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
@@ -59,14 +58,9 @@ void Motor2_GPIO_Init(void)
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_InitStructure.GPIO_Pin = Motor2_Sensor1_Pin;
-	GPIO_Init(Motor2_Sensor1_Group, &GPIO_InitStructure);
-
 	GPIO_InitStructure.GPIO_Pin = Motor2_Sensor2_Pin;
 	GPIO_Init(Motor2_Sensor2_Group, &GPIO_InitStructure);
-	
-	GPIO_InitStructure.GPIO_Pin = Motor2_Sensor3_Pin;
-	GPIO_Init(Motor2_Sensor3_Group, &GPIO_InitStructure);
+
 	
 /*	SYSCFG_EXTILineConfig(Motor2_Sensor1_EXTI_PortSource, Motor2_Sensor1_EXTI_PinSource);
 	SYSCFG_EXTILineConfig(Motor2_Sensor2_EXTI_PortSource, Motor2_Sensor2_EXTI_PinSource);

@@ -311,21 +311,13 @@ static void ShowRecord(void)
 				
 			//显示结果
 			if(S_RecordPageBuffer->tempdata->testResultDesc != ResultIsOK)
-			{
 				snprintf(S_RecordPageBuffer->buf, 10, "Error");
-			}
-			else if(IsShowRealValue() == true)
-				snprintf(S_RecordPageBuffer->buf, 20, "%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
-					S_RecordPageBuffer->tempdata->testSeries.BasicResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
-			else if(S_RecordPageBuffer->tempdata->testSeries.BasicResult <= S_RecordPageBuffer->tempdata->qrCode.itemConstData.lowstResult)
+			else if(S_RecordPageBuffer->tempdata->testSeries.result <= S_RecordPageBuffer->tempdata->qrCode.itemConstData.lowstResult)
 				snprintf(S_RecordPageBuffer->buf, 20, "<%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
 					S_RecordPageBuffer->tempdata->qrCode.itemConstData.lowstResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
-			else if(S_RecordPageBuffer->tempdata->testSeries.BasicResult >= S_RecordPageBuffer->tempdata->qrCode.itemConstData.highestResult)
-				snprintf(S_RecordPageBuffer->buf, 20, ">%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
-					S_RecordPageBuffer->tempdata->qrCode.itemConstData.highestResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
 			else
 				snprintf(S_RecordPageBuffer->buf, 20, "%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
-					S_RecordPageBuffer->tempdata->testSeries.BasicResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
+					S_RecordPageBuffer->tempdata->testSeries.result, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
 			DisText(0x204C+S_RecordPageBuffer->tempvalue1, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
 				
 			//显示时间

@@ -7,7 +7,6 @@
 #include	"TestData.h"
 #include	"Timer.h"
 #include	"DateTime.h"
-#include	"Motor_Task.h"
 
 typedef struct ReTestPageBuffer_tag {
 	unsigned short lcdinput[20];
@@ -29,7 +28,6 @@ typedef struct ReTestPageBuffer_tag {
 	unsigned char motorStep;
 	unsigned char testStep;
 	unsigned short count;
-	MotorAction motorAction;
 }ReTestPageBuffer;
 
 

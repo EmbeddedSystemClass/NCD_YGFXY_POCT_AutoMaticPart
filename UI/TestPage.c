@@ -17,9 +17,7 @@
 #include	"Test_Task.h"
 #include	"LunchPage.h"
 #include	"Printf_Fun.h"
-#include	"Motor1_Fun.h"
-#include	"Motor2_Fun.h"
-#include	"Motor4_Fun.h"
+#include	"Motor_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -94,7 +92,6 @@ static void activityStart(void)
 	/*获取当前测试数据的地址*/
 	S_TestPageBuffer->currenttestdata = GetCurrentTestItem();
 	S_TestPageBuffer->canExit = false;
-	S_TestPageBuffer->motorAction.motorActionName = OutOutCard;
 		
 	InitCurve();
 		
@@ -153,7 +150,7 @@ static void activityFresh(void)
 {
 	if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == NoResult)
 		RefreshCurve();
-	else if(isMotorActionOver())
+	else if(isMotorActionOver(MotorLocationNone, Motor2_MidLocation, Motor4_OpenLocation))
 	{
 		S_TestPageBuffer->canExit = true;
 		DeleteCurrentTest();
@@ -283,7 +280,7 @@ static void InitPageText(void)
 	memcpy(S_TestPageBuffer->buf, S_TestPageBuffer->currenttestdata->testData.sampleid, MaxSampleIDLen);
 	DisText(0x1820, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);
 			
-	sprintf(S_TestPageBuffer->buf, "%2.1f ℃\0", S_TestPageBuffer->currenttestdata->testData.temperature.O_Temperature);
+	sprintf(S_TestPageBuffer->buf, "%s\0", S_TestPageBuffer->currenttestdata->testData.operator.name);
 	DisText(0x1830, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);
 			
 	sprintf(S_TestPageBuffer->buf, "%s-%s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.PiHao, 
@@ -312,7 +309,8 @@ static void RefreshCurve(void)
 	 
 	if(My_Pass == TakeTestResult(&(S_TestPageBuffer->currenttestdata->testData.testResultDesc)))
 	{
-		StartMotorAction(&S_TestPageBuffer->motorAction);
+		S_TestPageBuffer->currenttestdata->statues = status_end;
+		PutCardOutOfDevice();
 		
 		memcpy(&(S_TestPageBuffer->currenttestdata->testData.testDateTime), &(getSystemRunTimeData()->systemDateTime), sizeof(DateTime));
 
@@ -349,18 +347,12 @@ static void RefreshPageText(void)
 	{
 		if(S_TestPageBuffer->currenttestdata->testData.testResultDesc != ResultIsOK)
 			sprintf(S_TestPageBuffer->buf, "Error\0");
-		else if(IsShowRealValue() == true)
-			sprintf(S_TestPageBuffer->buf, "%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum,
-				S_TestPageBuffer->currenttestdata->testData.testSeries.BasicResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
-		else if(S_TestPageBuffer->currenttestdata->testData.testSeries.BasicResult <= S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.lowstResult)
+		else if(S_TestPageBuffer->currenttestdata->testData.testSeries.result <= S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.lowstResult)
 			sprintf(S_TestPageBuffer->buf, "<%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum, 
 				S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.lowstResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
-		else if(S_TestPageBuffer->currenttestdata->testData.testSeries.BasicResult >= S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.highestResult)
-			sprintf(S_TestPageBuffer->buf, ">%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum, 
-				S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.highestResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
 		else
-			sprintf(S_TestPageBuffer->buf, "%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum, 
-				S_TestPageBuffer->currenttestdata->testData.testSeries.BasicResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
+			sprintf(S_TestPageBuffer->buf, "%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum,
+				S_TestPageBuffer->currenttestdata->testData.testSeries.result, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
 		
 		DisText(0x1838, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);
 	}

@@ -40,16 +40,20 @@ void ADS_IO_Init(void)
 {
     GPIO_InitTypeDef    GPIO_InitStructure;
 
-	/* Enable SMBUS_PORT clocks */
-	RCC_AHB1PeriphClockCmd(ADS_Rcc, ENABLE);
+	RCC_AHB1PeriphClockCmd(ADS_SCK_Rcc | ADS_SDA_Rcc | ADS_CS_Rcc, ENABLE);
 
-    /*配置SMBUS_SCK、SMBUS_SDA为集电极开漏输出*/
-	GPIO_InitStructure.GPIO_Pin = ADS_SCK_Pin | ADS_CS_Pin |ADS_SDA_Pin;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-    GPIO_Init(ADS_GpioGroup, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = ADS_SCK_Pin;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+    GPIO_Init(ADS_SCK_Group, &GPIO_InitStructure);
+	
+	GPIO_InitStructure.GPIO_Pin = ADS_CS_Pin;
+	GPIO_Init(ADS_CS_Group, &GPIO_InitStructure);
+	
+	GPIO_InitStructure.GPIO_Pin = ADS_SDA_Pin;
+	GPIO_Init(ADS_SDA_Group, &GPIO_InitStructure);
 	
     ADS_CS_H();
 }
@@ -67,11 +71,11 @@ static void ADS_SDA_IN(void)
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
 	GPIO_InitStructure.GPIO_Pin = ADS_SDA_Pin;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//普通输出模式
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-	GPIO_Init(ADS_GpioGroup, &GPIO_InitStructure);//初始化
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_Init(ADS_SDA_Group, &GPIO_InitStructure);
 }
 /***************************************************************************************************
 *FunctionName：TM1623_SDA_OUT
@@ -86,11 +90,11 @@ static void ADS_SDA_OUT(void)
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
 	GPIO_InitStructure.GPIO_Pin = ADS_SDA_Pin;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-	GPIO_Init(ADS_GpioGroup, &GPIO_InitStructure);//初始化
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_Init(ADS_SDA_Group, &GPIO_InitStructure);
 }
 
 /***************************************************************************************************

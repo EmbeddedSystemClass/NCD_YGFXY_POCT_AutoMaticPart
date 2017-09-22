@@ -12,6 +12,7 @@
 #include	"Universal_Task.h"
 #include	"Led_Driver.h"
 #include	"Universal_Fun.h"
+#include	"Ceju_Driver.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -70,7 +71,7 @@ static void vUniversalTask( void *pvParameters )
 
 		if(count % 10 == 0)
 			readAndUpdateSystemDateTimeFun();
-		
+
 		count++;
 		
 		vTaskDelay(100 / portTICK_RATE_MS);

@@ -68,6 +68,38 @@ bool CheckStrIsSame(const void *str1 , const void * str2 , unsigned short len)
 	return true;
 }
 
+unsigned short getMaxMinValue(unsigned short * datas, unsigned short len, Point * max, Point * min)
+{
+	unsigned short i=0;
+	unsigned int avg = 0;
+	
+	max->x = 0;
+	max->y = 0;
+	min->x = 0;
+	min->y = 0xffff;
+	
+	for(i=0; i<len; i++)
+	{
+		if(max->y < datas[i])
+		{
+			max->y = datas[i];
+			max->x = i;
+		}
+			
+		if(min->y > datas[i])
+		{
+			min->y = datas[i];
+			min->x = i;
+		}
+		
+		avg += datas[i];
+	}
+	
+	avg /= len;
+	
+	return avg;
+}
+
 /***************************************************************************************************
 *FunctionName: calculateDataCV
 *Description: º∆À„cv÷µ

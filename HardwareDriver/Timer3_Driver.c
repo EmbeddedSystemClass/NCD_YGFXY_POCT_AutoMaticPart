@@ -85,6 +85,11 @@ void TIM3_IRQHandler(void)
 
 				motor->parm1++;
 				
+				if(motor->parm1 == 1500 && motor->motorLocation != 0)
+				{
+					motor->motorLocation++;
+				}
+				
 				if((motor->motorLocation == motor->motorTargetLocation) && (motor->parm2))
 				{
 					motor->moveStepNum = motor->parm3;
@@ -113,17 +118,9 @@ void TIM3_IRQHandler(void)
 				else
 					motor->motorLocation--;
 				
-				//原点
-				if(Motor2Sensor1Triggered)
-					motor->motorLocation = 0;
-				
 				//中间
 				//if(Motor2Sensor2Triggered)
 				//	motor->parm1 = 1;
-				
-				//最大
-				if(Motor2Sensor3Triggered && motor->isFront)
-					motor->motorTargetLocation = motor->motorLocation;
 				
 				if(motor->motorLocation == motor->motorTargetLocation)
 					motor->moveStepNum = 0;

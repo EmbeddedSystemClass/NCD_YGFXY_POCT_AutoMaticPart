@@ -7,6 +7,7 @@
 #include	"MyEncryptTool.h"
 #include	"QueueUnits.h"
 #include	"ItemConst_Data.h"
+#include	"Motor_Fun.h"
 #include	"Motor1_Fun.h"
 #include	"Motor2_Fun.h"
 #include	"Motor4_Fun.h"
@@ -54,8 +55,8 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 		readQRCodeBuffer->cardQR = cardQR;
 		memset(readQRCodeBuffer->cardQR, 0, QRCodeStructSize);
 		
-		motor4MoveTo(Motor4_CardLocation, true);
-		motor2MoveTo(Motor2_WaitCardLocation, true);
+		while(false == isMotorActionOver(MotorLocationNone, MotorLocationNone, Motor4_CardLocation))
+			;
 		
 		OpenCodeScanner();
 	
@@ -94,20 +95,6 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 	CloseCodeScanner();
 	
 	scanResult = readQRCodeBuffer->scanResult;
-	
-	//二维码读取正确
-	if(scanResult == CardCodeScanOK)
-	{
-		motor2MoveTo(Motor2_PutDownCardLocation, true);
-		motor4MoveTo(Motor4_OpenLocation, true);
-		motor2MoveTo(Motor2_MidLocation, true);
-		motor1MoveStep(true);
-	}
-	else
-	{
-		motor4MoveTo(Motor4_OpenLocation, true);
-		motor2MoveTo(Motor2_WaitCardLocation, true);
-	}
 		
 	MyFree(readQRCodeBuffer);
 	

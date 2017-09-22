@@ -6,7 +6,7 @@
 #include	"stm32f4xx_rcc.h"
 #include	"Define.h"
 
-#define	CardCheck_Pin				GPIO_Pin_3
+#define	CardCheck_Pin				GPIO_Pin_10
 #define	CardCheck_Group				GPIOD
 #define	CardCheck_RCC				RCC_AHB1Periph_GPIOD
 

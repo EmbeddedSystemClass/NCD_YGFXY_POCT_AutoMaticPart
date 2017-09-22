@@ -20,8 +20,8 @@ typedef struct TestSeries_tag {
 	Point C_Point;
 	Point T_Point;
 	Point B_Point;
-	float BasicBili;
-	float BasicResult;
+	float t_c;
+	float result;
 } TestSeries;
 #pragma pack()
 
@@ -32,7 +32,6 @@ typedef struct TestData_tag {
 	QRCode 			qrCode;								//二维码信息
 	TestSeries 		testSeries;
 	DateTime 		testDateTime;						//测试时间
-	Temperature 	temperature;						//测试温度
 	unsigned short 	time;								//超时时间
 	ResultState 	testResultDesc;						//测试结果状态
 	unsigned short 	crc;
@@ -40,24 +39,11 @@ typedef struct TestData_tag {
 #pragma pack()
 
 
-#pragma pack(1)
-typedef struct
-{
-	PageRequest pageRequest;
-	DeviceRecordHeader deviceRecordHeader;
-	TestData testData[TestDataRecordPageShowNum];
-	unsigned char readTotalNum;							//读取到的有效数据数目
-}TestDataRecordReadPackage;
-#pragma pack()
-
 #define	TestSeriesStructSize	sizeof(TestSeries)
 
 #define	TestDataStructSize		sizeof(TestData)
 #define	TestDataStructCrcSize	TestDataStructSize - 2
 
-#define	TestDataRecordReadPackageStructSize		sizeof(TestDataRecordReadPackage)
-#define	TestDataRecordReadPackageStructCrcSize	TestDataRecordReadPackageStructSize - 2
-	
 #endif
 
 /****************************************end of file************************************************/

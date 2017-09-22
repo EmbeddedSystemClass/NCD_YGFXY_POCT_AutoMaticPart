@@ -4,7 +4,6 @@
 #include	"UI_Data.h"
 #include	"DeviceQuality.h"
 #include	"Timer.h"
-#include	"Motor_Task.h"
 
 typedef struct QualityPageBuffer_tag {
 	unsigned short lcdinput[100];
@@ -17,9 +16,7 @@ typedef struct QualityPageBuffer_tag {
 	TestData  testData;										//测试数据缓存
 	double resultSum;										//有效测试结果和
 	Timer cardTimer;										//插卡等待时间
-	
-	MotorAction motorAction;
-	bool isStartted;
+
 	unsigned char testCardIndex2;
 	double tempValue1;
 	double tempValue2;

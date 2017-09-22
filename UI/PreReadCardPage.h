@@ -15,6 +15,7 @@ typedef struct PreReadPageBuffer_tag {
 	QRCode temperweima;						//临时二维码数据缓冲区
 	char buf[100];
 	unsigned short lcdinput[100];
+	bool isStartted;								//是否开启扫描二维码任务
 }PreReadPageBuffer;
 
 MyRes createPreReadCardActivity(Activity * thizActivity, Intent * pram);

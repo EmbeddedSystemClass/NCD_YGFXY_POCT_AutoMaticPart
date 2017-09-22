@@ -7,13 +7,13 @@
 #include	"Define.h"
 #include	"DateTime.h"
 
-#define	RX_SCK_Pin			GPIO_Pin_14
-#define	RX_SCK_Group		GPIOE
-#define	RX_SCK_Rcc			RCC_AHB1Periph_GPIOE
+#define	RX_SCK_Pin			GPIO_Pin_6
+#define	RX_SCK_Group		GPIOB
+#define	RX_SCK_Rcc			RCC_AHB1Periph_GPIOB
 
-#define	RX_SDA_Pin			GPIO_Pin_9
-#define	RX_SDA_Group		GPIOE
-#define	RX_SDA_Rcc			RCC_AHB1Periph_GPIOE
+#define	RX_SDA_Pin			GPIO_Pin_7
+#define	RX_SDA_Group		GPIOB
+#define	RX_SDA_Rcc			RCC_AHB1Periph_GPIOB
 
 #define RX_SDA_H()	    	GPIO_SetBits(RX_SDA_Group, RX_SDA_Pin)
 #define RX_SDA_L()	    	GPIO_ResetBits(RX_SDA_Group, RX_SDA_Pin)

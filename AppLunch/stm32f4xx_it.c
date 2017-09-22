@@ -35,7 +35,6 @@
 #include	"Motor2_Driver.h"
 #include	"Motor3_Driver.h"
 #include	"Motor4_Driver.h"
-#include 	"stm324x7i_eval_sdio_sd.h"
 
 #include	"Motor_Data.h"
 
@@ -150,7 +149,7 @@ void DebugMon_Handler(void)
 {
 }
 
-void EXTI9_5_IRQHandler(void)
+void EXTI15_10_IRQHandler(void)
 {
 	//电机1，排队位传感器触发
 	if(EXTI_GetFlagStatus(Motor1_Sensor2_EXTI_Line) == SET)
@@ -163,7 +162,7 @@ void EXTI9_5_IRQHandler(void)
 			
 			if(motor->motorLocation <= 0)
 				motor->motorLocation = PaiDuiWeiNum;
-			else if(motor->motorLocation > PaiDuiWeiNum)
+			else if(motor->motorLocation > PaiDuiWeiNum*2)
 				motor->motorLocation = 1;
 		}
 		
@@ -186,11 +185,6 @@ void EXTI9_5_IRQHandler(void)
 	}*/
 }
 
-void EXTI15_10_IRQHandler(void)
-{
-
-}
-
 
 /**
   * @brief  This function handles SysTick Handler.
@@ -204,18 +198,6 @@ void SysTick_Handler(void)
 	//LedToggle();
 }
 
-
-void SDIO_IRQHandler(void)
-{
-	/* Process All SDIO Interrupt Sources */
-	SD_ProcessIRQSrc();
-}
-
-void SD_SDIO_DMA_IRQHANDLER(void)
-{
-	/* Process DMA2 Stream3 or DMA2 Stream6 Interrupt Sources */
-	SD_ProcessDMAIRQ();
-}
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */

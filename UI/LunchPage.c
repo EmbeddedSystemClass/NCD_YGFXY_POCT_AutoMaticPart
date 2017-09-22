@@ -6,6 +6,7 @@
 #include	"LCD_Driver.h"
 #include	"Define.h"
 #include	"MyMem.h"
+#include	"Motor_Fun.h"
 
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"
@@ -13,6 +14,7 @@
 #include	"PaiDuiPage.h"
 #include	"RecordPage.h"
 #include	"SleepPage.h"
+#include	"PaiDuiPage.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -115,29 +117,31 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	{
 		startActivity(createRecordActivity, NULL, NULL);
 	}
-	//常规测试
-	else if(page->lcdinput[0] == 0x1100)
-	{	
-		
-	}
-	//批量测试
-	else if(page->lcdinput[0] == 0x1101)
+	//关于按键第一次按下
+	else if(page->lcdinput[0] == 0x1106)
+		page->presscount = 0;
+	//关于按键持续按下
+	else if(page->lcdinput[0] == 0x1107)
+		page->presscount++;
+	//关于按键松开
+	else if(page->lcdinput[0] == 0x1108)
 	{
-		page->error = CreateANewTest(&page->currentTestDataBuffer);
-		//创建成功
-		if(Error_OK == page->error)
-		{
-			page->tempOperator = &page->currentTestDataBuffer->testData.operator;
-			page->motorAction.motorActionName = WaitPutInCard;
-			page->motorAction.motorActionParm = page->currentTestDataBuffer->testlocation;
-			StartMotorAction(&page->motorAction);
-		}
-		//创建失败
-		else if(Error_PaiduiFull == page->error)
+		if(page->presscount > 10)
 			startActivity(createPaiDuiActivity, NULL, NULL);
 		else
 		{
-			SendKeyCode(2);
+			page->error = CreateANewTest(&page->currentTestDataBuffer);
+			//创建成功
+			if(Error_OK == page->error)
+			{
+				page->tempOperator = &page->currentTestDataBuffer->testData.operator;
+				MotorMoveToWaitCardPutIn(page->currentTestDataBuffer->cardLocation);
+				startActivity(createSelectUserActivity, createIntent(&(page->tempOperator), 4), createSampleActivity);
+			}
+			else if(Error_PaiduiFull == page->error)
+				startActivity(createPaiDuiActivity, NULL, NULL);
+			else
+				SendKeyCode(2);
 		}
 	}
 }
@@ -153,12 +157,9 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(isMotorActionOver())
-		startActivity(createSelectUserActivity, createIntent(&(page->tempOperator), 4), createSampleActivity);
-	
 	if(TimerOut == timer_expired(&(page->timer)))
 	{
-		startActivity(createSleepActivity, NULL, NULL);
+		//startActivity(createSleepActivity, NULL, NULL);
 	}
 }
 
