@@ -11,7 +11,6 @@
 #include	"Timer3_Driver.h"
 #include	"Motor1_Driver.h"
 #include	"Motor2_Driver.h"
-#include	"Motor3_Driver.h"
 #include	"Motor4_Driver.h"
 #include	"Motor_Data.h"
 #include	"Led_Driver.h"
@@ -58,8 +57,8 @@ void Timer3_Init(void)
 	TIM_Cmd(TIM3, ENABLE);
 	
 	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=10;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x03;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 9;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 }
@@ -71,7 +70,7 @@ void TIM3_IRQHandler(void)
 		motor = getMotor(Motor_1);
 		if(motor->moveStepNum > 0)
 		{
-			plusMotorxPeriodCnt(Motor_1);
+			motor->periodCnt++;
 			
 			if(motor->periodCnt <= motor->highTime)
 				setMotor1ClkGPIO(ON);
@@ -79,58 +78,91 @@ void TIM3_IRQHandler(void)
 				setMotor1ClkGPIO(OFF);
 			else if(motor->periodCnt == motor->lowTime)
 			{
-				setMotorxPeriodCnt(Motor_1, 0);
+				motor->periodCnt = 0;
 				setMotor1ClkGPIO(OFF);
-				minusMotorxMoveStepNum(Motor_1);
+				if(motor->moveStepNum > 0)
+					motor->moveStepNum--;
 
 				motor->parm1++;
-				
-				if(motor->parm1 == 1500 && motor->motorLocation != 0)
+				if(motor->parm1 > 3000)
 				{
-					motor->motorLocation++;
+					if(Motor1Sensor1Triggered && motor->motorLocation != 0)
+					{
+						if(motor->isFront)
+							motor->motorLocation++;
+						else
+							motor->motorLocation--;
+						
+						if(motor->motorLocation > Motor1_MaxLocation)
+							motor->motorLocation = 2;
+						
+						if(motor->motorLocation == motor->motorTargetLocation)
+							motor->moveStepNum = 0;
+						
+						motor->parm1 = 0;
+					}
+				
+					if(Motor1Sensor2Triggered)
+					{
+						if(motor->isFront)
+							motor->motorLocation++;
+						else
+							motor->motorLocation--;
+
+						if(motor->motorLocation <= 0)
+							motor->motorLocation = Motor1_MaxLocation - 1;
+						else if(motor->motorLocation > Motor1_MaxLocation)
+							motor->motorLocation = 1;
+						
+						if(motor->motorLocation == motor->motorTargetLocation)
+							motor->moveStepNum = 0;
+						
+						motor->parm1 = 0;
+					}
 				}
 				
-				if((motor->motorLocation == motor->motorTargetLocation) && (motor->parm2))
-				{
-					motor->moveStepNum = motor->parm3;
-					motor->parm2 = false;
-				}
+				
 			}
 		}
 
 		motor = getMotor(Motor_2);
 		if(motor->moveStepNum > 0)
 		{
-			plusMotorxPeriodCnt(Motor_2);
-			
+			motor->periodCnt++;
+
 			if(motor->periodCnt <= motor->highTime)
 				setMotor2ClkGPIO(ON);
 			else if(motor->periodCnt < motor->lowTime)
 				setMotor2ClkGPIO(OFF);
 			else if(motor->periodCnt == motor->lowTime)
 			{
-				setMotorxPeriodCnt(Motor_2, 0);
 				setMotor2ClkGPIO(OFF);
-				minusMotorxMoveStepNum(Motor_2);
+				motor->periodCnt = 0;
+				if(motor->moveStepNum > 0)
+					motor->moveStepNum--;
+				
+				motor->parm1++;
 				
 				if(motor->isFront)
 					motor->motorLocation++;
-				else
+				else if(motor->motorLocation > 0)
 					motor->motorLocation--;
 				
-				//中间
-				//if(Motor2Sensor2Triggered)
-				//	motor->parm1 = 1;
+				if(Motor2Sensor2Triggered && motor->isFront && motor->parm1 > 2000)
+				{
+					motor->motorLocation = Motor2_MidLocation;
+					motor->parm1 = 0;
+				}
 				
 				if(motor->motorLocation == motor->motorTargetLocation)
 					motor->moveStepNum = 0;
 			}
 		}
-		
+#if(Motor4Type == Motor4IOMotor)		
 		motor = getMotor(Motor_4);
 		if(motor->moveStepNum > 0)
 		{
-			plusMotorxPeriodCnt(Motor_4);
+			motor->periodCnt++;
 			
 			if(motor->periodCnt <= motor->highTime)
 				setMotor4ClkGPIO(ON);
@@ -138,10 +170,17 @@ void TIM3_IRQHandler(void)
 				setMotor4ClkGPIO(OFF);
 			else if(motor->periodCnt == motor->lowTime)
 			{
-				setMotorxPeriodCnt(Motor_4, 0);
+				motor->periodCnt = 0;
 				setMotor4ClkGPIO(OFF);
-				minusMotorxMoveStepNum(Motor_4);
-				plusMotorxLocation(Motor_4, 1);
+				if(motor->moveStepNum > 0)
+					motor->moveStepNum--;
+				
+				motor->parm1++;
+				
+				if(motor->isFront)
+					motor->motorLocation++;
+				else if(motor->motorLocation > 0)
+					motor->motorLocation--;
 				
 				//原点
 				if(Motor4Sensor1Triggered)
@@ -151,7 +190,7 @@ void TIM3_IRQHandler(void)
 					motor->moveStepNum = 0;
 			}
 		}
-		
+#endif		
 		ClockStep++;
 		if(ClockStep >= 20000)
 		{

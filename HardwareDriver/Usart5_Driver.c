@@ -17,9 +17,7 @@ static xQueueHandle xTxQueue = NULL;									//send queue
 /***************************************************************************************************/
 /******************************************Static Methods*******************************************/
 /***************************************************************************************************/
-static void Usart5_Os_Init(void);
-static void ConfigUsart5(void);
-static portBASE_TYPE prvUsart5_ISR_NonNakedBehaviour( void );
+static void prvUsart5_ISR_NonNakedBehaviour( void );
 /***************************************************************************************************/
 /***************************************************************************************************/
 /******************************************Main Body************************************************/
@@ -27,28 +25,14 @@ static portBASE_TYPE prvUsart5_ISR_NonNakedBehaviour( void );
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************
-*FunctionName：Usart6_Os_Init
-*Description：创建串口6的队列互斥量
+*FunctionName：Usart6_Init
+*Description：串口6外部调用初始化函数
 *Input：None
 *Output：None
 *Author：xsx
-*Data：2016年4月29日11:28:04
+*Data：2016年4月29日11:28:56
 ***************************************************************************************************/
-static void Usart5_Os_Init(void)
-{
-	xRxQueue = xQueueCreate( xRxQueue5_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-	xTxQueue = xQueueCreate( xTxQueue5_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-}
-
-/***************************************************************************************************
-*FunctionName：ConfigUsart6
-*Description：串口6的端口初始化和配置
-*Input：None
-*Output：None
-*Author：xsx
-*Data：2016年4月29日11:28:25
-***************************************************************************************************/
-static void ConfigUsart5(void)
+void Usart5_Init(void)
 {
 	USART_InitTypeDef USART_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -57,7 +41,7 @@ static void ConfigUsart5(void)
 	/* 开启GPIO_D的时钟 */
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD, ENABLE);
 	/* 开启串口3的时钟 */
-	RCC_APB2PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE);
 
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -89,20 +73,9 @@ static void ConfigUsart5(void)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-}
-
-/***************************************************************************************************
-*FunctionName：Usart6_Init
-*Description：串口6外部调用初始化函数
-*Input：None
-*Output：None
-*Author：xsx
-*Data：2016年4月29日11:28:56
-***************************************************************************************************/
-void Usart5_Init(void)
-{
-	Usart5_Os_Init();
-	ConfigUsart5();
+	
+	xRxQueue = xQueueCreate( xRxQueue5_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	xTxQueue = xQueueCreate( xTxQueue5_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
 }
 
 /***************************************************************************************************
@@ -127,35 +100,34 @@ void UART5_IRQHandler(void)
 *Data：2016年4月29日11:29:32
 ***************************************************************************************************/
 __attribute__((__noinline__))
-static portBASE_TYPE prvUsart5_ISR_NonNakedBehaviour( void )
-{
-	signed portCHAR     cChar;
-	portBASE_TYPE     xHigherPriorityTaskWoken = pdFALSE;
+static void prvUsart5_ISR_NonNakedBehaviour( void )
+{	
+	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+	char cChar;
 
-	portBASE_TYPE retstatus;
-
-	if(USART_GetITStatus(UART5 , USART_IT_TXE) == SET)
+	if( USART_GetITStatus( UART5, USART_IT_TXE ) == SET )
 	{
-		portENTER_CRITICAL();
-			retstatus = xQueueReceiveFromISR( xTxQueue, &cChar, &xHigherPriorityTaskWoken );
-		portEXIT_CRITICAL();
-
-		if (retstatus == pdTRUE)
-			USART_SendData(UART5, cChar);
+		/* The interrupt was caused by the THR becoming empty.  Are there any
+		more characters to transmit? */
+		if( xQueueReceiveFromISR( xTxQueue, &cChar, &xHigherPriorityTaskWoken ) == pdTRUE )
+		{
+			/* A character was retrieved from the queue so can be sent to the
+			THR now. */
+			USART_SendData( UART5, cChar );
+		}
 		else
-			USART_ITConfig(UART5, USART_IT_TXE, DISABLE);
+		{
+			USART_ITConfig( UART5, USART_IT_TXE, DISABLE );		
+		}		
 	}
-
-	if(USART_GetITStatus(UART5, USART_IT_RXNE) == SET)
+	
+	if( USART_GetITStatus( UART5, USART_IT_RXNE ) == SET )
 	{
-		cChar = USART_ReceiveData(UART5);
-
-		portENTER_CRITICAL();
-			xQueueSendFromISR(xRxQueue, &cChar, &xHigherPriorityTaskWoken);
-		portEXIT_CRITICAL();
-	}
-
-	return ( xHigherPriorityTaskWoken );
+		cChar = USART_ReceiveData( UART5 );
+		xQueueSendFromISR( xRxQueue, &cChar, &xHigherPriorityTaskWoken );
+	}	
+	
+	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
 
 /***************************************************************************************************

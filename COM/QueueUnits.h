@@ -2,6 +2,7 @@
 #define _QUEUE_U_H__
 
 #include 	"FreeRTOS.h"
+#include 	"task.h"
 #include 	"queue.h"
 #include	"semphr.h"
 #include	"Define.h"
@@ -10,6 +11,5 @@ MyRes ReceiveDataFromQueue(xQueueHandle queue, xSemaphoreHandle mutex, void *rec
 	unsigned short itemsize, portTickType queueBlockTime, portTickType mutexBlockTime);
 MyRes SendDataToQueue(xQueueHandle queue, xSemaphoreHandle mutex, void *sendstr, unsigned short len, unsigned short itemsize, 
 	portTickType queueBlockTime, portTickType mutexBlockTime, void (*fun)(void));
-
 #endif
 

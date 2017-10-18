@@ -30,22 +30,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include 	"stm32f4xx_it.h"
 
-#include	"Led_Driver.h"
-#include	"Motor1_Driver.h"
-#include	"Motor2_Driver.h"
-#include	"Motor3_Driver.h"
-#include	"Motor4_Driver.h"
-
-#include	"Motor_Data.h"
-
 #include 	"FreeRTOS.h"
 #include 	"task.h"
 #include 	"queue.h"
 
 
 extern void xPortSysTickHandler(void);
-
-static Motor * motor = NULL;
 
 /** @addtogroup STM32F4xx_StdPeriph_Examples
   * @{
@@ -85,10 +75,7 @@ __asm void wait()
   */
 void HardFault_Handler(void)
 {
-wait();
-  /* Go to infinite loop when Hard Fault exception occurs */
-//	while(1)
-//		;
+return;
 }
 
 
@@ -151,38 +138,7 @@ void DebugMon_Handler(void)
 
 void EXTI15_10_IRQHandler(void)
 {
-	//电机1，排队位传感器触发
-	if(EXTI_GetFlagStatus(Motor1_Sensor2_EXTI_Line) == SET)
-	{
-		motor = getMotor(Motor_1);
-		
-		if((motor->motorLocation != 0) && (motor->parm1 > 2000))
-		{
-			motor->motorLocation++;
-			
-			if(motor->motorLocation <= 0)
-				motor->motorLocation = PaiDuiWeiNum;
-			else if(motor->motorLocation > PaiDuiWeiNum*2)
-				motor->motorLocation = 1;
-		}
-		
-		motor->parm1 = 0;
 
-		if(Motor1Sensor1Triggered)
-			motor->motorLocation = 1;
-		
-		EXTI_ClearITPendingBit(Motor1_Sensor2_EXTI_Line);
-	}
-	
-/*	//电机2，原点传感器
-	if(EXTI_GetFlagStatus(Motor2_Sensor1_EXTI_Line) == SET)
-	{
-		motor = getMotor(Motor_2);
-		
-		motor->motorLocation = 0;
-
-		EXTI_ClearITPendingBit(Motor2_Sensor1_EXTI_Line);
-	}*/
 }
 
 
@@ -194,8 +150,7 @@ void EXTI15_10_IRQHandler(void)
 
 void SysTick_Handler(void)
 {
-	xPortSysTickHandler(); 
-	//LedToggle();
+	xPortSysTickHandler();
 }
 
 /******************************************************************************/

@@ -21,6 +21,7 @@ void MD5Transform(unsigned int buf[4], unsigned int const in[16]);
  */  
 typedef struct MD5Context MD5_CTX;   
 
+void md5sum(char * md5Buf);
 
 #endif
 

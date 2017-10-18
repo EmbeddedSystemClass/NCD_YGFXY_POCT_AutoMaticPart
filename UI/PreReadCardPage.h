@@ -4,6 +4,7 @@
 #include	"Define.h"
 #include	"MyTest_Data.h"
 #include	"UI_Data.h"
+#include	"Motor_Fun.h"
 
 typedef struct PreReadPageBuffer_tag {
 	PaiduiUnitData * currenttestdata;
@@ -16,6 +17,7 @@ typedef struct PreReadPageBuffer_tag {
 	char buf[100];
 	unsigned short lcdinput[100];
 	bool isStartted;								//是否开启扫描二维码任务
+	MotorAction motorAction;
 }PreReadPageBuffer;
 
 MyRes createPreReadCardActivity(Activity * thizActivity, Intent * pram);

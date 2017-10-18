@@ -21,7 +21,7 @@
 #define	Motor1_Sleep_Group				GPIOE
 #define	Motor1_Sleep_RCC				RCC_AHB1Periph_GPIOE
 
-//原点传感器
+//测试位置号位传感器
 #define	Motor1_Sensor1_Pin				GPIO_Pin_11
 #define	Motor1_Sensor1_Group			GPIOD
 #define	Motor1_Sensor1_RCC				RCC_AHB1Periph_GPIOD
@@ -30,7 +30,7 @@
 #define	Motor1_Sensor1_EXTI_Line		EXTI_Line11
 #define	Motor1_Sensor1_EXTI_IRQ			EXTI15_10_IRQn
 
-//一格传感器
+//1号位传感器
 #define	Motor1_Sensor2_Pin				GPIO_Pin_12
 #define	Motor1_Sensor2_Group			GPIOD
 #define	Motor1_Sensor2_RCC				RCC_AHB1Periph_GPIOD

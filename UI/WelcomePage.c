@@ -10,7 +10,6 @@
 #include	"LunchPage.h"
 #include	"Test_Task.h"
 #include	"CodeScan_Task.h"
-#include	"Paidui_Task.h"
 #include 	"netconf.h"
 
 #include	<string.h>
@@ -144,10 +143,7 @@ static void activityFresh(void)
 			//开启读二维码任务
 			StartCodeScanTask();
 			
-			//开始排队任务
-			StartPaiduiTask();
-			
-			StartEthernet();
+			//StartEthernet();
 					
 			destroyTopActivity();
 			startActivity(createLunchActivity, NULL, NULL);

@@ -5,6 +5,7 @@
 #include	"Timer.h"
 #include	"MyTest_Data.h"
 #include	"UI_Data.h"
+#include	"Motor_Fun.h"
 
 typedef struct SampleIDPage_tag {
 	char tempbuf[150];
@@ -12,6 +13,7 @@ typedef struct SampleIDPage_tag {
 	PaiduiUnitData * currenttestdata;												//当前测试数据
 	unsigned short lcdinput[100];
 	bool isMotorOk;
+	MotorAction motorAction;
 }SampleIDPage;
 
 MyRes createSampleActivity(Activity * thizActivity, Intent * pram);

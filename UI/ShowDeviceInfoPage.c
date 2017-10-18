@@ -7,6 +7,7 @@
 #include	"SystemSetPage.h"
 #include	"SleepPage.h"
 #include	"DeviceDao.h"
+#include	"StringDefine.h"
 
 #include	"LCD_Driver.h"
 #include	"SystemSet_Dao.h"

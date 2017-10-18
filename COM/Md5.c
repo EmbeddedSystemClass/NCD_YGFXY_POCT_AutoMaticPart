@@ -10,6 +10,7 @@
 /***************************************************************************************************/
 #include	"Md5.h"
 #include	"MyMem.h"
+#include	"AppFileDao.h"
 
 #include	"stdio.h"
 #include	"string.h"
@@ -268,6 +269,50 @@ void MD5Transform(unsigned int buf[4], unsigned int const in[16])
     buf[1] += b;  
     buf[2] += c;  
     buf[3] += d;  
+}
+
+void md5sum(char * md5Buf)  
+{  
+	MD5_CTX ctx;
+    unsigned short readSize = 0;
+	unsigned char * dataBuf = NULL;
+	unsigned char i=0;
+	unsigned int startAddr = 0;
+	unsigned char digest[16];
+	char str[10];
+  
+    MD5Init(&ctx);  
+    dataBuf = MyMalloc(20*1024);
+	
+	if(dataBuf)
+	{
+		for(i=0; i<100; i++)
+		{
+			if(My_Pass == ReadAppFile(startAddr, dataBuf, 20*1024, &readSize, NULL))
+			{				
+				if(readSize != 0)
+				{
+					MD5Update(&ctx, dataBuf, readSize);
+					startAddr += readSize;
+				}
+				else
+					break;
+			}
+			else
+				break;
+		}
+		
+		MyFree(dataBuf);
+	}  
+  
+    MD5Final(digest, &ctx);
+	
+	for(i=0; i<16; i++)
+	{
+		memset(str, 0, 10);
+		sprintf(str, "%02x", digest[i]);				//上传服务器的为小写的md5字符串
+		sprintf(md5Buf+2*i, "%.2s", str);
+	}
 }  
   
 /****************************************end of file************************************************/

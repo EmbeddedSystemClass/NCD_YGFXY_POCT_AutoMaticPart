@@ -33,6 +33,7 @@ static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 static void ShowNetInfo(void);
+static void readAndShowGsmInfo(void);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -75,11 +76,12 @@ MyRes createNetInfoActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	timer_SetAndStart(&(S_NetInfoPageBuffer->timer), 1);
+	timer_SetAndStart(&(S_NetInfoPageBuffer->timer), 15);
 	
 	SelectPage(145);
 		
 	ShowNetInfo();
+	readAndShowGsmInfo();
 }
 
 /***************************************************************************************************
@@ -115,6 +117,7 @@ static void activityFresh(void)
 	if(TimerOut == timer_expired(&(S_NetInfoPageBuffer->timer)))
 	{
 		ShowNetInfo();
+		readAndShowGsmInfo();
 		timer_restart(&(S_NetInfoPageBuffer->timer));
 	}
 }
@@ -161,6 +164,7 @@ static void activityResume(void)
 static void activityDestroy(void)
 {
 	activityBufferFree();
+	giveGSMxMutex();
 }
 
 /***************************************************************************************************
@@ -226,14 +230,14 @@ static void ShowNetInfo(void)
 	memcpy(&(S_NetInfoPageBuffer->systemData), getSystemRunTimeData(), sizeof(SystemData));
 	//显示有线网信息
 	
-	S_NetInfoPageBuffer->lineico.ICO_ID = 31;
+	S_NetInfoPageBuffer->lineico.ICO_ID = 30;
 	S_NetInfoPageBuffer->lineico.X = 189;
 	S_NetInfoPageBuffer->lineico.Y = 130;
 	
-	if(Link_Down == S_NetInfoPageBuffer->systemData.wireNetInfo.lineStatus)
-		BasicUI(0x1CB0 ,0x1807 , 0, &(S_NetInfoPageBuffer->lineico) , sizeof(Basic_ICO));
-	else
-		BasicUI(0x1CB0 ,0x1807 , 1, &(S_NetInfoPageBuffer->lineico) , sizeof(Basic_ICO));
+	if(Link_Up == S_NetInfoPageBuffer->systemData.wireNetInfo.lineStatus)
+		S_NetInfoPageBuffer->lineico.ICO_ID += 1;
+	
+	BasicUI(0x1CB0 ,0x1807 , 1, &(S_NetInfoPageBuffer->lineico) , BasicIcoStructSize);
 	
 	sprintf(S_NetInfoPageBuffer->tempbuffer1, "%03d.%03d.%03d.%03d", S_NetInfoPageBuffer->systemData.wireNetInfo.ip.ip_1, S_NetInfoPageBuffer->systemData.wireNetInfo.ip.ip_2, 
 		S_NetInfoPageBuffer->systemData.wireNetInfo.ip.ip_3, S_NetInfoPageBuffer->systemData.wireNetInfo.ip.ip_4);
@@ -242,5 +246,43 @@ static void ShowNetInfo(void)
 	sprintf(S_NetInfoPageBuffer->tempbuffer1, "%02X-%02X-%02X-%02X-%02X-%02X\0", S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[0], S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[1], 
 		S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[2], S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[3], S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[4], 
 		S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[5]);
-	DisText(0x1CD0, S_NetInfoPageBuffer->tempbuffer1, strlen(S_NetInfoPageBuffer->tempbuffer1)+1);	
+	DisText(0x1CD0, S_NetInfoPageBuffer->tempbuffer1, strlen(S_NetInfoPageBuffer->tempbuffer1)+1);
+}
+
+static void readAndShowGsmInfo(void)
+{
+	S_NetInfoPageBuffer->GSMico.ICO_ID = 40;
+	S_NetInfoPageBuffer->GSMico.X = 200;
+	S_NetInfoPageBuffer->GSMico.Y = 327;
+	
+	memset(S_NetInfoPageBuffer->ICCID, 0, 20);
+	memset(S_NetInfoPageBuffer->phoneNum, 0, 14);
+	
+	if(S_NetInfoPageBuffer->isGetGSMControl == false)
+	{
+		if(My_Fail == takeGSMMutex(100 / portTICK_RATE_MS))
+			goto END;
+		else
+			S_NetInfoPageBuffer->isGetGSMControl = true;
+	}
+
+	//测试是不是AT模式
+	if(!checkIsATMode(S_NetInfoPageBuffer->sim800InitBuf.recvBuf))
+		goto END;
+	
+	readGSMInd(&S_NetInfoPageBuffer->sim800InitBuf, &S_NetInfoPageBuffer->GsmInd);
+	readGSMIccid(&S_NetInfoPageBuffer->sim800InitBuf, S_NetInfoPageBuffer->ICCID);
+	readGSMPhoneNum(&S_NetInfoPageBuffer->sim800InitBuf, S_NetInfoPageBuffer->phoneNum);
+	
+	S_NetInfoPageBuffer->GSMico.ICO_ID += S_NetInfoPageBuffer->GsmInd;
+	
+	END:
+		//清除图标
+		BasicUI(0x1CB8 ,0x1807 , 1, &S_NetInfoPageBuffer->GSMico , BasicIcoStructSize);
+		
+		snprintf(S_NetInfoPageBuffer->tempbuffer1, 15, "%s", S_NetInfoPageBuffer->phoneNum);
+		DisText(0x1CF0, S_NetInfoPageBuffer->tempbuffer1, 14);
+	
+		snprintf(S_NetInfoPageBuffer->tempbuffer1, 21, "%s", S_NetInfoPageBuffer->ICCID);
+		DisText(0x1CE0, S_NetInfoPageBuffer->tempbuffer1, 20);
 }

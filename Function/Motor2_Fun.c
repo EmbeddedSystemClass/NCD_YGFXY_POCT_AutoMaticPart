@@ -30,6 +30,7 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 static Motor * motor2 = NULL;
+static bool motor2StopMovePermission = false;
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -41,14 +42,41 @@ static Motor * motor2 = NULL;
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-void motor2MoveTo(unsigned short location, bool isWait)
+void motor2MoveStep(bool isFront, unsigned short stepNum, bool isWait)
 {
 	motor2 = getMotor(Motor_2);
 
-	//¶¨Î»
-	if(location == 0)
-		motor2->motorLocation = 60000;
+	motor2->isFront = isFront;
+	motor2->motorLocation = 0;
+	motor2->motorTargetLocation = 0;
 	
+	if(motor2->isFront)
+	{
+		setMotor2DirGPIO(ON);
+		motor2->motorTargetLocation = stepNum;
+	}
+	else
+	{
+		setMotor2DirGPIO(OFF);
+		motor2->motorLocation = stepNum;
+	}
+	vTaskDelay(10 / portTICK_RATE_MS);
+	
+	motor2->periodCnt = 0;
+	motor2->highTime = 1;
+	motor2->lowTime = 2;
+	motor2->moveStepNum = stepNum;
+	
+	while(isWait && motor2->motorLocation != motor2->motorTargetLocation)
+	{
+		vTaskDelay(100 / portTICK_RATE_MS);
+	}
+}
+
+void motor2MoveTo(unsigned char highTime, unsigned char lowTime, unsigned short location, bool isWait)
+{
+	motor2 = getMotor(Motor_2);
+
 	if(motor2->motorLocation == location)
 		return;
 	else if(motor2->motorLocation > location)
@@ -60,16 +88,30 @@ void motor2MoveTo(unsigned short location, bool isWait)
 		setMotor2DirGPIO(ON);
 	else
 		setMotor2DirGPIO(OFF);
-	delay_ms(5);
+	vTaskDelay(10 / portTICK_RATE_MS);
 	
 	motor2->periodCnt = 0;
+	motor2->parm1 = 0;
+	motor2->highTime = highTime;
+	motor2->lowTime = lowTime;
 	motor2->motorTargetLocation = location;
-	motor2->moveStepNum = 65000;
+	motor2->moveStepNum = 60000;
+	motor2StopMovePermission = false;
 	
 	while(isWait && motor2->motorLocation != motor2->motorTargetLocation)
 	{
-		vTaskDelay(1 / portTICK_RATE_MS);
+		vTaskDelay(100 / portTICK_RATE_MS);
+		if(motor2StopMovePermission)
+		{
+			motor2->moveStepNum = 0;
+			break;
+		}
 	}
+}
+
+void motor2StopMove(void)
+{
+	motor2StopMovePermission = true;
 }
 
 /****************************************end of file************************************************/

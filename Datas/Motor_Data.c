@@ -13,12 +13,16 @@
 /******************************************Static Variables*****************************************/
 /***************************************************************************************************/
 //定义4个电机
+#if(Motor4Type == Motor4UsartMotor)
+static Motor GB_Motors[2] = 
+#elif(Motor4Type == Motor4IOMotor)
 static Motor GB_Motors[3] = 
+#endif
 {
 	//电机1，转盘
 	{
-		.highTime = 6,										//高电平时间段，(1-3)*100us
-		.lowTime = 8,										//低电平时间段，(4)*100us
+		.highTime = 1,										//高电平时间段，(1-3)*100us
+		.lowTime = 2,										//低电平时间段，(4)*100us
 		.periodCnt = 0,
 		.isFront = true,									//是否前进
 		.moveStepNum = 0,									//运动步数
@@ -31,19 +35,20 @@ static Motor GB_Motors[3] =
 	},
 	//电机2，爪子移动
 	{
-		.highTime = 1,										//高电平时间，*100us
-		.lowTime = 2,										//低电平时间，*100us
+		.highTime = 2,										//高电平时间，*100us
+		.lowTime = 3,										//低电平时间，*100us
 		.periodCnt = 0,
 		.isFront = true,									//是否前进
 		.moveStepNum = 0,									//运动步数
-		.motorLocation = 60000,									//电机当前位置
+		.motorLocation = 1,									//电机当前位置
 		.motorTargetLocation = 0,							//电机目标位置
 		.motorMaxLocation = 65000,
 	},
+#if(Motor4Type == Motor4IOMotor)	
 	//电机4，爪子捏合
 	{
-		.highTime = 1,										//高电平时间，*100us
-		.lowTime = 2,										//低电平时间，*100us
+		.highTime = 2,										//高电平时间，*100us
+		.lowTime = 4,										//低电平时间，*100us
 		.periodCnt = 0,
 		.isFront = true,									//是否前进
 		.moveStepNum = 0,									//运动步数
@@ -51,6 +56,7 @@ static Motor GB_Motors[3] =
 		.motorTargetLocation = 0,							//电机目标位置
 		.motorMaxLocation = 65000
 	}
+#endif
 };
 /***************************************************************************************************/
 /******************************************Static Methods*******************************************/

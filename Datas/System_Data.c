@@ -82,4 +82,24 @@ void setSystemWireLinkStatus(LinkStatus linkStatus)
 	systemData.wireNetInfo.lineStatus = linkStatus;
 }
 
+void setSystemDeviceInfoStatus(bool isNew)
+{
+	systemData.deviceInfoIsNew = isNew;
+}
+
+bool getSystemDeviceInfoStatus(void)
+{
+	return systemData.deviceInfoIsNew;
+}
+
+void setSystemTimeIsRead(bool isNew)
+{
+	systemData.timeIsReaded = isNew;
+}
+
+bool getSystemTimeIsRead(void)
+{
+	return systemData.timeIsReaded;
+}
+
 /****************************************end of file************************************************/

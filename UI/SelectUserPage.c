@@ -9,7 +9,6 @@
 #include	"UserMPage.h"
 #include	"DeviceDao.h"
 #include	"Intent.h"
-#include	"Motor_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -112,10 +111,15 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*·µ»Ø*/
 		if(page->lcdinput[0] == 0x1200)
 		{
-			StartMotorAction(Motor_4, Motor4_OpenLocation, false);
-			StartMotorAction(Motor_2, Motor2_MidLocation, true);
-			
-			DeleteCurrentTest();
+			page->currenttestdata = GetCurrentTestItem();
+			if(NULL != page->currenttestdata)
+			{
+				page->motorAction.motorActionEnum = OriginLocationDef;
+				page->motorAction.motorParm = page->currenttestdata->cardLocation;
+				StartMotorAction(&page->motorAction, true, 3, 100/portTICK_RATE_MS);
+				DeleteCurrentTest();
+			}
+
 			backToFatherActivity();
 		}
 		

@@ -39,7 +39,7 @@ void Motor1_GPIO_Init(void)
 	EXTI_InitTypeDef   EXTI_InitStructure;
 	
 	RCC_AHB1PeriphClockCmd(Motor1_CLK_RCC | Motor1_DIR_RCC | Motor1_Sleep_RCC | Motor1_Sensor1_RCC | Motor1_Sensor2_RCC, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+//	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	
   	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -59,7 +59,7 @@ void Motor1_GPIO_Init(void)
 	
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Low_Speed;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_InitStructure.GPIO_Pin = Motor1_Sensor1_Pin;
 	GPIO_Init(Motor1_Sensor1_Group, &GPIO_InitStructure);
@@ -67,19 +67,28 @@ void Motor1_GPIO_Init(void)
 	GPIO_InitStructure.GPIO_Pin = Motor1_Sensor2_Pin;
 	GPIO_Init(Motor1_Sensor2_Group, &GPIO_InitStructure);
 	
+/*	SYSCFG_EXTILineConfig(Motor1_Sensor1_EXTI_PortSource, Motor1_Sensor1_EXTI_PinSource);
 	SYSCFG_EXTILineConfig(Motor1_Sensor2_EXTI_PortSource, Motor1_Sensor2_EXTI_PinSource);
 
-	EXTI_InitStructure.EXTI_Line = Motor1_Sensor2_EXTI_Line;
+	EXTI_InitStructure.EXTI_Line = Motor1_Sensor1_EXTI_Line;
 	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStructure);
 	
-	NVIC_InitStructure.NVIC_IRQChannel = Motor1_Sensor2_EXTI_IRQ;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 12;
+	EXTI_InitStructure.EXTI_Line = Motor1_Sensor2_EXTI_Line;
+	EXTI_Init(&EXTI_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = Motor1_Sensor1_EXTI_IRQ;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = Motor1_Sensor2_EXTI_IRQ;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 13;
+	NVIC_Init(&NVIC_InitStructure);
+	*/
 }
 
 /***************************************************************************************************

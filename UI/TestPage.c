@@ -92,7 +92,7 @@ static void activityStart(void)
 	/*获取当前测试数据的地址*/
 	S_TestPageBuffer->currenttestdata = GetCurrentTestItem();
 	S_TestPageBuffer->canExit = false;
-		
+	readGbSystemSetData(&S_TestPageBuffer->systemSetData);
 	InitCurve();
 		
 	//必须在获取当前测试数据地址后使用
@@ -101,7 +101,6 @@ static void activityStart(void)
 	StartTest(&(S_TestPageBuffer->currenttestdata->testData));
 	
 	SelectPage(96);
-
 }
 
 /***************************************************************************************************
@@ -150,7 +149,7 @@ static void activityFresh(void)
 {
 	if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == NoResult)
 		RefreshCurve();
-	else if(isMotorActionOver(MotorLocationNone, Motor2_MidLocation, Motor4_OpenLocation))
+	else if(isMotorMoveEnd(0 / portTICK_RATE_MS))
 	{
 		S_TestPageBuffer->canExit = true;
 		DeleteCurrentTest();
@@ -310,7 +309,9 @@ static void RefreshCurve(void)
 	if(My_Pass == TakeTestResult(&(S_TestPageBuffer->currenttestdata->testData.testResultDesc)))
 	{
 		S_TestPageBuffer->currenttestdata->statues = status_end;
-		PutCardOutOfDevice();
+		S_TestPageBuffer->motorAction.motorActionEnum = PutCardOutOfDeviceDef;
+		S_TestPageBuffer->motorAction.motorParm = S_TestPageBuffer->currenttestdata->testLocation;
+		StartMotorAction(&S_TestPageBuffer->motorAction, true, 3, 100/portTICK_RATE_MS);
 		
 		memcpy(&(S_TestPageBuffer->currenttestdata->testData.testDateTime), &(getSystemRunTimeData()->systemDateTime), sizeof(DateTime));
 

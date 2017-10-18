@@ -138,7 +138,6 @@ MyRes readRecordDataFromFileByPageRequest(const char * fileName, PageRequest * p
 	if(myfile && fileName && pageRequest && deviceRecordHeader && page)
 	{
 		memset(myfile, 0, MyFileStructSize);
-		memset(deviceRecordHeader, 0, DeviceRecordHeaderStructSize);
 		page->totalPageSize = 0;
 		page->totalItemSize = 0;
 		page->readItemSize = 0;
@@ -152,9 +151,35 @@ MyRes readRecordDataFromFileByPageRequest(const char * fileName, PageRequest * p
 			f_lseek(&(myfile->file), 0);
 			
 			//读取数据头
+			deviceRecordHeader->crc = 0;
 			myfile->res = f_read(&(myfile->file), deviceRecordHeader, DeviceRecordHeaderStructSize, &(myfile->br));
 			if(deviceRecordHeader->crc != CalModbusCRC16Fun(deviceRecordHeader, DeviceRecordHeaderStructCrcSize, NULL))
 				goto Finally;
+			else if(pageRequest == NULL)
+			{
+				myfile->tempValue1 = DeviceRecordHeaderStructSize;
+				//根据用户上传索引读取数据
+				if(deviceRecordHeader->userUpLoadIndex < deviceRecordHeader->itemSize)
+				{
+					myfile->tempValue1 += deviceRecordHeader->userUpLoadIndex * ItemByteSize;
+					f_lseek(&(myfile->file), myfile->tempValue1);
+				
+					myfile->tempValue1 = UserePageContentIndex;
+					myfile->tempValue1 *= ItemByteSize;
+					f_read(&(myfile->file), page->content, myfile->tempValue1, &(myfile->br));
+				}
+				
+				//根据纽康度上传索引读取数据
+				if(deviceRecordHeader->ncdUpLoadIndex < deviceRecordHeader->itemSize)
+				{
+					myfile->tempValue1 += deviceRecordHeader->ncdUpLoadIndex * ItemByteSize;
+					f_lseek(&(myfile->file), myfile->tempValue1);
+
+					myfile->tempValue1 = UserePageContentIndex;
+					myfile->tempValue1 *= ItemByteSize;
+					f_read(&(myfile->file), &page->content[UserePageContentIndex], myfile->tempValue1, &(myfile->br));
+				}
+			}
 			else
 			{
 				page->totalItemSize = deviceRecordHeader->itemSize;

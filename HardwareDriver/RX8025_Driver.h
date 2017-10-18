@@ -27,6 +27,6 @@
 void RTC_BSPInit(void);
 MyRes RTC_SetTimeData(DateTime * data);
 MyRes RTC_GetTimeData(DateTime * time);
-
+MyRes RTC_SetTimeData2(char * buf);
 #endif
 /****************************************end of file************************************************/

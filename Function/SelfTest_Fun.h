@@ -1,7 +1,13 @@
 #ifndef SELFCHECK_FUN_H
 #define SELFCHECK_FUN_H
 
+#include	"DeviceError.h"
+#include	"SystemSet_Data.h"
+#include	"DeviceAdjust.h"
+#include	"Timer.h"
 #include	"Define.h"
+#include	"Motor.h"
+#include	"Motor_Fun.h"
 
 typedef enum
 { 
@@ -25,8 +31,27 @@ typedef enum
 	
 	SelfTestting = 99,								//自检中
 	SelfTest_OK = 100,								//自检成功
+	SelfTest_Error = 101,								//自检成功
 	SelfTest_None = 0xff
 }ERROR_SelfTest;
+
+#pragma pack(1)
+typedef struct SelfTestBuf_Tag
+{
+	SystemSetData systemSetData;
+	DeviceAdjust deviceAdjust;
+	DeviceError deviceError;
+	unsigned short juli;
+	Motor * motor;
+	MotorAction motorAction;
+	Timer timer;
+	double a;
+	double b;
+	unsigned char i;
+	unsigned char j;
+	MyBitAction locationStatus[Motor1_HalfLocation];
+}SelfTestBuf;
+#pragma pack()
 
 void SelfTest_Function(void);
 ERROR_SelfTest getSelfTestStatus(void);

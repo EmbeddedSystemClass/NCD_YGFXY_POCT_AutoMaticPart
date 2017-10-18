@@ -60,37 +60,6 @@ void Motor2_GPIO_Init(void)
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_InitStructure.GPIO_Pin = Motor2_Sensor2_Pin;
 	GPIO_Init(Motor2_Sensor2_Group, &GPIO_InitStructure);
-
-	
-/*	SYSCFG_EXTILineConfig(Motor2_Sensor1_EXTI_PortSource, Motor2_Sensor1_EXTI_PinSource);
-	SYSCFG_EXTILineConfig(Motor2_Sensor2_EXTI_PortSource, Motor2_Sensor2_EXTI_PinSource);
-	SYSCFG_EXTILineConfig(Motor2_Sensor3_EXTI_PortSource, Motor2_Sensor3_EXTI_PinSource);
-	
-	EXTI_InitStructure.EXTI_Line = Motor2_Sensor1_EXTI_Line;
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStructure);
-	
-	EXTI_InitStructure.EXTI_Line = Motor2_Sensor2_EXTI_Line;
-	EXTI_Init(&EXTI_InitStructure);
-	
-	EXTI_InitStructure.EXTI_Line = Motor2_Sensor3_EXTI_Line;
-	EXTI_Init(&EXTI_InitStructure);
-	
-	NVIC_InitStructure.NVIC_IRQChannel = Motor2_Sensor1_EXTI_IRQ;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x02;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-	
-	NVIC_InitStructure.NVIC_IRQChannel = Motor2_Sensor2_EXTI_IRQ;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x03;
-	NVIC_Init(&NVIC_InitStructure);
-	
-	NVIC_InitStructure.NVIC_IRQChannel = Motor2_Sensor2_EXTI_IRQ;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x04;
-	NVIC_Init(&NVIC_InitStructure);*/
 }
 
 /***************************************************************************************************

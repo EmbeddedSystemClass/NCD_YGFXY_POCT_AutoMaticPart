@@ -10,8 +10,8 @@
 #include 	"queue.h"
 #include	"semphr.h"
 
-#define xRxQueue5_Len				200
-#define xTxQueue5_Len				300
+#define xRxQueue5_Len				6000
+#define xTxQueue5_Len				2048
 
 void Usart5_Init(void);
 void EnableUsart5TXInterrupt(void);

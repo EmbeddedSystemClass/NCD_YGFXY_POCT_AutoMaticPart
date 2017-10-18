@@ -10,6 +10,8 @@
 /***************************************************************************************************/
 #include	"RX8025_Driver.h"
 
+#include	"MyMem.h"
+
 #include	<string.h>
 #include	"stdio.h"
 #include 	"stdlib.h"
@@ -356,6 +358,74 @@ MyRes RTC_SetTimeData(DateTime * data)
 		return My_Fail;
 	else
 		return My_Pass;
+}
+
+MyRes RTC_SetTimeData2(char * buf)
+{
+	unsigned short temp = 0;
+	DateTime temptime;
+	MyRes status = My_Fail;
+	
+	char * tempbuf = NULL;
+	
+	tempbuf = MyMalloc(64);
+	
+	if(tempbuf && buf)
+	{
+		memset(tempbuf, 0, 64);
+		memcpy(tempbuf, buf, 4);
+		temp = strtol(tempbuf, NULL, 10);
+		if((temp >= 2016) && (temp <= 2100))
+			temptime.year = temp-2000;
+		else
+			goto END;
+		
+		memset(tempbuf, 0, 64);
+		memcpy(tempbuf, buf+4, 2);
+		temp = strtol(tempbuf, NULL, 10);
+		if((temp >= 1) && (temp <= 12))
+			temptime.month = temp;
+		else
+			goto END;
+			
+		memset(tempbuf, 0, 64);
+		memcpy(tempbuf, buf+6, 2);
+		temp = strtol(tempbuf, NULL, 10);
+		if((temp >= 1) && (temp <= 31))
+			temptime.day = temp;
+		else
+			goto END;
+			
+		memset(tempbuf, 0, 64);
+		memcpy(tempbuf, buf+8, 2);
+		temp = strtol(tempbuf, NULL, 10);
+		if(temp <= 23)
+			temptime.hour = temp;
+		else
+			goto END;
+			
+		memset(tempbuf, 0, 64);
+		memcpy(tempbuf, buf+10, 2);
+		temp = strtol(tempbuf, NULL, 10);
+		if(temp <= 59)
+			temptime.min = temp;
+		else
+			goto END;
+			
+		memset(tempbuf, 0, 64);
+		memcpy(tempbuf, buf+12, 2);
+		temp = strtol(tempbuf, NULL, 10);
+		if(temp <= 59)
+			temptime.sec = temp+2;
+		else
+			goto END;
+		
+		status = RTC_SetTimeData(&temptime);
+	}
+	
+	END:
+		MyFree(tempbuf);
+		return status;
 }
 
 MyRes RTC_GetTimeData(DateTime * time)

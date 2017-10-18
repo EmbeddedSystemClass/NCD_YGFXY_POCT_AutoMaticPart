@@ -27,6 +27,7 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 static Motor * motor1 = NULL;
+static bool motor1StopMovePermission = false;
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -37,21 +38,7 @@ static Motor * motor1 = NULL;
 /****************************************File Start*************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-/***************************************************************************************************
-*FunctionName: motor1Reset
-*Description: 电机1重置位置，则下次转盘运动的时候会重新定位
-*Input: 
-*Output: 
-*Return: 
-*Author: xsx
-*Date: 2017年8月11日 08:59:08
-***************************************************************************************************/
-void motor1Reset(void)
-{
-	motor1 = getMotor(Motor_1);
-	
-	motor1->motorLocation = 0;
-}
+
 /***************************************************************************************************
 *FunctionName: motor1StartMove
 *Description: 电机1开始运动N步
@@ -65,36 +52,56 @@ void motor1Reset(void)
 ***************************************************************************************************/
 void motor1MoveToNum(unsigned char num, bool isWait)
 {
-	unsigned short waitTime = 0;
 	motor1 = getMotor(Motor_1);
 
-	if(motor1->motorLocation == 0)
+/*	if(motor1->motorLocation == 0)
 		motor1->isFront = true;
-	else 
+	else
 	{
 		if(motor1->motorLocation == num)
+			return;
+		else if(motor1->motorLocation > num)
 		{
-			if(Motor1Sensor2Triggered)
-				return;
+			if(motor1->motorLocation - num <= Motor1_HalfLocation)
+				motor1->isFront = false;
 			else
-				motor1->motorLocation++;
+				motor1->isFront = true;
+		}
+		else
+		{
+			if(num - motor1->motorLocation <= Motor1_HalfLocation)
+				motor1->isFront = true;
+			else
+				motor1->isFront = false;
 		}
 	}
 	
+	if(motor1->isFront)
+		setMotor1DirGPIO(ON);
+	else
+		setMotor1DirGPIO(OFF);
+	vTaskDelay(10 / portTICK_RATE_MS);
+*/	
 	motor1->periodCnt = 0;
 	motor1->motorTargetLocation = num;
-	motor1->parm2 = true;
-	motor1->moveStepNum = 65000;
-	motor1->parm3 = 100;
+	motor1->moveStepNum = 650000;
+	motor1->parm1 = 0;
+	motor1StopMovePermission = false;
 	
-	if(isWait)
-		waitTime = 200;
-	
-	while(waitTime && motor1->motorLocation != motor1->motorTargetLocation)
+	while(isWait && motor1->motorLocation != motor1->motorTargetLocation)
 	{
 		vTaskDelay(100 / portTICK_RATE_MS);
-		waitTime--;
+		if(motor1StopMovePermission)
+		{
+			motor1->moveStepNum = 0;
+			break;
+		}
 	}
+}
+
+void motor1StopMove(void)
+{
+	motor1StopMovePermission = true;
 }
 
 /****************************************end of file************************************************/

@@ -1,22 +1,26 @@
 /***************************************************************************************************
-*FileName：Universal_Task
-*Description：通用任务
-*Author：xsx
-*Data：2016年5月6日16:56:17
+*FileName:IAP_Fun
+*Description:IAP功能
+*Author:xsx
+*Data:2017年2月16日16:27:25
 ***************************************************************************************************/
+
 
 /***************************************************************************************************/
 /******************************************头文件***************************************************/
 /***************************************************************************************************/
+#include	"IAP_Fun.h"
 
-#include	"Universal_Task.h"
-#include	"Led_Driver.h"
-#include	"Universal_Fun.h"
-#include	"Ads8325_Driver.h"
-#include	"Paidui_Fun.h"
+#include	"RemoteSoftDao.h"
+#include	"AppFileDao.h"
 
-#include 	"FreeRTOS.h"
-#include 	"task.h"
+#include	"RemoteSoft_Data.h"
+
+#include	"MyMem.h"
+#include	"Md5.h"
+#include	"Define.h"
+#include	"MyTools.h"
+#include	"Delay.h"
 
 #include	<string.h>
 #include	"stdio.h"
@@ -25,13 +29,10 @@
 /***************************************************************************************************/
 /**************************************局部变量声明*************************************************/
 /***************************************************************************************************/
-#define UniversalTask_PRIORITY			2
-const char * UniversalTaskName = "vUniversalTask";
+
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
-
-static void vUniversalTask( void *pvParameters );	//看门狗任务
 
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -41,45 +42,62 @@ static void vUniversalTask( void *pvParameters );	//看门狗任务
 /***************************************************************************************************/
 
 /***************************************************************************************************
-*FunctionName：StartvSysLedTask
-*Description：建立系统指示灯任务
-*Input：None
-*Output：None
-*Author：xsx
-*Data：2015年8月26日16:58:13
+*FunctionName: checkMd5
+*Description: 计算并对比MD5
+*Input: 
+*Output: 
+*Return: 
+*Author: xsx
+*Date: 2017年2月20日14:02:35
 ***************************************************************************************************/
-char StartvUniversalTask(void)
+MyRes checkMd5(void)
 {
-	return xTaskCreate( vUniversalTask, UniversalTaskName, configMINIMAL_STACK_SIZE, NULL, UniversalTask_PRIORITY, NULL );
+	RemoteSoftInfo * remoteSoftInfo = NULL;		//读取的固件信息
+	char currentMd5[40];				//当前MD5
+	
+	remoteSoftInfo = MyMalloc(sizeof(RemoteSoftInfo));
+	if(remoteSoftInfo)
+	{
+		//读取文件中的md5
+		memset(remoteSoftInfo, 0, sizeof(RemoteSoftInfo));
+		if(My_Fail == ReadRemoteSoftInfo(remoteSoftInfo))
+			return My_Fail;
+	}
+	else
+		return My_Fail;
+	
+	
+	//计算更新固件的md5值
+	memset(currentMd5, 0, 40);
+	md5sum(currentMd5);
+	
+	//对比MD5
+	if(true == CheckStrIsSame(remoteSoftInfo->md5, currentMd5, 32))
+		return My_Pass;
+	else
+		return My_Fail;
 }
 
 /***************************************************************************************************
-*FunctionName：vSysLedTask
-*Description：系统指示灯闪烁表面程序正常运行
-*Input：None
-*Output：None
-*Author：xsx
-*Data：2015年8月26日16:58:46
+*FunctionName: checkNewFirmwareIsSuccessDownload
+*Description: 检查是否成功下载新固件
+*Input: 
+*Output: 
+*Return: 
+*Author: xsx
+*Date: 2017年2月21日09:02:28
 ***************************************************************************************************/
-static void vUniversalTask( void *pvParameters )
+MyRes checkNewFirmwareIsSuccessDownload(void)
 {
-	static unsigned int count = 0;
-
-	while(1)
+	//检查是否有新程序
+	if(My_Pass == checkNewAppFileIsExist())
 	{
-		LedToggle();
-
-		if(count % 10 == 0)
-			readAndUpdateSystemDateTimeFun();
-		
-		if(count % 5 == 0)
-			PaiDuiHandler();
-
-		ADS8325();
-		
-		count++;
-
-		vTaskDelay(100 / portTICK_RATE_MS);
+		//如果有新固件，对比MD5
+		if(My_Pass == checkMd5())
+			return My_Pass;	
 	}
+	
+	return My_Fail;
 }
+
 

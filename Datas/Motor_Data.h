@@ -12,20 +12,37 @@ typedef enum
 	Motor_None = 0xff,
 }Motorx_Def;
 
-#define	Motor2_EndTestLocation				28300							//停止测试位置
-#define	Motor2_StartTestLocation			19300							//开始测试位置
-#define	Motor2_CatchCardLocation			32000							//抓卡准备测试
+#define	MotorLocationZero					0
+#define	MotorLocationNone					MotorLocationZero
+
+/*电机1相关定义*/
+#define	Motor1_MaxLocation					18								//电机1最大位置号
+#define	Motor1_HalfLocation					9								//电机1中间位置号
+#define	Motor1_WaitTimeDef					200								//电机2等待时间，2S
+
+/*电机2相关定义*/
+#define	Motor2_PutCardOutLocation			100								//将卡排除设备
+#define	Motor2_EndTestLocation				27600							//停止测试位置
+#define	Motor2_StartTestLocation			18000							//开始测试位置
+#define	Motor2_CatchCardLocation			30000							//抓卡准备测试
 #define	Motor2_PutDownCardLocation2			33500							//从测试的一边将卡在排队位放好
-#define	Motor2_MidLocation					40000							//中心位置
-#define	Motor2_PutDownCardLocation			45500							//将卡在排队位放好
-#define	Motor2_WaitCardLocation				52000							//等待插卡
+#define	Motor2_MidLocation					38000							//中心位置
+#define	Motor2_PutDownCardLocation			44500							//将卡在排队位放好
+#define	Motor2_WaitCardLocation				53000							//等待插卡
+#define	Motor2_WaitTimeDef					200								//电机2等待时间，20S
 
+/*电机4相关定义*/
+#define	Motor4_WaitTimeDef					50								//电机4等待时间，5S
+#if(Motor4Type == Motor4UsartMotor)
+	#define	Motor4_OpenLocation				20								//电机4打开
+	#define	Motor4_CardLocation				50								//电机4夹卡
+	#define	Motor4_CloseLocation			60								//电机4合并
+#elif(Motor4Type == Motor4IOMotor)
+	#define	Motor4_OpenLocation				10								//电机4打开
+	#define	Motor4_CardLocation				1000							//电机4夹卡
+	#define	Motor4_CloseLocation			2000							//电机4合并
+#endif
 
-#define	Motor4_OpenLocation		0
-#define	Motor4_CardLocation		3700
-#define	Motor4_CloseLocation	4500
-
-#define	MotorLocationNone		0xffff
 
 Motor * getMotor(Motorx_Def motor);
 
@@ -51,7 +68,6 @@ unsigned short getMotorxTargetLocation(Motorx_Def motor);
 unsigned short getMotorxHighTime(Motorx_Def motor);
 unsigned short getMotorxLowTime(Motorx_Def motor);
 
-unsigned short getMotorxMaxLocation(Motorx_Def motor);
 
 #endif
 

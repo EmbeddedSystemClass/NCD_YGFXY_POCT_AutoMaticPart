@@ -23,6 +23,7 @@
 #include	"MyMem.h"
 #include	"MyTools.h"
 #include	"QueueUnits.h"
+#include	"Delay.h"
 
 #include 	"task.h"
 #include 	"queue.h"
@@ -82,7 +83,7 @@ static MyRes SendTestPointData(void * data)
 	if(xTestCurveQueue == NULL)
 		return My_Fail;
 	
-	if(pdPASS == xQueueSend( xTestCurveQueue, data, 1/portTICK_RATE_MS ))
+	if(pdPASS == xQueueSend( xTestCurveQueue, data, 0/portTICK_RATE_MS ))
 		return My_Pass;
 	else
 		return My_Fail;	
@@ -141,26 +142,31 @@ ResultState TestFunction(PaiduiUnitData * parm)
 		memset(S_TempCalData, 0, sizeof(TempCalData));
 		//测试数据指针指向传进来的真实数据空间
 		S_TempCalData->paiduiUnitData = parm;
-		
+		S_TempCalData->motor = getMotor(Motor_2);
 		//初始配置
 		SetLedVol(getGBSystemSetData()->testLedLightIntensity);
 		vTaskDelay(10/portTICK_RATE_MS);
 		
 		SelectChannel(S_TempCalData->paiduiUnitData->testData.qrCode.ChannelNum);
 		vTaskDelay(10/portTICK_RATE_MS);
-
+		
 		repeat:
 
 			S_TempCalData->resultstatues = NoResult;
 			S_TempCalData->tempvalue1 = 0;
 			S_TempCalData->motorLocation = Motor2_StartTestLocation;
-			
+			motor2MoveTo(1, 2, S_TempCalData->motorLocation, true);
+		
+			motor2MoveTo(5, 10, Motor2_EndTestLocation, false);
+		
 			for(i=1; i<= TestStep; i++)
 			{
-				S_TempCalData->motorLocation += TestMotorStepUp;
-				motor2MoveTo(S_TempCalData->motorLocation, true);
-				
-//				vTaskDelay(1 / portTICK_RATE_MS);				
+				//S_TempCalData->motorLocation += TestMotorStepUp;
+				//motor2MoveTo(S_TempCalData->motorLocation, false);
+				//delay_us(TestMotorStepUp * 10);
+				//while(S_TempCalData->motor->motorLocation != S_TempCalData->motor->motorTargetLocation)
+				//	vTaskDelay(1 / portTICK_RATE_MS);	
+				vTaskDelay(4 / portTICK_RATE_MS);				
 				S_TempCalData->tempvalue1 += ADS8325();
 				
 				//平均值滤波
@@ -176,6 +182,7 @@ ResultState TestFunction(PaiduiUnitData * parm)
 						
 					S_TempCalData->tempvalue1 = 0;
 				}
+				delay_us(840);
 			}
 			
 			//分析曲线
@@ -232,10 +239,13 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		}
 		else if(S_TempCalData->maxdata < 50)
 		{
-			SelectChannel(getChannelNum() + 3);
+			if(getChannelNum() < 7)
+			{
+				SelectChannel(getChannelNum() + 3);
 				
-			vTaskDelay(10/portTICK_RATE_MS);
-			return;
+				vTaskDelay(10/portTICK_RATE_MS);
+				return;
+			}
 		}
 		
 		//step.1 计算整条曲线的cv值，用于判断是否加样
@@ -404,6 +414,23 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		if(S_TempCalData->paiduiUnitData->testData.testSeries.result < 0)
 			S_TempCalData->paiduiUnitData->testData.testSeries.result = 0;
 
+		if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IT1705-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 0.6666f;
+		}
+		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IK1705-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result /= 2.3f;
+		}
+		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IT1708-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result /= 1.75f;
+		}
+		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IM1705-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result /= 5.0f;
+		}
+		
 		S_TempCalData->resultstatues = ResultIsOK;
 		return;
 		

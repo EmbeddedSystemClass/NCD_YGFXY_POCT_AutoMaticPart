@@ -55,8 +55,11 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 		readQRCodeBuffer->cardQR = cardQR;
 		memset(readQRCodeBuffer->cardQR, 0, QRCodeStructSize);
 		
-		while(false == isMotorActionOver(MotorLocationNone, MotorLocationNone, Motor4_CardLocation))
-			;
+		readQRCodeBuffer->motorAction.motorActionEnum = Motor4MoveDef;
+		readQRCodeBuffer->motorAction.motorParm = Motor4_CardLocation;
+		if(My_Fail == StartMotorAction(&readQRCodeBuffer->motorAction, false, 3, 1000/portTICK_RATE_MS))
+			readQRCodeBuffer->scanResult = CardCodeScanFail;
+		while(false == isMotorMoveEnd(10000 / portTICK_RATE_MS));
 		
 		OpenCodeScanner();
 	
@@ -65,8 +68,8 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 		//设置定时器
 		timer_SetAndStart(&(readQRCodeBuffer->timer), MAX_SCAN_QR_TIME);
 		
-		readQRCodeBuffer->motorLocation = getMotorxLocation(Motor_2);
-	
+		readQRCodeBuffer->motorAction.motorActionEnum = Motor2MoveDef;
+		
 		while(readQRCodeBuffer->scanResult == CardCodeScanning)
 		{
 			if(OFF == readCaedCheckStatus())				//卡被拔出
@@ -78,9 +81,27 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 				readQRCodeBuffer->motorDir++;
 				
 				if(readQRCodeBuffer->motorDir%2 == 0)
-					motor2MoveTo(55000, true);
+				{
+					readQRCodeBuffer->motorAction.motorParm = Motor2_WaitCardLocation;
+					if(My_Fail == StartMotorAction(&readQRCodeBuffer->motorAction, false, 3, 1000/portTICK_RATE_MS))
+					{
+						readQRCodeBuffer->scanResult = CardCodeScanFail;
+						break;
+					}
+					
+					while(false == isMotorMoveEnd(1000 / portTICK_RATE_MS));
+				}
 				else
-					motor2MoveTo(Motor2_PutDownCardLocation, true);
+				{
+					readQRCodeBuffer->motorAction.motorParm = Motor2_PutDownCardLocation;
+					if(My_Fail == StartMotorAction(&readQRCodeBuffer->motorAction, false, 3, 1000/portTICK_RATE_MS))
+					{
+						readQRCodeBuffer->scanResult = CardCodeScanFail;
+						break;
+					}
+					
+					while(false == isMotorMoveEnd(1000 / portTICK_RATE_MS));
+				}
 				
 				ReadBasicCodeData(readQRCodeBuffer);
 
@@ -94,6 +115,10 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 
 	CloseCodeScanner();
 	
+	readQRCodeBuffer->motorAction.motorParm = Motor2_PutDownCardLocation;
+	StartMotorAction(&readQRCodeBuffer->motorAction, false, 3, 1000/portTICK_RATE_MS);
+	while(false == isMotorMoveEnd(1000 / portTICK_RATE_MS));
+					
 	scanResult = readQRCodeBuffer->scanResult;
 		
 	MyFree(readQRCodeBuffer);

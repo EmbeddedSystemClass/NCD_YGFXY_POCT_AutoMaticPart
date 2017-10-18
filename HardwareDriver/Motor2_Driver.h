@@ -4,6 +4,9 @@
 #include	"stm32f4xx.h"
 #include	"stm32f4xx_gpio.h"
 #include	"stm32f4xx_rcc.h"
+#include	"stm32f4xx_exti.h"
+#include 	"stm32f4xx_syscfg.h"
+#include	"misc.h"
 #include	"Define.h"
 
 #define	Motor2_CLK_Pin			GPIO_Pin_11

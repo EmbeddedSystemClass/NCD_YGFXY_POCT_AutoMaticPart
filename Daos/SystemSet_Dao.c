@@ -60,12 +60,12 @@ MyRes SaveSystemSetData(SystemSetData * systemSetData)
 		{
 			f_lseek(&(myfile->file), 0);
 			
-			systemSetData->crc = CalModbusCRC16Fun(systemSetData, sizeof(SystemSetData)-2, NULL);
+			systemSetData->crc = CalModbusCRC16Fun(systemSetData, SystemSetDataStructCrcSize, NULL);
 			
-			myfile->res = f_write(&(myfile->file), systemSetData, sizeof(SystemSetData), &(myfile->bw));
+			myfile->res = f_write(&(myfile->file), systemSetData, SystemSetDataStructSize, &(myfile->bw));
 			
 			//如果写入成功，则更新内存中的设备信息
-			if((FR_OK == myfile->res)&&(myfile->bw == sizeof(SystemSetData)))
+			if((FR_OK == myfile->res)&&(myfile->bw == SystemSetDataStructSize))
 			{
 				status = My_Pass;
 				
@@ -108,13 +108,13 @@ MyRes ReadSystemSetData(SystemSetData * systemSetData)
 		{
 			f_lseek(&(myfile->file), 0);
 					
-			myfile->res = f_read(&(myfile->file), systemSetData, sizeof(SystemSetData), &(myfile->br));
+			myfile->res = f_read(&(myfile->file), systemSetData, SystemSetDataStructSize, &(myfile->br));
 			
 			//如果读取成功，也更新内存中的设备信息数据
-			if((FR_OK == myfile->res)&&(myfile->br == sizeof(SystemSetData)))
+			if((FR_OK == myfile->res)&&(myfile->br == SystemSetDataStructSize))
 				statues = My_Pass;
 			else
-				memset(systemSetData, 0, sizeof(SystemSetData));
+				memset(systemSetData, 0, SystemSetDataStructSize);
 
 			f_close(&(myfile->file));
 		}

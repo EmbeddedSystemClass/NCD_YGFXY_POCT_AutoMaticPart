@@ -105,7 +105,7 @@ unsigned short CalModbusCRC16Fun(const void *puchMsg, unsigned short usDataLen, 
 	if(crc)
 	{
 		*crc++ = uchCRCHi;
-		*crc++ = uchCRCLo;
+		*crc = uchCRCLo;
 	}
 	
     return crcV;

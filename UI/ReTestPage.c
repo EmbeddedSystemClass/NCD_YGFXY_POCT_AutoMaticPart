@@ -169,7 +169,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(S_ReTestPageBuffer->isTestting)
+/*	if(S_ReTestPageBuffer->isTestting)
 	{
 		//²å¿¨
 		if(S_ReTestPageBuffer->waitCardIndex <= PaiDuiWeiNum)
@@ -346,7 +346,7 @@ static void activityFresh(void)
 			dspReTestLogs();
 		
 		S_ReTestPageBuffer->count++;
-	}
+	}*/
 }
 
 /***************************************************************************************************

@@ -5,18 +5,8 @@
 #include 	"FreeRTOS.h"
 #include	"ff.h"
 
-/*设置中各个功能的密码*/
-#define		AdminPassWord				"201300\0"								//管理员密码，用于修改设备id
-#define		AdjustPassWord				"201301\0"								//校准密码
-#define		TestPassWord				"201302\0"								//老化测试密码
-#define		CheckQRPassWord				"201303\0"								//测试二维码密码
-#define		AdjLedPassWord				"201304\0"								//校准led密码
-#define		FactoryResetPassWord		"201305\0"								//恢复出厂设置密码
-#define		ChangeValueShowTypePassWord	"201306\0"								//切换结果显示模式，是否显示真实值
-#define		UnlockLCDPassWord			"201307\0"								//解锁屏幕一次
-
 /*V1.0.03*/
-#define	GB_SoftVersion	(unsigned short)2000
+#define	GB_SoftVersion	(unsigned short)1000
 #define	GB_SoftVersion_Build	"Build17090401\0"
 
 /*服务器信息*/
@@ -42,14 +32,14 @@
 #define	QueryRemoteSoftVersionUrl	"QuerySoftInfo\0"
 #define	DownRemoteSoftFileUrl		"DownloadSoftFile\0"
 
-/*SD卡文件名*/
-#define	TestDataFileName			"0:/TD.ncd\0"
-#define	DeviceFileName				"0:/Device.ncd\0"
-#define	DeviceAdjustFileName		"0:/Dadj.ncd\0"
-#define	DeviceErrorFileName			"0:/Derr.ncd\0"
-#define	DeviceMainenanceFileName	"0:/Dmai.ncd\0"
-#define	DeviceQualityFileName		"0:/Dqua.ncd\0"
 
+#define	Motor4IOMotor						0x90							//IO口控制的爪子
+#define	Motor4UsartMotor					0x91							//串口控制的爪子
+#define	Motor4Type							Motor4UsartMotor
+
+#define	DEVICE_EN		100
+#define	DEVICE_CN		101
+#define	DeviceLanguage	DEVICE_CN
 
 #define	_Use_AdjustLed_Fun	0
 #define	_Use_Lwip_Fun	0
@@ -94,7 +84,8 @@ typedef struct
 /**********************************************************************************************************/
 /**********************************************************************************************************/
 
-#define	PaiDuiWeiNum	8							//排队位置数目
+#define	PaiDuiWeiNum	9							//排队位置数目
+
 typedef enum
 {
 	statusNull = 0,									//没开始,默认状态
@@ -175,6 +166,8 @@ typedef struct BasicICO_Tag
 	unsigned short ICO_ID;
 }Basic_ICO;
 #pragma pack()
+
+#define	BasicIcoStructSize		sizeof(Basic_ICO)
 /**********************************************************************************************************/
 /**********************************************************************************************************/
 
@@ -224,14 +217,15 @@ typedef struct
 
 #define	DeviceRecordHeaderStructSize		sizeof(DeviceRecordHeader)								//最多保存的用户数目
 #define	DeviceRecordHeaderStructCrcSize		DeviceRecordHeaderStructSize - 2						//最多保存的用户数目
-
+#define	PageContentItemNum					10
+#define	UserePageContentIndex				5
 #pragma pack(1)
 typedef struct
 {
 	unsigned int totalPageSize;
 	unsigned int totalItemSize;
 	unsigned int readItemSize;
-	void * content[10];
+	void * content[PageContentItemNum];
 }Page;
 #pragma pack()
 
@@ -239,12 +233,6 @@ typedef struct
 
 /**********************************************************************************************************/
 /**********************************************************************************************************/
-
-/*********************************************************************************************/
-/*********************************************************************************************/
-/*********************************************************************************************/
-/**************************校准参数***********************************************************/
-/*********************************************************************************************/
 typedef enum
 {
 	NoResult = 0,										//还未测试，结果未null
@@ -261,6 +249,21 @@ typedef struct Point_tag {
 	unsigned short x;
 }Point;
 #pragma pack()
+
+/**********************************************************************************************************/
+/**********************************************************************************************************/
+#pragma pack(1)
+typedef struct TempDataBuffer_tag {
+	unsigned char i;
+	unsigned short j;
+	unsigned int tempInt;
+	double tempDouble;
+	unsigned short shortData[1024];
+	unsigned char * tempCharP;
+	unsigned short * tempShortP;
+}TempDataBuffer;
+#pragma pack()
+#define	TempDataBufferStructSize	sizeof(TempDataBuffer)
 
 #endif
 

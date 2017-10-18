@@ -15,7 +15,6 @@
 #include	"MyTools.h"
 #include	"CRC16.h"
 #include	"System_Data.h"
-#include	"Motor_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -143,23 +142,26 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 static void activityFresh(void)
 {	
 	CheckQRCode();
-			
-	if(S_PreReadPageBuffer->scancode != CardCodeScanOK && S_PreReadPageBuffer->scancode != CardCodeScanning && isMotorActionOver(S_PreReadPageBuffer->currenttestdata->cardLocation, Motor2_MidLocation,
-		Motor4_OpenLocation))
-	{
-		if(S_PreReadPageBuffer->scancode == CardUnsupported)										//不支持的品种
-			SendKeyCode(6);
-		else if(S_PreReadPageBuffer->scancode == CardCodeTimeOut)									//过期
-			SendKeyCode(4);
-		else
-			SendKeyCode(1);
-	}	
 	
-	if(S_PreReadPageBuffer->scancode == CardCodeScanOK && isMotorActionOver(S_PreReadPageBuffer->currenttestdata->cardLocation+1, Motor2_MidLocation,
-		Motor4_OpenLocation))
+	if(S_PreReadPageBuffer->scancode != CardCodeScanning)
 	{
-		S_PreReadPageBuffer->currenttestdata->statues = status_start;
-		startActivity(createPaiDuiActivity, NULL, NULL);
+		if(isMotorMoveEnd(0 / portTICK_RATE_MS))
+		{
+			if(S_PreReadPageBuffer->scancode == CardCodeScanOK)
+			{
+				S_PreReadPageBuffer->currenttestdata->statues = status_start;
+				startActivity(createPaiDuiActivity, NULL, NULL);
+			}
+			else
+			{
+				if(S_PreReadPageBuffer->scancode == CardUnsupported)										//不支持的品种
+					SendKeyCode(6);
+				else if(S_PreReadPageBuffer->scancode == CardCodeTimeOut)									//过期
+					SendKeyCode(4);
+				else
+					SendKeyCode(1);
+			}
+		}
 	}
 }
 
@@ -262,13 +264,17 @@ static void CheckQRCode(void)
 			memcpy(&(S_PreReadPageBuffer->currenttestdata->testData.qrCode), &(S_PreReadPageBuffer->temperweima), sizeof(QRCode));
 					
 			//设置倒计时时间
-			timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*3);
+			timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*60);
 			
-			motorMoveToDisablePutInCard(S_PreReadPageBuffer->currenttestdata->cardLocation+1);
+			S_PreReadPageBuffer->motorAction.motorActionEnum = OriginLocationDef;
+			S_PreReadPageBuffer->motorAction.motorParm = S_PreReadPageBuffer->currenttestdata->cardLocation+1;
+			StartMotorAction(&S_PreReadPageBuffer->motorAction, true, 3, 100/portTICK_RATE_MS);
 		}
 		else
 		{
-			MotorMoveToWaitCardPutIn(S_PreReadPageBuffer->currenttestdata->cardLocation);
+			S_PreReadPageBuffer->motorAction.motorActionEnum = WaitCardPutInDef;
+			S_PreReadPageBuffer->motorAction.motorParm = S_PreReadPageBuffer->currenttestdata->cardLocation;
+			StartMotorAction(&S_PreReadPageBuffer->motorAction, true, 3, 100/portTICK_RATE_MS);
 		}
 	}
 }

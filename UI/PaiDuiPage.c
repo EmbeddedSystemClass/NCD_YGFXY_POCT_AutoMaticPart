@@ -16,7 +16,6 @@
 #include	"MyTest_Data.h"
 #include	"LunchPage.h"
 #include	"System_Data.h"
-#include	"Motor_Fun.h"
 #include	"Motor_Data.h"
 
 #include 	"FreeRTOS.h"
@@ -132,8 +131,12 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		//创建成功
 		if(Error_OK == S_PaiDuiPageBuffer->error)
 		{
-			MotorMoveToWaitCardPutIn(S_PaiDuiPageBuffer->currentTestDataBuffer->cardLocation);
-			startActivity(createSampleActivity, NULL, NULL);
+			S_PaiDuiPageBuffer->motorAction.motorActionEnum = WaitCardPutInDef;
+			S_PaiDuiPageBuffer->motorAction.motorParm = S_PaiDuiPageBuffer->currentTestDataBuffer->cardLocation;
+			if(My_Pass == StartMotorAction(&S_PaiDuiPageBuffer->motorAction, true, 1, 0/portTICK_RATE_MS))
+				S_PaiDuiPageBuffer->isCreate = true;
+			else
+				SendKeyCode(1);
 		}
 		//排队位置满，不允许
 		else if(Error_PaiduiFull == S_PaiDuiPageBuffer->error)
@@ -161,6 +164,9 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
+	if(S_PaiDuiPageBuffer->isCreate && isMotorMoveEnd(0 / portTICK_RATE_MS))
+		startActivity(createSampleActivity, NULL, NULL);
+						
 	if(S_PaiDuiPageBuffer->count % 5 == 0)
 	{
 		S_PaiDuiPageBuffer->currentTestDataBuffer = GetCurrentTestItem();
@@ -170,7 +176,7 @@ static void activityFresh(void)
 			{
 				if(S_PaiDuiPageBuffer->isMotorStartted)
 				{
-					if(isMotorActionOver(S_PaiDuiPageBuffer->currentTestDataBuffer->testLocation, Motor2_StartTestLocation, Motor4_CardLocation))
+					if(isMotorMoveEnd(0 / portTICK_RATE_MS))
 						startActivity(createTimeDownActivity, NULL, NULL);
 					else
 					{
@@ -182,8 +188,10 @@ static void activityFresh(void)
 				}
 				else
 				{
-					S_PaiDuiPageBuffer->isMotorStartted = true;
-					MotorMoveToStartTestLocation(S_PaiDuiPageBuffer->currentTestDataBuffer->testLocation);
+					S_PaiDuiPageBuffer->motorAction.motorActionEnum = StartTestDef;
+					S_PaiDuiPageBuffer->motorAction.motorParm = S_PaiDuiPageBuffer->currentTestDataBuffer->testLocation;
+					if(My_Pass == StartMotorAction(&S_PaiDuiPageBuffer->motorAction, true, 1, 100/portTICK_RATE_MS))
+						S_PaiDuiPageBuffer->isMotorStartted = true;
 
 					//显示转盘
 					if(S_PaiDuiPageBuffer->currentTestDataBuffer->testLocation % 2 == 1)
@@ -239,6 +247,7 @@ static void activityHide(void)
 {
 	//清除当前页面的告警弹出框
 	SendKeyCode(16);
+	S_PaiDuiPageBuffer->isCreate = false;
 }
 
 /***************************************************************************************************
@@ -253,6 +262,7 @@ static void activityHide(void)
 static void activityResume(void)
 {
 	SelectPage(93);
+	S_PaiDuiPageBuffer->isCreate = false;
 }
 
 /***************************************************************************************************

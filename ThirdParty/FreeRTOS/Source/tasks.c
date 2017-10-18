@@ -1223,7 +1223,7 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 
 	void vTaskDelay( const TickType_t xTicksToDelay )
 	{
-	BaseType_t xAlreadyYielded = pdFALSE;
+		BaseType_t xAlreadyYielded = pdFALSE;
 
 		/* A delay time of zero just forces a reschedule. */
 		if( xTicksToDelay > ( TickType_t ) 0U )

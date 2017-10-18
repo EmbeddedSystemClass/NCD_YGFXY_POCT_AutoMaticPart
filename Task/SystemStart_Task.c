@@ -16,6 +16,7 @@
 #include	"SystemUI_Task.h"
 #include	"WelcomePage.h"
 #include	"Motor_Task.h"
+#include	"NcdClient_Task.h"
 #include	"UI_Data.h"
 
 #include	"Define.h"
@@ -61,10 +62,8 @@ void StartSystemStartTask(void)
 ***************************************************************************************************/
 static void vSystemStartTask( void *pvParameters )
 {
-	/*开启看门狗任务*/
 	StartvIwdgTask();
-	
-	/*通用任务*/
+
 	StartvUniversalTask();
 
 	startActivity(createWelcomeActivity, NULL, NULL);
@@ -74,10 +73,16 @@ static void vSystemStartTask( void *pvParameters )
 	StartvLcdInputTask();
 	
 	StartMotorTask();
-
+	
 	SelfTest_Function();
+	
+	StartvNcdClientTask();
 
 	vTaskDelete(NULL);
+	while(1)
+	{
+		vTaskDelay(1000 / portTICK_RATE_MS);
+	}
 }
 
 /****************************************end of file************************************************/

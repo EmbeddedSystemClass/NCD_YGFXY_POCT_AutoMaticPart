@@ -4,6 +4,13 @@
 
 #include	"Motor_Data.h"
 
+#if(Motor4Type == Motor4UsartMotor)
+	MyRes motor4Reset(void);
+	unsigned short readMotorLocation(void);
+#elif(Motor4Type == Motor4IOMotor)
+
+#endif
+
 void motor4MoveTo(unsigned short location, bool isWait);
 #endif
 

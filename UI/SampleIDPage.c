@@ -15,7 +15,6 @@
 #include	"SelectUserPage.h"
 #include	"WaittingCardPage.h"
 #include	"ReadBarCode_Fun.h"
-#include	"Motor_Fun.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -111,8 +110,10 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	{
 		if(checkFatherActivityIs(paiduiActivityName))
 		{
-			StartMotorAction(Motor_4, Motor4_OpenLocation, false);
-			StartMotorAction(Motor_2, Motor2_MidLocation, true);
+			S_SampleIDPage->motorAction.motorActionEnum = OriginLocationDef;
+			S_SampleIDPage->motorAction.motorParm = S_SampleIDPage->currenttestdata->cardLocation;
+			StartMotorAction(&S_SampleIDPage->motorAction, true, 1, 100/portTICK_RATE_MS);
+
 			DeleteCurrentTest();
 		}
 		backToFatherActivity();
@@ -120,7 +121,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//确定
 	else if(S_SampleIDPage->lcdinput[0] == 0x1301)
 	{
-		if(strlen(S_SampleIDPage->currenttestdata->testData.sampleid) > 0 && S_SampleIDPage->isMotorOk)
+		if(strlen(S_SampleIDPage->currenttestdata->testData.sampleid) > 0)
 			startActivity(createWaittingCardActivity, NULL, NULL);
 		else
 			SendKeyCode(1);
@@ -144,13 +145,11 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(isMotorActionOver(S_SampleIDPage->currenttestdata->cardLocation, Motor2_WaitCardLocation, Motor4_OpenLocation))
-		S_SampleIDPage->isMotorOk = true;
-	
 	//从条码枪读取样品编号
 	if(ReadBarCodeFunction((char *)(S_SampleIDPage->tempbuf), 100) > 0)
 	{
 		memcpy(S_SampleIDPage->currenttestdata->testData.sampleid, S_SampleIDPage->tempbuf, MaxSampleIDLen);
+		RefreshSampleID();
 	}
 }
 
@@ -240,8 +239,6 @@ static void activityBufferFree(void)
 	MyFree(S_SampleIDPage);
 	S_SampleIDPage = NULL;
 }
-
-
 
 static void RefreshSampleID(void)
 {

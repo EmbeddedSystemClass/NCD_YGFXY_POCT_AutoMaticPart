@@ -6,12 +6,11 @@
 #include	"QRCode.h"
 #include	"DateTime.h"
 #include	"Define.h"
-#include	"Temperature.h"
 
-#define	TestMotorStepUp					6
+#define	TestMotorStepUp					8
 #define	TestDataRecordPageShowNum		8							//一页8个数据
 #define	TestStep 		(Motor2_EndTestLocation - Motor2_StartTestLocation)/TestMotorStepUp
-#define	AvregeNum		5								//平均值滤波个数
+#define	AvregeNum		4								//平均值滤波个数
 #define	MaxPointLen		300
 
 #pragma pack(1)

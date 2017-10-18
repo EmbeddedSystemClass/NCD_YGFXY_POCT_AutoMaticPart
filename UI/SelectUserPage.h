@@ -7,6 +7,7 @@
 #include	"UI_Data.h"
 #include	"Operator.h"
 #include	"Device.h"
+#include	"Motor_Fun.h"
 
 typedef struct UserPage_tag {
 	Device device;													//设备信息
@@ -16,6 +17,8 @@ typedef struct UserPage_tag {
 	char tempBuf[20];
 	unsigned short tempV1;
 	unsigned char pageindex;										//页面索引
+	PaiduiUnitData * currenttestdata;
+	MotorAction motorAction;
 }UserPageBuffer;
 
 MyRes createSelectUserActivity(Activity * thizActivity, Intent * pram);

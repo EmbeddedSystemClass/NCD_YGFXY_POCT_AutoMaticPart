@@ -56,7 +56,7 @@ void setDefaultSystemSetData(SystemSetData * systemSetData)
 
 		systemSetData->wireNetSet.isStaticIp = false;
 
-		systemSetData->testLedLightIntensity = 2000;
+		systemSetData->testLedLightIntensity = 1200;
 		
 		systemSetData->crc = CalModbusCRC16Fun(systemSetData, SystemSetDataStructCrcSize, NULL);
 	}
@@ -65,6 +65,12 @@ void setDefaultSystemSetData(SystemSetData * systemSetData)
 SystemSetData * getGBSystemSetData(void)
 {
 	return &GBSystemSetData;
+}
+
+void readGbSystemSetData(SystemSetData * systemSetData)
+{
+	if(systemSetData)
+		memcpy(systemSetData, &GBSystemSetData, SystemSetDataStructSize);
 }
 
 
@@ -93,5 +99,11 @@ void setIsShowRealValue(bool isShow)
 bool IsShowRealValue(void)
 {
 	return isShowRealValue;
+}
+
+void readSystemDeviceId(char * device)
+{
+	if(device)
+		memcpy(device, GBSystemSetData.deviceId, DeviceIdLen);
 }
 /****************************************end of file************************************************/

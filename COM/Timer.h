@@ -16,7 +16,6 @@ typedef struct
 {
 	unsigned int start;
 	unsigned int interval;
-	TimerStatus timerStatus;
 }Timer;
 #pragma pack()
 

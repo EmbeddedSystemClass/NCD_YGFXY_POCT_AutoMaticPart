@@ -4,6 +4,7 @@
 #include	"Define.h"
 #include	"MyTest_Data.h"
 #include	"UI_Data.h"
+#include	"Motor_Fun.h"
 
 typedef struct PaiDuiPageBuffer_tag {
 	unsigned int tempvalue1;					//³¬Ê±Ê±¼ä
@@ -18,6 +19,8 @@ typedef struct PaiDuiPageBuffer_tag {
 	bool isMotorStartted;
 	unsigned short index;
 	unsigned char lastMotorLocation;
+	MotorAction motorAction;
+	bool isCreate;
 }PaiDuiPageBuffer;
 
 

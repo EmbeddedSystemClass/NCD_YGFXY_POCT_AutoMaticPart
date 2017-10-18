@@ -17,8 +17,6 @@ static xQueueHandle xTxQueue = NULL;									//send queue
 /***************************************************************************************************/
 /******************************************Static Methods*******************************************/
 /***************************************************************************************************/
-static void Usart_Os_Init(void);
-static void ConfigUsart(void);
 static portBASE_TYPE prvUsart_ISR_NonNakedBehaviour( void );
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -27,28 +25,14 @@ static portBASE_TYPE prvUsart_ISR_NonNakedBehaviour( void );
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************
-*FunctionName：Usart6_Os_Init
-*Description：创建串口6的队列互斥量
+*FunctionName：Usart6_Init
+*Description：串口6外部调用初始化函数
 *Input：None
 *Output：None
 *Author：xsx
-*Data：2016年4月29日11:28:04
+*Data：2016年4月29日11:28:56
 ***************************************************************************************************/
-static void Usart_Os_Init(void)
-{
-	xRxQueue = xQueueCreate( xRxQueue4_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-	xTxQueue = xQueueCreate( xTxQueue4_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-}
-
-/***************************************************************************************************
-*FunctionName：ConfigUsart6
-*Description：串口6的端口初始化和配置
-*Input：None
-*Output：None
-*Author：xsx
-*Data：2016年4月29日11:28:25
-***************************************************************************************************/
-static void ConfigUsart(void)
+void Usart4_Init(void)
 {
 	USART_InitTypeDef USART_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -88,20 +72,9 @@ static void ConfigUsart(void)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-}
-
-/***************************************************************************************************
-*FunctionName：Usart6_Init
-*Description：串口6外部调用初始化函数
-*Input：None
-*Output：None
-*Author：xsx
-*Data：2016年4月29日11:28:56
-***************************************************************************************************/
-void Usart4_Init(void)
-{
-	Usart_Os_Init();
-	ConfigUsart();
+	
+	xRxQueue = xQueueCreate( xRxQueue4_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	xTxQueue = xQueueCreate( xTxQueue4_Len, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
 }
 
 /***************************************************************************************************

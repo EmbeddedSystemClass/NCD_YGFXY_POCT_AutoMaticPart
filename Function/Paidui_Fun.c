@@ -76,6 +76,12 @@ void PaiDuiHandler(void)
 					{
 						SetCurrentTestItem(temp);
 						temp->statues = status_testting;
+						
+						if(false == CheckStrIsSame(paiduiActivityName, getCurrentActivityName(), strlen(paiduiActivityName)))
+						{
+							backToActivity(lunchActivityName);
+							startActivity(createPaiDuiActivity, NULL, NULL);
+						}
 					}
 				}
 				// ±º‰>30√Î

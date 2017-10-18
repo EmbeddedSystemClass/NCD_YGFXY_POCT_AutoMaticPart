@@ -20,8 +20,9 @@
 #include 	"Usart6_Driver.h"
 #include	"Motor1_Driver.h"
 #include	"Motor2_Driver.h"
-#include	"Motor3_Driver.h"
+#if (Motor4Type == Motor4IOMotor)
 #include	"Motor4_Driver.h"
+#endif
 #include 	"Iwdg_Driver.h"
 #include	"Timer3_Driver.h"
 #include	"CodeScanner_Driver.h"
@@ -33,6 +34,7 @@
 #include	"Ceju_Driver.h"
 
 #include	"Delay.h"
+#include	"Define.h"
 /***************************************************************************************************/
 /**************************************局部变量声明*************************************************/
 /***************************************************************************************************/
@@ -73,10 +75,10 @@ void MySystemBSPInit(void)
 	Usart3_Init();						//串口2初始化
 	delay_ms(1);
 	
-//	Usart4_Init();						//串口4初始化
+	Usart4_Init();						//串口4初始化
 	delay_ms(1);
 	
-//	Usart5_Init();						//串口4初始化
+	Usart5_Init();						//串口4初始化
 	delay_ms(1);
 	
 	Usart6_Init();						//串口6初始化
@@ -90,13 +92,12 @@ void MySystemBSPInit(void)
 	
 	Motor2_GPIO_Init();							//电机 IO初始化
 	delay_ms(1);
-	
-//	Motor3_GPIO_Init();							//电机 IO初始化
+
+#if (Motor4Type == Motor4IOMotor)
+	Motor4_GPIO_Init();
 	delay_ms(1);
-	
-	Motor4_GPIO_Init();							//电机 IO初始化
-	delay_ms(1);
-	
+#endif
+
 	CodeScanner_GPIO_Init();
 	delay_ms(1);
 	

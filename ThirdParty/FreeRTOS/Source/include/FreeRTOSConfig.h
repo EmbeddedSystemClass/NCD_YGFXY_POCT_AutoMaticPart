@@ -102,12 +102,12 @@
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */
 
-#define INCLUDE_vTaskPrioritySet		1
-#define INCLUDE_uxTaskPriorityGet		1
+#define INCLUDE_vTaskPrioritySet		0
+#define INCLUDE_uxTaskPriorityGet		0
 #define INCLUDE_vTaskDelete				1
 #define INCLUDE_vTaskCleanUpResources	1
 #define INCLUDE_vTaskSuspend			1
-#define INCLUDE_vTaskDelayUntil			1
+#define INCLUDE_vTaskDelayUntil			0
 #define INCLUDE_vTaskDelay				1
 #define configUSE_MUTEXES 				1
 
@@ -126,9 +126,9 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY 	( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) ) /* equivalent to 0xb0, or priority 11. */
 
 /*调试功能，正式需关闭*/
-#define configUSE_TRACE_FACILITY                    1
+#define configUSE_TRACE_FACILITY                    0
 
-#define configUSE_STATS_FORMATTING_FUNCTIONS        1
+#define configUSE_STATS_FORMATTING_FUNCTIONS        0
 
 #endif /* FREERTOS_CONFIG_H */
 

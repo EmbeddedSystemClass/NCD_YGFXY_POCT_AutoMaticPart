@@ -580,6 +580,21 @@
               <FileType>1</FileType>
               <FilePath>..\Function\Motor_Fun.c</FilePath>
             </File>
+            <File>
+              <FileName>SIM800_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\SIM800_Fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>NcdClient_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\NcdClient_Fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>IAP_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\IAP_Fun.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -599,11 +614,6 @@
               <FileName>LcdInput_Task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Task\LcdInput_Task.c</FilePath>
-            </File>
-            <File>
-              <FileName>Paidui_Task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Task\Paidui_Task.c</FilePath>
             </File>
             <File>
               <FileName>SystemStart_Task.c</FileName>
@@ -641,9 +651,9 @@
               <FilePath>..\Task\Motor_Task.c</FilePath>
             </File>
             <File>
-              <FileName>BasicWEB_Task.c</FileName>
+              <FileName>NcdClient_Task.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Task\BasicWEB_Task.c</FilePath>
+              <FilePath>..\Task\NcdClient_Task.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -881,14 +891,19 @@
               <FilePath>..\Entity\RemoteSoftInfo.h</FilePath>
             </File>
             <File>
-              <FileName>Temperature.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Entity\Temperature.h</FilePath>
-            </File>
-            <File>
               <FileName>TestData.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Entity\TestData.h</FilePath>
+            </File>
+            <File>
+              <FileName>HttpBuf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\HttpBuf.h</FilePath>
+            </File>
+            <File>
+              <FileName>StringDefine.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\StringDefine.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1040,11 +1055,6 @@
         <Group>
           <GroupName>Com</GroupName>
           <Files>
-            <File>
-              <FileName>CRC_CCITT.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\COM\CRC_CCITT.c</FilePath>
-            </File>
             <File>
               <FileName>CRC16.c</FileName>
               <FileType>1</FileType>

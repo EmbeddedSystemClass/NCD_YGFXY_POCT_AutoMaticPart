@@ -113,7 +113,6 @@ static void activityFresh(void)
 	/*ÊÇ·ñ²å¿¨*/
 	if(readCaedCheckStatus() == ON)
 	{
-		StartMotorAction(Motor_4, Motor4_CardLocation, true);
 		startActivity(createPreReadCardActivity, NULL, NULL);
 		return;
 	}

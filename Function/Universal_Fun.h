@@ -3,6 +3,5 @@
 
 void readAndUpdateSystemDateTimeFun(void);
 
-
 #endif
 

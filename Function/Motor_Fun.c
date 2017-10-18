@@ -15,15 +15,26 @@
 #include	"Motor4_Fun.h"
 
 #include	"Motor_Data.h"
+
+#include 	"FreeRTOS.h"
+#include 	"task.h"
 /**************************************************************************************************/
 /******************************************Static Variables****************************************/
 /**************************************************************************************************/
-static xQueueHandle xMotorActionQueue = NULL ;				//电机指令队列
-static MotorAction motorAction;								//电机指令保存
-static MotorAction motorActionSendBuf;						//电机指令发送缓存
+static xSemaphoreHandle xMotorMutex;
+static MotorAction motorAction;																//电机指令保存
+static xQueueHandle xMotorQueue;																//发送队列
+static MotorActionResultEnum motorActionResult = MotorActionResultNone;						//电机指令发送缓存
+static bool motorStopActionPermission = false;
 /**************************************************************************************************/
 /******************************************Static Methods******************************************/
 /**************************************************************************************************/
+static void MotorMoveToWaitCardPutIn(unsigned char num);
+static void MotorMoveToStartTestLocation(unsigned char num);
+static void PutCardOutOfDevice(unsigned char num);
+static void MotorMoveToOriginLocation(unsigned char num);
+static void motorMoveToDisablePutInCard(unsigned char num);
+static void motorMoveToPutDownCardInPlace(void);
 /**************************************************************************************************/
 /**************************************************************************************************/
 /**************************************************************************************************/
@@ -32,39 +43,78 @@ static MotorAction motorActionSendBuf;						//电机指令发送缓存
 /**************************************************************************************************/
 void MotorActionInit(void)
 {
-	xMotorActionQueue = xQueueCreate(10, sizeof(MotorAction));
+	xMotorQueue = xQueueCreate( 10, ( unsigned portBASE_TYPE ) sizeof(MotorAction));
+	vSemaphoreCreateBinary(xMotorMutex);
+	while(pdPASS == xSemaphoreTake(xMotorMutex, 0))
+		;
 }
 
 void MotorActionFunction(void)
 {
-	if(pdPASS == xQueueReceive( xMotorActionQueue, &motorAction, portMAX_DELAY))
-	{	
-		switch(motorAction.motor)
+	if(pdPASS == xQueueReceive(xMotorQueue, &motorAction, portMAX_DELAY))
+	{
+		switch(motorAction.motorActionEnum)
 		{
-			case Motor_1 :	motor1MoveToNum(motorAction.motorParm, motorAction.isWait);	break;
+			case Motor1MoveDef :			motor1MoveToNum(motorAction.motorParm, true);	break;
 				
-			case Motor_2 :	motor2MoveTo(motorAction.motorParm, motorAction.isWait);	break;
+			case Motor2MoveDef :			motor2MoveTo(1, 2, motorAction.motorParm, true);	break;
 				
-			case Motor_4 :	motor4MoveTo(motorAction.motorParm, motorAction.isWait);	break;
+			case Motor4MoveDef :			motor4MoveTo(motorAction.motorParm, true);	break;
+			
+			case WaitCardPutInDef :			MotorMoveToWaitCardPutIn(motorAction.motorParm);	break;
 				
-			default: break;
+			case StartTestDef :				MotorMoveToStartTestLocation(motorAction.motorParm);	break;
+				
+			case PutCardOutOfDeviceDef :	PutCardOutOfDevice(motorAction.motorParm);	break;
+			
+			case OriginLocationDef :		MotorMoveToOriginLocation(motorAction.motorParm);	break;
+			
+			case DisablePutInCardDef :		motorMoveToDisablePutInCard(motorAction.motorParm);	break;
+											
+			case PutDownCardInPlaceDef :	motorMoveToPutDownCardInPlace();	break;
+				
+			default: 						break;
 		}
+		
+		xSemaphoreGive(xMotorMutex);
 	}
 }
 
-MyRes StartMotorAction(Motorx_Def motor, unsigned short motorParm, bool isWait)
+MyRes StartMotorAction(MotorAction * motorAction, bool isStopAction, unsigned char waitCnt, portTickType waitBlockTime)
 {
-	motorActionSendBuf.motor = motor;
-	motorActionSendBuf.motorParm = motorParm;
-	motorActionSendBuf.isWait = isWait;
+	if(motorAction == NULL)
+		return My_Fail;
 	
-	if(pdPASS == xQueueSend( xMotorActionQueue, &motorActionSendBuf, 1000/portTICK_RATE_MS))
-		return My_Pass;
+	while(pdPASS == xSemaphoreTake(xMotorMutex, 0))
+		;
+	
+	if(isStopAction)
+	{
+		motorStopActionPermission = true;
+		motor1StopMove();
+		motor2StopMove();
+	}
 	else
-		return My_Fail;	
+		motorStopActionPermission = false;
+	
+	while(waitCnt--)
+	{
+		if(pdPASS == xQueueSend(xMotorQueue, motorAction, waitBlockTime))
+			return My_Pass;
+	}
+	
+	return My_Fail;
 }
 
-bool isMotorActionOver(unsigned short motor1Location, unsigned short motor2Location, unsigned short motor4Location)
+bool isMotorMoveEnd(portTickType waitBlockTime)
+{
+	if(pdPASS == xSemaphoreTake(xMotorMutex, waitBlockTime))
+		return true;
+	else
+		return false;
+}
+
+bool isMotorInRightLocation(unsigned int motor1Location, unsigned int motor2Location, unsigned int motor4Location)
 {
 	Motor * motor = getMotor(Motor_1);
 
@@ -74,69 +124,168 @@ bool isMotorActionOver(unsigned short motor1Location, unsigned short motor2Locat
 			return false;
 	}
 	
-	motor++;
+	motor = getMotor(Motor_2);
 	if(motor2Location != MotorLocationNone)
 	{
 		if(motor2Location != motor->motorLocation)
 			return false;
 	}
 	
-	motor++;
-	if(motor4Location != MotorLocationNone)
-	{
-		if(motor4Location != motor->motorLocation)
-			return false;
-	}
+	#if(Motor4Type == Motor4UsartMotor)
+		
+		if(motor4Location != MotorLocationNone)
+		{
+			if(motor4Location != readMotorLocation())
+				return false;
+		}
+		
+	#elif(Motor4Type == Motor4IOMotor)
+		
+		motor = getMotor(Motor_4);
+		if(motor4Location != MotorLocationNone)
+		{
+			if(motor4Location != motor->motorLocation)
+				return false;
+		}
+		
+	#endif
+	
 	
 	return true;
 }
 
-void MotorMoveToWaitCardPutIn(unsigned char num)
+
+static void MotorMoveToWaitCardPutIn(unsigned char num)
 {
-	StartMotorAction(Motor_4, Motor4_OpenLocation, true);
+	motorStopActionPermission = false;
+	
+	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	if(num != getMotorxLocation(Motor_1))
 	{
-		StartMotorAction(Motor_2, Motor2_MidLocation, true);
+		motor2MoveTo(1, 2, Motor2_MidLocation, true);
+		if(motorStopActionPermission == true)
+			return;
 	
-		StartMotorAction(Motor_1, num, true);
+		motor1MoveToNum(num, true);
+		if(motorStopActionPermission == true)
+			return;
 	}
 	
-	StartMotorAction(Motor_2, Motor2_WaitCardLocation, true);
+	motor2MoveTo(1, 2, Motor2_WaitCardLocation, true);
+	if(motorStopActionPermission == true)
+			return;
 }
 
-void MotorMoveToStartTestLocation(unsigned char num)
+
+static void MotorMoveToStartTestLocation(unsigned char num)
 {
-	StartMotorAction(Motor_4, Motor4_OpenLocation, true);
-	StartMotorAction(Motor_2, Motor2_MidLocation, true);
-	StartMotorAction(Motor_1, num, true);
-	StartMotorAction(Motor_2, Motor2_CatchCardLocation, true);
-	StartMotorAction(Motor_4, Motor4_CardLocation, true);
-	StartMotorAction(Motor_2, Motor2_StartTestLocation, true);
+	motorStopActionPermission = false;
+	
+	motor4MoveTo(Motor4_OpenLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+	
+	motor1MoveToNum(num, true);
+	if(motorStopActionPermission == true)
+			return;
+	
+	motor2MoveTo(1, 2, Motor2_CatchCardLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+	
+	motor4MoveTo(Motor4_CardLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_StartTestLocation, true);
+	if(motorStopActionPermission == true)
+			return;
 }
 
-void PutCardOutOfDevice(void)
+
+static void PutCardOutOfDevice(unsigned char num)
 {
-	StartMotorAction(Motor_4, Motor4_OpenLocation, false);
-	StartMotorAction(Motor_2, 0, true);
-	StartMotorAction(Motor_2, Motor2_MidLocation, true);
+	motorStopActionPermission = false;
+	
+	MotorMoveToOriginLocation(num);
+	
+	motor4MoveTo(Motor4_OpenLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_StartTestLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+	motor4MoveTo(Motor4_CardLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_PutCardOutLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+
+	motor4MoveTo(Motor4_OpenLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+	if(motorStopActionPermission == true)
+			return;
 }
 
-void MotorMoveToOriginLocation(unsigned char num)
+static void MotorMoveToOriginLocation(unsigned char num)
 {
-	StartMotorAction(Motor_4, Motor4_OpenLocation, false);
-	StartMotorAction(Motor_2, Motor2_MidLocation, true);
+	motorStopActionPermission = false;
+	
+	motor4MoveTo(Motor4_OpenLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+	if(motorStopActionPermission == true)
+			return;
 	
 	if(num != getMotorxLocation(Motor_1))
-		StartMotorAction(Motor_1, num, true);
+	{
+		motor1MoveToNum(num, true);
+		if(motorStopActionPermission == true)
+			return;
+	}
 }
 
-void motorMoveToDisablePutInCard(unsigned char num)
+static void motorMoveToDisablePutInCard(unsigned char num)
 {
-	StartMotorAction(Motor_2, Motor2_PutDownCardLocation, true);
-	StartMotorAction(Motor_4, Motor4_OpenLocation, true);
-	StartMotorAction(Motor_2, Motor2_MidLocation, true);
-	StartMotorAction(Motor_1, num, true);
+	motorStopActionPermission = false;
+	
+	motor2MoveTo(1, 2, Motor2_PutDownCardLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+	
+	motor4MoveTo(Motor4_OpenLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+	
+	motor1MoveToNum(num, true);
+	if(motorStopActionPermission == true)
+			return;
+}
+
+static void motorMoveToPutDownCardInPlace(void)
+{
+	motorStopActionPermission = false;
+	
+	motor4MoveTo(Motor4_OpenLocation, true);
+
+	motor2MoveTo(1, 2, Motor2_WaitCardLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+	
+	motor4MoveTo(Motor4_CardLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_PutDownCardLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+	
+	motor4MoveTo(Motor4_OpenLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+	if(motorStopActionPermission == true)
+			return;
 }
 
 /****************************************end of file***********************************************/

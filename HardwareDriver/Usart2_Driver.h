@@ -11,7 +11,7 @@
 #include	"semphr.h"
 
 #define xRxQueue2_Len				50
-#define xTxQueue2_Len				10
+#define xTxQueue2_Len				50
 
 void Usart2_Init(void);
 void EnableUsart2TXInterrupt(void);

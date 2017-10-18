@@ -10,7 +10,7 @@
 /***************************************************************************************************/
 #include	"ReadBarCode_Fun.h"
 
-#include	"Usart2_Driver.h"
+#include	"Usart1_Driver.h"
 
 #include	"QueueUnits.h"
 
@@ -49,7 +49,7 @@ unsigned char ReadBarCodeFunction(char * codebuf, unsigned char len)
 	{
 		memset(codebuf, 0, len);
 		
-		ReceiveDataFromQueue(GetUsart2RXQueue(), NULL, codebuf, len, &rxlen, 1, 20 / portTICK_RATE_MS,50 / portTICK_RATE_MS);	
+		ReceiveDataFromQueue(GetUsart1RXQueue(), NULL, codebuf, len, &rxlen, 1, 20 / portTICK_RATE_MS,50 / portTICK_RATE_MS);	
 	}
 	
 	return rxlen;

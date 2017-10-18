@@ -4,9 +4,7 @@
 #include	"Define.h"
 #include 	"FreeRTOS.h"
 #include	"MyTest_Data.h"
-
-#define	DataMaxWinSize			20
-#define	TestMotorStep	(Motor2_StartTestLocation - Motor2_EndTestLocation)
+#include	"Motor_Data.h"
 
 #pragma pack(1)
 typedef struct TempCalData_tag{
@@ -26,6 +24,7 @@ typedef struct TempCalData_tag{
 	unsigned short maxdata;
 	PaiduiUnitData * paiduiUnitData;												//测试数据指针
 	ResultState resultstatues;											//测试结果状态
+	Motor * motor;
 }TempCalData;
 #pragma pack()
 

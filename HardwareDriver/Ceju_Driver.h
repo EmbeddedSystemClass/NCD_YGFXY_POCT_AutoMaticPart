@@ -6,16 +6,17 @@
 #include	"stm32f4xx_gpio.h"
 #include	"stm32f4xx_rcc.h"
 
-#define	CejuADC_Pin			GPIO_Pin_2
-#define	CejuADC_Group		GPIOC
-#define	CejuADC_Gpio_Rcc	RCC_AHB1Periph_GPIOC
-#define	CejuADC				ADC1
-#define	CejuADC_Rcc			RCC_APB2Periph_ADC1
-#define	CejuADC_Channel		ADC_Channel_12
+#define	CejuADC_Pin			GPIO_Pin_0
+#define	CejuADC_Group		GPIOA
+#define	CejuADC_Gpio_Rcc	RCC_AHB1Periph_GPIOA
+#define	CejuADC				ADC2
+#define	CejuADC_Rcc			RCC_APB2Periph_ADC2
+#define	CejuADC_Channel		ADC_Channel_0
 
 
 void  CejuADC_Init(void);
-unsigned short ChangeValueToVol(void);
 void stopCejuADCFun(void);
+unsigned short readJuliValue(void);
+unsigned short readCejuADC(void);
 #endif
 /****************************************end of file***********************************************/

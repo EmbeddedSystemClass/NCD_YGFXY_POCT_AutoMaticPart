@@ -96,7 +96,7 @@ static void activityStart(void)
 	pageBuffer->testStep = 0;
 	pageBuffer->resultSum = 0.0;
 	
-	MotorMoveToWaitCardPutIn(1);
+//	MotorMoveToWaitCardPutIn(1);
 	
 	timer_SetAndStart(&pageBuffer->cardTimer, 99999);
 	
@@ -179,7 +179,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(pageBuffer->testStep == 0 && isMotorActionOver(1, Motor2_WaitCardLocation, Motor4_OpenLocation))
+/*	if(pageBuffer->testStep == 0 && isMotorActionOver(1, Motor2_WaitCardLocation, Motor4_OpenLocation))
 	{
 		if(pageBuffer->testCnt >= DeviceQualityMaxTestCount)
 			showStatus("²âÊÔ½áÊø\0");
@@ -251,7 +251,7 @@ static void activityFresh(void)
 	{
 		MotorMoveToWaitCardPutIn(1);
 		pageBuffer->testStep = 0;
-	}
+	}*/
 }
 
 /***************************************************************************************************
