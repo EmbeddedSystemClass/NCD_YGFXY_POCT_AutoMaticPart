@@ -80,15 +80,18 @@ MyRes createSampleActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	S_SampleIDPage->currenttestdata = GetCurrentTestItem();
-	S_SampleIDPage->isMotorOk = false;
-	
-	while(ReadBarCodeFunction((char *)(S_SampleIDPage->tempbuf), 100) > 0)
-		;
-		
-	RefreshSampleID();
-	
 	SelectPage(86);
+	
+	S_SampleIDPage->currenttestdata = GetCurrentTestItem();
+	
+	S_SampleIDPage->sampleIdLen = 0;
+	clearBarCodeQueue();
+	
+	S_SampleIDPage->motorAction.motorActionEnum = WaitCardPutInDef;
+	S_SampleIDPage->motorAction.motorParm = S_SampleIDPage->currenttestdata->cardLocation;
+	S_SampleIDPage->isMotorStartted = My_Fail;
+		
+	RefreshSampleID();	
 }
 
 /***************************************************************************************************
@@ -109,20 +112,15 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	if(S_SampleIDPage->lcdinput[0] == 0x1300)
 	{
 		if(checkFatherActivityIs(paiduiActivityName))
-		{
-			S_SampleIDPage->motorAction.motorActionEnum = OriginLocationDef;
-			S_SampleIDPage->motorAction.motorParm = S_SampleIDPage->currenttestdata->cardLocation;
-			StartMotorAction(&S_SampleIDPage->motorAction, true, 1, 100/portTICK_RATE_MS);
-
 			DeleteCurrentTest();
-		}
+	
 		backToFatherActivity();
 	}
 	//确定
 	else if(S_SampleIDPage->lcdinput[0] == 0x1301)
 	{
-		if(strlen(S_SampleIDPage->currenttestdata->testData.sampleid) > 0)
-			startActivity(createWaittingCardActivity, NULL, NULL);
+		if(S_SampleIDPage->sampleIdLen > 0)
+			S_SampleIDPage->isConfirmed = true;
 		else
 			SendKeyCode(1);
 	}
@@ -130,7 +128,8 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	else if(S_SampleIDPage->lcdinput[0] == 0x1310)
 	{
 		memset(S_SampleIDPage->currenttestdata->testData.sampleid, 0, MaxSampleIDLen);
-		memcpy(S_SampleIDPage->currenttestdata->testData.sampleid, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
+		S_SampleIDPage->sampleIdLen = GetBufLen(&pbuf[7] , 2*pbuf[6]);
+		memcpy(S_SampleIDPage->currenttestdata->testData.sampleid, &pbuf[7], S_SampleIDPage->sampleIdLen);
 	}
 }
 
@@ -145,11 +144,33 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	//从条码枪读取样品编号
-	if(ReadBarCodeFunction((char *)(S_SampleIDPage->tempbuf), 100) > 0)
+	S_SampleIDPage->cnt++;
+	
+	if(S_SampleIDPage->cnt % 5 == 0)
 	{
-		memcpy(S_SampleIDPage->currenttestdata->testData.sampleid, S_SampleIDPage->tempbuf, MaxSampleIDLen);
-		RefreshSampleID();
+		if(S_SampleIDPage->isMotorStartted == My_Pass)
+		{
+			if(isMotorMoveEnd(0))
+				startActivity(createWaittingCardActivity, NULL, NULL);
+		}
+		else if(S_SampleIDPage->sampleIdLen > 0)
+		{
+			S_SampleIDPage->isMotorStartted = StartMotorAction(&S_SampleIDPage->motorAction, false, false);
+			if(S_SampleIDPage->isMotorStartted == My_Pass)
+				SendKeyCode(2);
+		}
+		else
+		{
+			//从条码枪读取样品编号
+			S_SampleIDPage->tempv1 = ReadBarCodeFunction((char *)(S_SampleIDPage->tempbuf), 100);
+			if(S_SampleIDPage->tempv1 > 0)
+			{
+				S_SampleIDPage->sampleIdLen = S_SampleIDPage->tempv1;
+				sprintf(S_SampleIDPage->currenttestdata->testData.sampleid, "%.*s", S_SampleIDPage->sampleIdLen, S_SampleIDPage->tempbuf);
+				
+				RefreshSampleID();
+			}
+		}
 	}
 }
 
@@ -164,7 +185,9 @@ static void activityFresh(void)
 ***************************************************************************************************/
 static void activityHide(void)
 {
-
+	S_SampleIDPage->isMotorStartted = My_Fail;
+	S_SampleIDPage->isConfirmed = false;
+	SendKeyCode(16);
 }
 
 /***************************************************************************************************
@@ -194,6 +217,7 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
+	SendKeyCode(16);
 	activityBufferFree();
 }
 
@@ -244,4 +268,5 @@ static void RefreshSampleID(void)
 {
 	snprintf(S_SampleIDPage->tempbuf, MaxSampleIDLen, "%s", S_SampleIDPage->currenttestdata->testData.sampleid);
 	DisText(0x1310, S_SampleIDPage->tempbuf, strlen(S_SampleIDPage->tempbuf)+1);
+	S_SampleIDPage->sampleIdLen = strlen(S_SampleIDPage->currenttestdata->testData.sampleid);
 }

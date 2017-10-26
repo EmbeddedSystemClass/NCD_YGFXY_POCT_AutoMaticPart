@@ -21,6 +21,7 @@ typedef struct PaiDuiPageBuffer_tag {
 	unsigned char lastMotorLocation;
 	MotorAction motorAction;
 	bool isCreate;
+	char tempSampleId[100];
 }PaiDuiPageBuffer;
 
 

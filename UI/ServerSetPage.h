@@ -11,8 +11,7 @@ typedef struct ServerSetPageBuffer_tag {
 	char buf[100];
 	unsigned char ischanged;
 	unsigned short lcdinput[100];
-	char * tempBuf;
-	unsigned int tempValue;
+	char * tempP;
 }ServerSetPageBuffer;
 
 

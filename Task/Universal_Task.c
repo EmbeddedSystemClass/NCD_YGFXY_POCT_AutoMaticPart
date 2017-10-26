@@ -74,8 +74,6 @@ static void vUniversalTask( void *pvParameters )
 		
 		if(count % 5 == 0)
 			PaiDuiHandler();
-
-		ADS8325();
 		
 		count++;
 

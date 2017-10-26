@@ -57,9 +57,7 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 		
 		readQRCodeBuffer->motorAction.motorActionEnum = Motor4MoveDef;
 		readQRCodeBuffer->motorAction.motorParm = Motor4_CardLocation;
-		if(My_Fail == StartMotorAction(&readQRCodeBuffer->motorAction, false, 3, 1000/portTICK_RATE_MS))
-			readQRCodeBuffer->scanResult = CardCodeScanFail;
-		while(false == isMotorMoveEnd(10000 / portTICK_RATE_MS));
+		StartMotorAction(&readQRCodeBuffer->motorAction, false, true);
 		
 		OpenCodeScanner();
 	
@@ -70,6 +68,7 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 		
 		readQRCodeBuffer->motorAction.motorActionEnum = Motor2MoveDef;
 		
+		readQRCodeBuffer->scanResult = CardCodeScanning;
 		while(readQRCodeBuffer->scanResult == CardCodeScanning)
 		{
 			if(OFF == readCaedCheckStatus())				//卡被拔出
@@ -83,24 +82,12 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 				if(readQRCodeBuffer->motorDir%2 == 0)
 				{
 					readQRCodeBuffer->motorAction.motorParm = Motor2_WaitCardLocation;
-					if(My_Fail == StartMotorAction(&readQRCodeBuffer->motorAction, false, 3, 1000/portTICK_RATE_MS))
-					{
-						readQRCodeBuffer->scanResult = CardCodeScanFail;
-						break;
-					}
-					
-					while(false == isMotorMoveEnd(1000 / portTICK_RATE_MS));
+					StartMotorAction(&readQRCodeBuffer->motorAction, false, true);
 				}
 				else
 				{
 					readQRCodeBuffer->motorAction.motorParm = Motor2_PutDownCardLocation;
-					if(My_Fail == StartMotorAction(&readQRCodeBuffer->motorAction, false, 3, 1000/portTICK_RATE_MS))
-					{
-						readQRCodeBuffer->scanResult = CardCodeScanFail;
-						break;
-					}
-					
-					while(false == isMotorMoveEnd(1000 / portTICK_RATE_MS));
+					StartMotorAction(&readQRCodeBuffer->motorAction, false, true);
 				}
 				
 				ReadBasicCodeData(readQRCodeBuffer);
@@ -116,8 +103,7 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 	CloseCodeScanner();
 	
 	readQRCodeBuffer->motorAction.motorParm = Motor2_PutDownCardLocation;
-	StartMotorAction(&readQRCodeBuffer->motorAction, false, 3, 1000/portTICK_RATE_MS);
-	while(false == isMotorMoveEnd(1000 / portTICK_RATE_MS));
+	StartMotorAction(&readQRCodeBuffer->motorAction, true, true);
 					
 	scanResult = readQRCodeBuffer->scanResult;
 		
@@ -137,7 +123,7 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 static void ReadBasicCodeData(ReadQRCodeBuffer * readQRCodeBuffer)
 {
 	ReceiveDataFromQueue(GetUsart3RXQueue(), NULL, readQRCodeBuffer->originalcode , MAX_QR_CODE_LENGHT, &(readQRCodeBuffer->originalCodeLen), 1, 10 / portTICK_RATE_MS
-		, 10 / portTICK_RATE_MS);
+		, 10 / portTICK_RATE_MS, 10 / portTICK_RATE_MS);
 	
 	if(readQRCodeBuffer->originalCodeLen > 0)
 	{
@@ -249,7 +235,19 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 	/*读取检测卡反应时间*/
 	readQRCodeBuffer->pbuf1 = strtok(NULL , "#");
 	if(readQRCodeBuffer->pbuf1)
+	{
 		readQRCodeBuffer->cardQR->CardWaitTime = strtol(readQRCodeBuffer->pbuf1 , NULL , 10);
+		
+		#if(DeviceUseType == Device_Final)
+		
+			readQRCodeBuffer->cardQR->CardWaitTime *= 60;
+		
+		#elif(DeviceUseType == Device_Demo)
+		
+			readQRCodeBuffer->cardQR->CardWaitTime *= 10;
+		
+		#endif
+	}
 	else
 		goto END;
 		

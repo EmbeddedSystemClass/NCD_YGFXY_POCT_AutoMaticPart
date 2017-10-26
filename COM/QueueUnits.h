@@ -8,7 +8,7 @@
 #include	"Define.h"
 
 MyRes ReceiveDataFromQueue(xQueueHandle queue, xSemaphoreHandle mutex, void *receivedstr, unsigned short len, unsigned short * readSize, 
-	unsigned short itemsize, portTickType queueBlockTime, portTickType mutexBlockTime);
+	unsigned short itemsize, portTickType queueBlockTime, portTickType mutexBlockTime, portTickType waitBlockTime);
 MyRes SendDataToQueue(xQueueHandle queue, xSemaphoreHandle mutex, void *sendstr, unsigned short len, unsigned short itemsize, 
 	portTickType queueBlockTime, portTickType mutexBlockTime, void (*fun)(void));
 #endif

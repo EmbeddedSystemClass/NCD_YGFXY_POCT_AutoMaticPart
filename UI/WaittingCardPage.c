@@ -11,6 +11,7 @@
 #include	"Motor_Fun.h"
 
 #include	"LunchPage.h"
+#include	"PaiDuiPage.h"
 #include	"SampleIDPage.h"
 
 #include 	"FreeRTOS.h"
@@ -76,7 +77,13 @@ MyRes createWaittingCardActivity(Activity * thizActivity, Intent * pram)
 static void activityStart(void)
 {	
 	S_WaitPageData->currenttestdata = GetCurrentTestItem();
-
+	S_WaitPageData->motorAction.motorActionEnum = OriginLocationDef;
+	S_WaitPageData->motorAction.motorParm = S_WaitPageData->currenttestdata->cardLocation;
+	S_WaitPageData->isMotorStartted = My_Fail;
+	S_WaitPageData->isBack = false;
+	
+	timer_SetAndStart(&S_WaitPageData->timer2, 90);							//90S不插卡，取消当前测试
+	
 	SelectPage(88);
 }
 
@@ -96,7 +103,11 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		
 	//返回
 	if(S_WaitPageData->lcdinput[0] == 0x1303)
-		backToFatherActivity();
+	{
+		memset(S_WaitPageData->currenttestdata->testData.sampleid, 0, MaxSampleIDLen);
+		S_WaitPageData->isBackButtonPressed = true;
+		S_WaitPageData->isBack = true;
+	}
 }
 
 /***************************************************************************************************
@@ -110,11 +121,38 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	/*是否插卡*/
-	if(readCaedCheckStatus() == ON)
+	if(S_WaitPageData->isMotorStartted == My_Pass)
+	{
+		if(isMotorMoveEnd(0 / portTICK_RATE_MS))
+		{
+			if(S_WaitPageData->isBackButtonPressed)
+				backToFatherActivity();
+			else
+			{
+				DeleteCurrentTest();
+		
+				backToActivity(lunchActivityName);
+							
+				if(IsPaiDuiTestting())
+					startActivity(createPaiDuiActivity, NULL, NULL);
+			}
+		}
+	}
+	else if(S_WaitPageData->isBack)
+	{
+		S_WaitPageData->isMotorStartted = StartMotorAction(&S_WaitPageData->motorAction, true, false);
+		if(S_WaitPageData->isMotorStartted == My_Pass)
+			SendKeyCode(1);
+	}
+	else if(readCaedCheckStatus() == ON)											//是否插卡
 	{
 		startActivity(createPreReadCardActivity, NULL, NULL);
 		return;
+	}
+	else if(TimerOut == timer_expired(&(S_WaitPageData->timer2)))
+	{
+		S_WaitPageData->isBackButtonPressed = false;
+		S_WaitPageData->isBack = true;
 	}
 }
 
@@ -129,7 +167,7 @@ static void activityFresh(void)
 ***************************************************************************************************/
 static void activityHide(void)
 {
-
+	SendKeyCode(16);
 }
 
 /***************************************************************************************************
@@ -157,6 +195,7 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
+	SendKeyCode(16);
 	activityBufferFree();
 }
 

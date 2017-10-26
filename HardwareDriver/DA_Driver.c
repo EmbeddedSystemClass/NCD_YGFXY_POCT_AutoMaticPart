@@ -58,7 +58,7 @@ void DA_GPIOInit(void)
 	DAC_Cmd(DA_Led_Channel, ENABLE);
 	DAC_Cmd(DA_Line_Channel, ENABLE);
   
-	SetLedVol(1200);
+	SetLedVol(0);
 	SetLineVol(0);
 }
 

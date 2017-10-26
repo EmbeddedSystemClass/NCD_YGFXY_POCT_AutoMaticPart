@@ -15,7 +15,6 @@ typedef struct TestPageBuffer_tag {
 	unsigned char testisover;
 	char buf[100];
 	TestData testDataForPrintf;							//复制一份测试数据，给打印用
-	bool isPrintfData;							//是否正在打印
 	SystemSetData systemSetData;
 	bool canExit;
 	MotorAction motorAction;

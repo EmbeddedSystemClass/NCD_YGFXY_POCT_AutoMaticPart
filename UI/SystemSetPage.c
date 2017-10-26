@@ -23,6 +23,7 @@
 #include	"QualityPage.h"
 #include	"QualityRecordPage.h"
 #include	"Maintenance_Data.h"
+#include	"Universal_Fun.h"
 #include	"Quality_Data.h"
 
 #include 	"FreeRTOS.h"
@@ -172,14 +173,14 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 				/*else if(pdPASS == CheckStrIsSame(&pbuf[7] , AdjLedPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
 				{
 					startActivity(createAdjustLedActivity, NULL, NULL);
-				}
+				}*/
 				else if(pdPASS == CheckStrIsSame(&pbuf[7] , FactoryResetPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
 				{
-					if(My_Pass == SystemReset())
+					if(My_Pass == SystemFactoryReset())
 						SendKeyCode(2);
 					else
 						SendKeyCode(1);
-				}*/
+				}
 				else if(pdPASS == CheckStrIsSame(&pbuf[7] , UnlockLCDPassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
 				{
 					unLockLCDOneTime();

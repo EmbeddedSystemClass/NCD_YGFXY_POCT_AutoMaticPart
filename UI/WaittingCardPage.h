@@ -4,11 +4,16 @@
 #include	"Timer.h"
 #include	"MyTest_Data.h"
 #include	"UI_Data.h"
+#include	"Motor_Fun.h"
 
 typedef struct WaitPage_tag {
 	Timer timer2;				//º‰∏ÙÃ· æ≤Âø®
 	PaiduiUnitData * currenttestdata;
 	unsigned short lcdinput[100];
+	MyRes isMotorStartted;
+	bool isBack;
+	bool isBackButtonPressed;
+	MotorAction motorAction;
 }WaitPageData;
 
 MyRes createWaittingCardActivity(Activity * thizActivity, Intent * pram);

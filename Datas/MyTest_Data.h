@@ -27,6 +27,7 @@ bool isInTimeOutStatus(PaiduiUnitData * PaiduiUnitData);
 void SetCurrentTestItem(PaiduiUnitData * s_PaiduiUnitData);
 PaiduiUnitData * GetCurrentTestItem(void);
 bool IsPaiDuiTestting(void);
+void upDateLastOperator(Operator * operator);
 
 #endif
 

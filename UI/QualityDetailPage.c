@@ -216,52 +216,55 @@ static void activityBufferFree(void)
 
 static void showPageValue(void)
 {
-	unsigned char i=0;
-	pageBuffer->resultSum = 0.0;
-	pageBuffer->tempValue3 = 0;
+	//操作人
+	sprintf(pageBuffer->tempBuf, "%s", pageBuffer->deviceQuality.operator.name);
+	DisText(0x3540, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
+	
+	//时间
+	sprintf(pageBuffer->tempBuf, "20%02d-%02d-%02d %02d:%02d:%02d", pageBuffer->deviceQuality.dateTime.year, pageBuffer->deviceQuality.dateTime.month, 
+		pageBuffer->deviceQuality.dateTime.day, pageBuffer->deviceQuality.dateTime.hour, pageBuffer->deviceQuality.dateTime.min, pageBuffer->deviceQuality.dateTime.sec);
+	DisText(0x3530, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
+	
+	//项目
+	sprintf(pageBuffer->tempBuf, "%s", pageBuffer->deviceQuality.itemName);
+	DisText(0x3510, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
 	
 	//显示标准值
-	snprintf(pageBuffer->tempBuf, 15, "%.2f", pageBuffer->deviceQuality.standardValue);
-	DisText(0x3410, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
+	sprintf(pageBuffer->tempBuf, "%.3f", pageBuffer->deviceQuality.standardValue);
+	DisText(0x350a, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
+	
+	//平均值
+	sprintf(pageBuffer->tempBuf, "%.3f", pageBuffer->deviceQuality.avgValue);
+	DisText(0x3500, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
+			
+	//平均偏差
+	sprintf(pageBuffer->tempBuf, "%.3f%%", pageBuffer->deviceQuality.avgPicha*100);
+	DisText(0x3505, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
 	
 	//显示每个测试值和对应偏差
-	for(i=0; i<DeviceQualityMaxTestCount; i++)
+	for(pageBuffer->i=0; pageBuffer->i<MaxQualityCount; pageBuffer->i++)
 	{
-		//有数据则显示
-		if(pageBuffer->deviceQuality.testValue[i] != 0)
+		if(pageBuffer->deviceQuality.testResult[pageBuffer->i] == Bool_True)
 		{
-			snprintf(pageBuffer->tempBuf, 15, "%.2f", pageBuffer->deviceQuality.testValue[i]);
-			DisText(0x3430+(i*0x05), pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
+			sprintf(pageBuffer->tempBuf, "%.3f", pageBuffer->deviceQuality.testValue[pageBuffer->i]);
+			DisText(0x3410 + pageBuffer->i*0x05, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
 			
-			pageBuffer->tempValue1 = (pageBuffer->deviceQuality.testValue[i] - pageBuffer->deviceQuality.standardValue) 
-				/ pageBuffer->deviceQuality.standardValue;
-				
-			pageBuffer->tempValue1 *= 100;
-				
-			snprintf(pageBuffer->tempBuf, 15, "%.2f%%", pageBuffer->tempValue1);
-			DisText(0x3465+(i*0x05), pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
-			
-			pageBuffer->resultSum += pageBuffer->deviceQuality.testValue[i];
-			pageBuffer->tempValue3++;
+			sprintf(pageBuffer->tempBuf, "%.3f%%", pageBuffer->deviceQuality.testPicha[pageBuffer->i]*100);
+			DisText(0x3440 + pageBuffer->i*0x05, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
 		}
-		//无数据则清除
+		else if(pageBuffer->deviceQuality.testResult[pageBuffer->i] == Bool_False)
+		{
+			sprintf(pageBuffer->tempBuf, "Error");
+			DisText(0x3410 + pageBuffer->i*0x05, pageBuffer->tempBuf, 6);
+			
+			sprintf(pageBuffer->tempBuf, "---");
+			DisText(0x3440 + pageBuffer->i*0x05, pageBuffer->tempBuf, 4);
+		}
 		else
 		{
-			ClearText(0x3430+(i*0x05));
-			ClearText(0x3465+(i*0x05));
+			ClearText(0x3410 + pageBuffer->i*0x05);
+			ClearText(0x3440 + pageBuffer->i*0x05);
 		}
-	}
-		
-	//更新平均偏差率
-	if(i > 0)
-	{
-		pageBuffer->tempValue2 = pageBuffer->resultSum / pageBuffer->tempValue3;
-		pageBuffer->tempValue2 = (pageBuffer->tempValue2 - pageBuffer->deviceQuality.standardValue)/pageBuffer->deviceQuality.standardValue;
-			
-		pageBuffer->tempValue1 = pageBuffer->tempValue2*100;
-				
-		snprintf(pageBuffer->tempBuf, 15, "%.2f%%", pageBuffer->tempValue1);
-		DisText(0x349a, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
 	}
 	
 	//显示结果
@@ -274,7 +277,7 @@ static void showPageValue(void)
 	WriteRadioData(0x3402, pageBuffer->tempBuf, 2);
 	
 	snprintf(pageBuffer->tempBuf, 40, "%s", pageBuffer->deviceQuality.desc);
-	DisText(0x3420, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
+	DisText(0x3520, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
 }
 
 

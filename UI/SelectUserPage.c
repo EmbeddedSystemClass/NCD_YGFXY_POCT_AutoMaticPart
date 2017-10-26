@@ -114,9 +114,6 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			page->currenttestdata = GetCurrentTestItem();
 			if(NULL != page->currenttestdata)
 			{
-				page->motorAction.motorActionEnum = OriginLocationDef;
-				page->motorAction.motorParm = page->currenttestdata->cardLocation;
-				StartMotorAction(&page->motorAction, true, 3, 100/portTICK_RATE_MS);
 				DeleteCurrentTest();
 			}
 

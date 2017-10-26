@@ -60,8 +60,8 @@ void NcdClientFunction(void)
 			httpBuf = MyMalloc(HttpBufStructSize);
 			if(httpBuf)
 			{
-				//if(!getSystemTimeIsRead())
-				//	readServerTime(httpBuf);
+				if(!getSystemTimeIsRead())
+					readServerTime(httpBuf);
 				
 				//readRemoteFirmwareVersion(httpBuf);
 				

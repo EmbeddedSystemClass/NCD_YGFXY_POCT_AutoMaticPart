@@ -8,10 +8,11 @@ typedef struct QualityDetailPageBuffer_tag {
 	unsigned short lcdinput[100];
 	char tempBuf[100];
 	DeviceQuality deviceQuality;
-	float tempValue1;
-	double resultSum;										//有效测试结果和
+	double tempValue1;
+	unsigned int tempIntV1;
 	double tempValue2;
 	unsigned char tempValue3;
+	unsigned int i;
 }QualityDetailPageBuffer;
 
 #define	QualityDetailPageBufferStructSize	sizeof(QualityDetailPageBuffer)

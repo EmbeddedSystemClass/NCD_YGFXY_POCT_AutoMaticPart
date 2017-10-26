@@ -54,34 +54,9 @@ void motor1MoveToNum(unsigned char num, bool isWait)
 {
 	motor1 = getMotor(Motor_1);
 
-/*	if(motor1->motorLocation == 0)
-		motor1->isFront = true;
-	else
-	{
-		if(motor1->motorLocation == num)
-			return;
-		else if(motor1->motorLocation > num)
-		{
-			if(motor1->motorLocation - num <= Motor1_HalfLocation)
-				motor1->isFront = false;
-			else
-				motor1->isFront = true;
-		}
-		else
-		{
-			if(num - motor1->motorLocation <= Motor1_HalfLocation)
-				motor1->isFront = true;
-			else
-				motor1->isFront = false;
-		}
-	}
+	if(motor1->motorLocation == num)
+		return;
 	
-	if(motor1->isFront)
-		setMotor1DirGPIO(ON);
-	else
-		setMotor1DirGPIO(OFF);
-	vTaskDelay(10 / portTICK_RATE_MS);
-*/	
 	motor1->periodCnt = 0;
 	motor1->motorTargetLocation = num;
 	motor1->moveStepNum = 650000;
@@ -103,6 +78,7 @@ void motor1StopMove(void)
 {
 	motor1StopMovePermission = true;
 }
+
 
 /****************************************end of file************************************************/
 

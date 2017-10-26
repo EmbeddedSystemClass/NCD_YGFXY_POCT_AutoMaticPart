@@ -9,7 +9,6 @@
 #include	"TestData.h"
 
 #define		DeviceQualityRecordPageShowNum	8
-#define		DeviceQualityMaxTestCount		10
 
 #pragma pack(1)
 typedef struct
@@ -18,7 +17,11 @@ typedef struct
 	Operator operator;												//质控人
 	char itemName[ItemNameLen];										//质控项目名称
 	double standardValue;											//质控标准值
-	float testValue[DeviceQualityMaxTestCount];						//质控测试值
+	double avgValue;												//测试平均值
+	double avgPicha;												//平均偏差
+	double testValue[MaxQualityCount];								//质控测试值
+	double testPicha[MaxQualityCount];								//质控测试偏差
+	MyBool testResult[MaxQualityCount];								//质控结果标志
 	bool isOk;														//质控结果
 	char desc[50];													//质控说明
 	unsigned short crc;

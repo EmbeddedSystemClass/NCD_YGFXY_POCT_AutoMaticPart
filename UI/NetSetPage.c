@@ -8,6 +8,7 @@
 #include	"MyMem.h"
 #include	"CRC16.h"
 #include	"SleepPage.h"
+#include	"MyTools.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -32,7 +33,6 @@ static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 static void UpPageValue(void);
-static void SetTempIP(unsigned char *buf);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -115,13 +115,20 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*设置IP*/
 		else if(S_NetSetPageBuffer->lcdinput[0] == 0x1E10)
 		{
-			SetTempIP(&pbuf[7]);
+			memset(S_NetSetPageBuffer->buf, 0, 50);
+			memcpy(S_NetSetPageBuffer->buf, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
+			if(My_Pass != parseIpString(&S_NetSetPageBuffer->wireNetSet.staticIP, S_NetSetPageBuffer->buf, S_NetSetPageBuffer->tempP))
+			{
+				memset(&S_NetSetPageBuffer->wireNetSet.staticIP, 0, 4);
+				ClearText(0x1E10);
+				SendKeyCode(3);
+			}
 		}
 		/*确认修改*/
 		else if(S_NetSetPageBuffer->lcdinput[0] == 0x1E05)
 		{
-			memcpy(&(S_NetSetPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
-		
+			readGbSystemSetData(&S_NetSetPageBuffer->systemSetData);
+			
 			memcpy(&(S_NetSetPageBuffer->systemSetData.wireNetSet), &(S_NetSetPageBuffer->wireNetSet), sizeof(WireNetSet));
 				
 			if(My_Pass == SaveSystemSetData(&(S_NetSetPageBuffer->systemSetData)))
@@ -242,7 +249,7 @@ static void activityBufferFree(void)
 /***************************************************************************************************/
 static void UpPageValue(void)
 {
-	memset(S_NetSetPageBuffer->buf, 0, 100);
+	memset(S_NetSetPageBuffer->buf, 0, 50);
 		
 	/*更新ip获取方式*/
 	if(S_NetSetPageBuffer->wireNetSet.isStaticIp)
@@ -255,7 +262,7 @@ static void UpPageValue(void)
 	/*更新ip*/
 	if(S_NetSetPageBuffer->wireNetSet.isStaticIp)
 	{
-		sprintf((S_NetSetPageBuffer->buf), "%03d.%03d.%03d.%03d", S_NetSetPageBuffer->wireNetSet.staticIP.ip_1, S_NetSetPageBuffer->wireNetSet.staticIP.ip_2, 
+		sprintf(S_NetSetPageBuffer->buf, "%03d.%03d.%03d.%03d", S_NetSetPageBuffer->wireNetSet.staticIP.ip_1, S_NetSetPageBuffer->wireNetSet.staticIP.ip_2, 
 			S_NetSetPageBuffer->wireNetSet.staticIP.ip_3, S_NetSetPageBuffer->wireNetSet.staticIP.ip_4);
 		DisText(0x1E10, S_NetSetPageBuffer->buf, 15);
 	}
@@ -263,57 +270,4 @@ static void UpPageValue(void)
 		ClearText(0x1E10);
 }
 
-static void SetTempIP(unsigned char *buf)
-{
-	S_NetSetPageBuffer->tempBuf = strtok((char *)buf, ".");
-	if(S_NetSetPageBuffer->tempBuf)
-	{
-		S_NetSetPageBuffer->tempValue = strtol(S_NetSetPageBuffer->tempBuf, NULL, 10);
-		if(S_NetSetPageBuffer->tempValue > 255)
-			goto END;
-		
-		S_NetSetPageBuffer->wireNetSet.staticIP.ip_1 = S_NetSetPageBuffer->tempValue;
-	}
-	else
-		goto END;
-	
-	S_NetSetPageBuffer->tempBuf = strtok(NULL, ".");
-	if(S_NetSetPageBuffer->tempBuf)
-	{
-		S_NetSetPageBuffer->tempValue = strtol(S_NetSetPageBuffer->tempBuf, NULL, 10);
-		if(S_NetSetPageBuffer->tempValue > 255)
-			goto END;
-		
-		S_NetSetPageBuffer->wireNetSet.staticIP.ip_2 = S_NetSetPageBuffer->tempValue;
-	}
-	else
-		goto END;
-	
-	S_NetSetPageBuffer->tempBuf = strtok(NULL, ".");
-	if(S_NetSetPageBuffer->tempBuf)
-	{
-		S_NetSetPageBuffer->tempValue = strtol(S_NetSetPageBuffer->tempBuf, NULL, 10);
-		if(S_NetSetPageBuffer->tempValue > 255)
-			goto END;
-		
-		S_NetSetPageBuffer->wireNetSet.staticIP.ip_3 = S_NetSetPageBuffer->tempValue;
-	}
-	else
-		goto END;
-	
-	S_NetSetPageBuffer->tempBuf = strtok(NULL, ".");
-	if(S_NetSetPageBuffer->tempBuf)
-	{
-		S_NetSetPageBuffer->tempValue = strtol(S_NetSetPageBuffer->tempBuf, NULL, 10);
-		if(S_NetSetPageBuffer->tempValue > 255)
-			goto END;
-		
-		S_NetSetPageBuffer->wireNetSet.staticIP.ip_4 = S_NetSetPageBuffer->tempValue;
-	}
-	else
-		goto END;
-	
-	END:
-		SendKeyCode(3);
-}
 

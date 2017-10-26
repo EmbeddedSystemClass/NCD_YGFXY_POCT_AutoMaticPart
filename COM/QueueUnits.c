@@ -39,11 +39,11 @@
 *Data£º2016Äê4ÔÂ22ÈÕ15:35:40
 ***************************************************************************************************/
 MyRes ReceiveDataFromQueue(xQueueHandle queue, xSemaphoreHandle mutex, void *receivedstr, unsigned short len, unsigned short * readSize, 
-	unsigned short itemsize, portTickType queueBlockTime, portTickType mutexBlockTime)
+	unsigned short itemsize, portTickType queueBlockTime, portTickType mutexBlockTime, portTickType waitBlockTime)
 {
 	unsigned short i=0;
 	unsigned char *pdata = (unsigned char *)receivedstr;
-	
+
 	if(queue == NULL)
 		return My_Fail;
 	
@@ -55,11 +55,20 @@ MyRes ReceiveDataFromQueue(xQueueHandle queue, xSemaphoreHandle mutex, void *rec
 	
 	for(i=0; i<len; i++)
 	{
-		if(pdPASS == xQueueReceive(queue, pdata , queueBlockTime))
-			pdata += itemsize;
-			
+		if(i == 0)
+		{
+			if(pdPASS == xQueueReceive(queue, pdata , queueBlockTime))
+				pdata += itemsize;	
+			else
+				break;
+		}
 		else
-			break;
+		{
+			if(pdPASS == xQueueReceive(queue, pdata , waitBlockTime))
+				pdata += itemsize;	
+			else
+				break;
+		}
 	}
 
 	if(readSize)

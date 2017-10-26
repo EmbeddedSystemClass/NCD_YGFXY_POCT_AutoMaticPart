@@ -87,38 +87,28 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_NetPrePageBuffer)
+	S_NetPrePageBuffer->lcdinput[0] = pbuf[4];
+	S_NetPrePageBuffer->lcdinput[0] = (S_NetPrePageBuffer->lcdinput[0]<<8) + pbuf[5];
+		
+	/*返回*/
+	if(S_NetPrePageBuffer->lcdinput[0] == 0x1E00)
 	{
-		/*命令*/
-		S_NetPrePageBuffer->lcdinput[0] = pbuf[4];
-		S_NetPrePageBuffer->lcdinput[0] = (S_NetPrePageBuffer->lcdinput[0]<<8) + pbuf[5];
-		
-		/*返回*/
-		if(S_NetPrePageBuffer->lcdinput[0] == 0x1E00)
-		{
-			backToFatherActivity();
-		}
-		
-		/*有线网设置*/
-		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E01)
-		{
-			startActivity(createNetSetActivity, NULL, NULL);
-		}
-		/*wifi设置*/
-		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E02)
-		{
-			//startActivity(createWifiSetActivity, NULL, NULL);
-		}
-		//服务器设置
-		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1FA0)
-		{
-			startActivity(createServerSetActivity, NULL, NULL);
-		}
-		//查看网络信息
-		else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E03)
-		{
-			startActivity(createNetInfoActivity, NULL, NULL);
-		}
+		backToFatherActivity();
+	}	
+	/*有线网设置*/
+	else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E01)
+	{
+		startActivity(createNetSetActivity, NULL, NULL);
+	}
+	//服务器设置
+	else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E02)
+	{
+		startActivity(createServerSetActivity, NULL, NULL);
+	}
+	//查看网络信息
+	else if(S_NetPrePageBuffer->lcdinput[0] == 0x1E03)
+	{
+		startActivity(createNetInfoActivity, NULL, NULL);
 	}
 }
 

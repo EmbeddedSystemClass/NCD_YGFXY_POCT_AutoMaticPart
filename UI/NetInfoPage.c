@@ -243,7 +243,7 @@ static void ShowNetInfo(void)
 		S_NetInfoPageBuffer->systemData.wireNetInfo.ip.ip_3, S_NetInfoPageBuffer->systemData.wireNetInfo.ip.ip_4);
 	DisText(0x1CC0, S_NetInfoPageBuffer->tempbuffer1, 15);
 	
-	sprintf(S_NetInfoPageBuffer->tempbuffer1, "%02X-%02X-%02X-%02X-%02X-%02X\0", S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[0], S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[1], 
+	sprintf(S_NetInfoPageBuffer->tempbuffer1, "%02X-%02X-%02X-%02X-%02X-%02X", S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[0], S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[1], 
 		S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[2], S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[3], S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[4], 
 		S_NetInfoPageBuffer->systemData.wireNetInfo.LineMAC[5]);
 	DisText(0x1CD0, S_NetInfoPageBuffer->tempbuffer1, strlen(S_NetInfoPageBuffer->tempbuffer1)+1);
@@ -281,7 +281,7 @@ static void readAndShowGsmInfo(void)
 		BasicUI(0x1CB8 ,0x1807 , 1, &S_NetInfoPageBuffer->GSMico , BasicIcoStructSize);
 		
 		snprintf(S_NetInfoPageBuffer->tempbuffer1, 15, "%s", S_NetInfoPageBuffer->phoneNum);
-		DisText(0x1CF0, S_NetInfoPageBuffer->tempbuffer1, 14);
+		DisText(0x1CC8, S_NetInfoPageBuffer->tempbuffer1, 14);
 	
 		snprintf(S_NetInfoPageBuffer->tempbuffer1, 21, "%s", S_NetInfoPageBuffer->ICCID);
 		DisText(0x1CE0, S_NetInfoPageBuffer->tempbuffer1, 20);

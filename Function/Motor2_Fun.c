@@ -85,7 +85,11 @@ void motor2MoveTo(unsigned char highTime, unsigned char lowTime, unsigned short 
 		motor2->isFront = true;
 
 	if(motor2->isFront)
+	{
 		setMotor2DirGPIO(ON);
+		if(location == Motor2_MidLocation)
+			motor2->motorLocation = 0;
+	}
 	else
 		setMotor2DirGPIO(OFF);
 	vTaskDelay(10 / portTICK_RATE_MS);
@@ -113,6 +117,7 @@ void motor2StopMove(void)
 {
 	motor2StopMovePermission = true;
 }
+
 
 /****************************************end of file************************************************/
 

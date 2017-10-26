@@ -1,7 +1,9 @@
 #ifndef __UNIVERSAL_F_H__
 #define __UNIVERSAL_F_H__
 
-void readAndUpdateSystemDateTimeFun(void);
+#include	"Define.h"
 
+void readAndUpdateSystemDateTimeFun(void);
+MyRes SystemFactoryReset(void);
 #endif
 

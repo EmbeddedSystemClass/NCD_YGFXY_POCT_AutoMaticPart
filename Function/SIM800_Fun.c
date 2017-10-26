@@ -1,3 +1,4 @@
+
 /***************************************************************************************************
 *FileName:WifiFunction
 *Description:一些WIFI模块的操作函数,函数只能在线程中使用
@@ -63,7 +64,7 @@ void giveGSMxMutex(void)
 *Author: xsx
 *Date: 2017年3月7日09:41:31
 ***************************************************************************************************/
-MyRes ComWithSim800c(char * txBuf, const char *strcmp, char *rxBuf, unsigned short maxRxLen, portTickType delayTime, unsigned char maxErrorCnt)
+MyRes ComWithSim800c(char * txBuf, const char *strcmp, char *rxBuf, unsigned short maxRxLen, portTickType delayTime, unsigned char maxErrorCnt, portTickType waitTime)
 {
 	MyRes statues = My_Fail;
 	unsigned char errorCnt = 0;
@@ -74,7 +75,7 @@ MyRes ComWithSim800c(char * txBuf, const char *strcmp, char *rxBuf, unsigned sho
 		
 		if(txBuf)
 		{
-			while(pdPASS == ReceiveDataFromQueue(GetUsart5RXQueue(), NULL, rxBuf, maxRxLen, NULL, 1, 0, 0));
+			while(pdPASS == ReceiveDataFromQueue(GetUsart5RXQueue(), NULL, rxBuf, maxRxLen, NULL, 1, 0, 0, 0));
 			
 			if(pdFAIL == SendDataToQueue(GetUsart5TXQueue(), NULL, txBuf, strlen(txBuf), 1, delayTime, 0, EnableUsart5TXInterrupt))
 				continue;
@@ -84,7 +85,7 @@ MyRes ComWithSim800c(char * txBuf, const char *strcmp, char *rxBuf, unsigned sho
 		{
 			memset(rxBuf, 0, maxRxLen);
 				
-			if(My_Pass == ReceiveDataFromQueue(GetUsart5RXQueue(), NULL, rxBuf, maxRxLen, NULL, 1, delayTime, 0))
+			if(My_Pass == ReceiveDataFromQueue(GetUsart5RXQueue(), NULL, rxBuf, maxRxLen, NULL, 1, delayTime, 0, waitTime))
 			{
 				if(strcmp)
 				{
@@ -104,7 +105,7 @@ MyRes ComWithSim800c(char * txBuf, const char *strcmp, char *rxBuf, unsigned sho
 
 bool checkIsATMode(char * recvBuf)
 {
-	if(My_Fail == ComWithSim800c(ATStr, AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+	if(My_Fail == ComWithSim800c(ATStr, AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 		return false;
 	else
 		return true;
@@ -112,7 +113,7 @@ bool checkIsATMode(char * recvBuf)
 
 void readGSMInd(Sim800InitBuf * sim800InitBuf, unsigned char * ind)
 {
-	if(My_Fail == ComWithSim800c("AT+CSQ\r", NULL, sim800InitBuf->recvBuf, 100, 100 / portTICK_RATE_MS, 3))
+	if(My_Fail == ComWithSim800c("AT+CSQ\r", NULL, sim800InitBuf->recvBuf, 100, 100 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 		*ind = 0;
 	else
 	{
@@ -137,7 +138,7 @@ void readGSMInd(Sim800InitBuf * sim800InitBuf, unsigned char * ind)
 
 void readGSMPhoneNum(Sim800InitBuf * sim800InitBuf, char * num)
 {
-	if(My_Fail == ComWithSim800c("AT+CNUM\r", NULL, sim800InitBuf->recvBuf, 100, 100 / portTICK_RATE_MS, 3))
+	if(My_Fail == ComWithSim800c("AT+CNUM\r", NULL, sim800InitBuf->recvBuf, 100, 2000 / portTICK_RATE_MS, 3, 2000/portTICK_RATE_MS))
 		memset(num, 0, 11);
 	else
 	{
@@ -149,7 +150,7 @@ void readGSMPhoneNum(Sim800InitBuf * sim800InitBuf, char * num)
 
 void readGSMIccid(Sim800InitBuf * sim800InitBuf, char * iccid)
 {	
-	if(My_Fail == ComWithSim800c("AT+CCID\r", NULL, sim800InitBuf->recvBuf, 100, 100 / portTICK_RATE_MS, 3))
+	if(My_Fail == ComWithSim800c("AT+CCID\r", NULL, sim800InitBuf->recvBuf, 100, 100 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 		memset(iccid, 0, 20);
 	else
 	{
@@ -165,52 +166,52 @@ MyRes ConnectServer(char * recvBuf)
 
 	if(recvBuf)
 	{
-		if(My_Fail == ComWithSim800c(ATStr, AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+		if(My_Fail == ComWithSim800c(ATStr, AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 			goto END;
 
 		//"关闭移动场景\r");
-        if(My_Fail == ComWithSim800c("AT+CIPSHUT\r", "SHUT OK", recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+        if(My_Fail == ComWithSim800c("AT+CIPSHUT\r", "SHUT OK", recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 			goto END;
-		if(My_Fail == ComWithSim800c("AT+CIPCLOSE\r", NULL, recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+		if(My_Fail == ComWithSim800c("AT+CIPCLOSE\r", NULL, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 			goto END;
 		
 		//"设置GPRS移动台类型为B\r");
-        if(My_Fail == ComWithSim800c("AT+CGCLASS=\"B\"\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+        if(My_Fail == ComWithSim800c("AT+CGCLASS=\"B\"\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 			goto END;
 		
 		//"定义PDP上下文：1, IP, CMNET\r");
-        if(My_Fail == ComWithSim800c("AT+CGDCONT=1,\"IP\",\"CMNET\"\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+        if(My_Fail == ComWithSim800c("AT+CGDCONT=1,\"IP\",\"CMNET\"\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 			goto END;
 		
 		//"附着GPRS业务\r");
-        if(My_Fail == ComWithSim800c("AT+CGATT=1\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+        if(My_Fail == ComWithSim800c("AT+CGATT=1\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 			goto END;
 		
 		//"设置GPRS连接模式为: GPRS\r");
-        if(My_Fail == ComWithSim800c("AT+CIPCSGP=1,\"CMNET\"\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+        if(My_Fail == ComWithSim800c("AT+CIPCSGP=1,\"CMNET\"\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 			goto END;
 		
 		//"设置为单IP连接模式\r");
-        if(My_Fail == ComWithSim800c("AT+CIPMUX=0\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+        if(My_Fail == ComWithSim800c("AT+CIPMUX=0\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 			goto END;
 		
 		//"设置接收数据显示IP头\r");
-        if(My_Fail == ComWithSim800c("AT+CIPHEAD=0\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+        if(My_Fail == ComWithSim800c("AT+CIPHEAD=0\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 			goto END;
 		
 		//设置为透传模式
-        if(My_Fail == ComWithSim800c("AT+CIPMODE=1\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3))
+        if(My_Fail == ComWithSim800c("AT+CIPMODE=1\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
 			goto END;
 		
 		//"发起连接\r");
-		if(My_Fail == ComWithSim800c("AT+CIPSTART=\"TCP\",\"116.62.108.201\",\"8080\"\r", AT_OK, recvBuf, 500, 20000 / portTICK_RATE_MS, 1))
+		if(My_Fail == ComWithSim800c("AT+CIPSTART=\"TCP\",\"116.62.108.201\",\"8080\"\r", AT_OK, recvBuf, 500, 20000 / portTICK_RATE_MS, 1, 5000/portTICK_RATE_MS))
 			goto END;
 	
 		if(strstr(recvBuf, "CONNECT"))
 			status = My_Pass;
 		else
 		{
-			if(My_Pass == ComWithSim800c(NULL, "CONNECT", recvBuf, 500, 20000 / portTICK_RATE_MS, 3))
+			if(My_Pass == ComWithSim800c(NULL, "CONNECT", recvBuf, 500, 20000 / portTICK_RATE_MS, 3, 5000/portTICK_RATE_MS))
 				status = My_Pass;
 		}
 	}
@@ -228,7 +229,7 @@ MyRes CommunicateWithNcdServerInGPRS(HttpBuf * httpBuf)
 	{
 		//清空队列数据
 		while(pdPASS == ReceiveDataFromQueue(GetUsart5RXQueue(), NULL, httpBuf->recvBuf, 1000, 
-				NULL, 1, 0, 0));
+				NULL, 1, 0, 0, 0));
 		
 		//发送数据
 		readSize = httpBuf->sendDataLen;
@@ -258,7 +259,7 @@ MyRes CommunicateWithNcdServerInGPRS(HttpBuf * httpBuf)
 		//接收数据,最好等待1s
 
 		while(pdPASS == ReceiveDataFromQueue(GetUsart5RXQueue(), NULL, httpBuf->recvBuf, 2000, 
-			&readSize, 1, 20000 / portTICK_RATE_MS, 1000 / portTICK_RATE_MS))
+			&readSize, 1, 20000 / portTICK_RATE_MS, 1000 / portTICK_RATE_MS, 1000 / portTICK_RATE_MS))
 		{
 			//如果发生的是GET请求，则说明是下载固件，需要保存
 			if(!httpBuf->isPost)
@@ -302,4 +303,6 @@ MyRes CommunicateWithNcdServerInGPRS(HttpBuf * httpBuf)
 			return My_Pass;
 		}
 	}
+	
+	return My_Fail;
 }

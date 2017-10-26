@@ -4,22 +4,32 @@
 #include	"UI_Data.h"
 #include	"DeviceQuality.h"
 #include	"Timer.h"
+#include	"PaiduiUnitData.h"
+#include	"Motor_Fun.h"
 
 typedef struct QualityPageBuffer_tag {
 	unsigned short lcdinput[100];
 	char tempBuf[50];
+	unsigned int ScheduleCount;
 	DeviceQuality * deviceQuality;
-	unsigned char testStep;
-	unsigned char testCnt;								//测试次数索引
+	unsigned char testIndex;								//测试次数索引
 	ResultState cardTestResult;								//测试结果
 	ScanCodeResult cardScanResult;							//扫码结果
-	TestData  testData;										//测试数据缓存
+	PaiduiUnitData paiduiUnitData[MaxQualityCount];			//数据缓存
+	PaiduiUnitData * currentPaiduiUnitData;					//当前数据缓存
+	PaiduiUnitData * tempPaiduiUnitData;					//当前数据缓存
 	double resultSum;										//有效测试结果和
-	Timer cardTimer;										//插卡等待时间
+	double resultNum;										//有效测试数目
 
-	unsigned char testCardIndex2;
 	double tempValue1;
 	double tempValue2;
+	float tempFloat1;
+	unsigned short i;
+	unsigned short tempShortV1;
+	unsigned short minTime;
+	int tempIntV1;
+	bool isMotorStartted;
+	MotorAction motorAction;
 }QualityPageBuffer;
 
 #define	QualityPageBufferStructSize	sizeof(QualityPageBuffer)

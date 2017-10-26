@@ -104,7 +104,7 @@ MyRes TakeTestPointData(void * data)
 	if(xTestCurveQueue == NULL)
 		return My_Fail;
 	
-	if(pdPASS == xQueueReceive( xTestCurveQueue, data, 0*portTICK_RATE_MS))
+	if(pdPASS == xQueueReceive( xTestCurveQueue, data, 5/portTICK_RATE_MS))
 		return My_Pass;
 	else
 		return My_Fail;	
@@ -199,7 +199,7 @@ ResultState TestFunction(PaiduiUnitData * parm)
 			S_ResultState = S_TempCalData->resultstatues;
 			
 			MyFree(S_TempCalData);
-
+			vTaskDelay(100 / portTICK_RATE_MS);
 			SetLedVol(0);
 
 			return S_ResultState;

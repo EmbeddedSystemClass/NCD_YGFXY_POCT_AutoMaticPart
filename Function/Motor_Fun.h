@@ -7,6 +7,7 @@
 
 typedef enum
 {
+	MotorActionNone = 0x00,
 	Motor1MoveDef = 0x09,
 	Motor2MoveDef = 0x0a,
 	Motor4MoveDef = 0x0b,
@@ -14,7 +15,6 @@ typedef enum
 	StartTestDef = 0x12,									/*开始测试状态*/
 	PutCardOutOfDeviceDef = 0x13,							/*将卡排除设备*/
 	OriginLocationDef = 0x14,								/*恢复待机状态*/
-	DisablePutInCardDef = 0x15,
 	PutDownCardInPlaceDef = 0x16,							/*将卡放在排队位*/
 }MotorActionEnum;
 
@@ -29,14 +29,15 @@ typedef enum
 typedef struct MotorAction_tag{
 	MotorActionEnum motorActionEnum;
 	unsigned int motorParm;
+	unsigned char step;
 }MotorAction;
 
 #define	MotorActionStructSize	sizeof(MotorAction)
 
 void MotorActionInit(void);
 void MotorActionFunction(void);
-MyRes StartMotorAction(MotorAction * motorAction, bool isStopAction, unsigned char waitCnt, portTickType waitBlockTime);
-bool isMotorInRightLocation(unsigned int motor1Location, unsigned int motor2Location, unsigned int motor4Location);
+MyRes StartMotorActionWithParm(MotorActionEnum motorActionEnum, unsigned int motorParm, bool isStopWhenBusy, bool waitActionDone);
+MyRes StartMotorAction(MotorAction * motorAction, bool isStopWhenBusy, bool waitActionDone);
 bool isMotorMoveEnd(portTickType waitBlockTime);
 
 #endif

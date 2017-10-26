@@ -45,7 +45,7 @@ typedef struct Sim800InitBuf_Tag
 void createGSMMutex(void);
 MyRes takeGSMMutex(portTickType xBlockTime);
 void giveGSMxMutex(void);
-MyRes ComWithSim800c(char * txBuf, const char *strcmp, char *rxBuf, unsigned short maxRxLen, portTickType delayTime, unsigned char maxErrorCnt);
+MyRes ComWithSim800c(char * txBuf, const char *strcmp, char *rxBuf, unsigned short maxRxLen, portTickType delayTime, unsigned char maxErrorCnt, portTickType waitTime);
 bool checkIsATMode(char * recvBuf);
 MyRes ConnectServer(char * recvBuf);
 void readGSMInd(Sim800InitBuf * sim800InitBuf, unsigned char * ind);

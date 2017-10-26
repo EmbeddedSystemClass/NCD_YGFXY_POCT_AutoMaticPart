@@ -184,7 +184,11 @@ void TIM3_IRQHandler(void)
 				
 				//Ô­µã
 				if(Motor4Sensor1Triggered)
+				{
 					motor->motorLocation = 0;
+					if(!motor->isFront)
+						motor->motorTargetLocation = 0;
+				}
 				
 				if(motor->motorLocation == motor->motorTargetLocation)
 					motor->moveStepNum = 0;

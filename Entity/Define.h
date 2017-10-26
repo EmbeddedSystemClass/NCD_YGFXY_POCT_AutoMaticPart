@@ -33,16 +33,20 @@
 #define	DownRemoteSoftFileUrl		"DownloadSoftFile\0"
 
 
-#define	Motor4IOMotor						0x90							//IO口控制的爪子
-#define	Motor4UsartMotor					0x91							//串口控制的爪子
-#define	Motor4Type							Motor4UsartMotor
+#define	Motor4IOMotor					0x90							//IO口控制的爪子
+#define	Motor4UsartMotor				0x91							//串口控制的爪子
+#define	Motor4Type						Motor4IOMotor
 
-#define	DEVICE_EN		100
-#define	DEVICE_CN		101
-#define	DeviceLanguage	DEVICE_CN
+#define	DEVICE_EN						100
+#define	DEVICE_CN						101
+#define	DeviceLanguage					DEVICE_CN
 
-#define	_Use_AdjustLed_Fun	0
-#define	_Use_Lwip_Fun	0
+#define	Device_Final					0x27
+#define	Device_Demo						0x28
+#define	DeviceUseType					Device_Demo
+
+#define	PaiDuiWeiNum					9							//排队位置数目
+#define	MaxQualityCount					PaiDuiWeiNum
 /**********************************************************************************************************/
 /******************************************操作结果变量*************************************************/
 /**********************************************************************************************************/
@@ -57,6 +61,13 @@ typedef enum
 	true = 1,
 	false = 0
 }bool;
+
+typedef enum
+{ 
+	Bool_Null = 0,
+	Bool_True = 1,
+	Bool_False = 2
+}MyBool;
 
 typedef enum
 { 
@@ -83,20 +94,27 @@ typedef struct
 #define	MyFileStructSize sizeof(FatfsFileInfo_Def)
 /**********************************************************************************************************/
 /**********************************************************************************************************/
-
-#define	PaiDuiWeiNum	9							//排队位置数目
-
 typedef enum
 {
 	statusNull = 0,									//没开始,默认状态
+	statusNone = 19,									//没开始,默认状态
+	statusMotorMoveQR = 1,							//电机正在运行到等待插卡口
+	statusWaitCardPutIn = 2,						//等待插卡
+	statusWaitCardPutOut = 4,						//等待插卡
+	statusWaitScanQR = 3,							//等待扫描二维码结果
+	statusMotorPutCardDown = 6,						//读取二维码成功后，等待电机运动将卡放在排队位
 	status_start = 5,								//启动排队
 	status_timedown = 10,							//倒计时状态
 	status_timeup = 15,								//超时状态
-	status_waitTest = 14,							//倒计时时间小于30s，卡闪烁提示，界面不切换，锁定，不允许添加卡
-	status_testting = 16,							//进入测试状态，倒计时时间小于10s，切换到倒计时界面等待
+	status_testting = 16,							//开始测试
+	statusPrepareTest = 18,							//进入测试状态，倒计时时间小于10s，切换到倒计时界面等待
+	statusTestMotor = 20,							//等待电机走到测试位置
 	status_end = 17,
 }MyPaiDuiStatues;
 
+#define	StartTestTime								20					//禁止创建测试的最小时间
+#define	DisableCreateNewTestTime					30					//禁止创建测试的最小时间
+#define	DisableReturnTime							40					//禁止返回，即将测试时间
 /**********************************************************************************************************/
 /**********************************************************************************************************/
 
@@ -110,7 +128,8 @@ typedef enum
 
 typedef enum
 {
-	CardCodeScanning = 0,											//正在扫描
+	CardScanNone = 0,
+	
 	CardCodeScanOK = 1,												//扫描二维码成功
 	CardCodeScanFail = 2,											//扫描失败
 	CardCodeTimeOut = 3,											//过期
@@ -118,7 +137,7 @@ typedef enum
 	CardCodeScanTimeOut = 5,										//扫描超时
 	CardCodeCRCError = 6,											//crc错误
 	CardUnsupported = 7,											//当前程序不支持
-	CardNone = 0xff,
+	CardCodeScanning = 8,											//正在扫描
 }ScanCodeResult;
 
 

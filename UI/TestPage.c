@@ -156,7 +156,7 @@ static void activityFresh(void)
 		S_TestPageBuffer->currenttestdata = NULL;
 	}
 	
-	if(S_TestPageBuffer->canExit && S_TestPageBuffer->isPrintfData == false && IsPaiDuiTestting())
+	if(S_TestPageBuffer->canExit && IsPaiDuiTestting())
 	{
 		backToActivity(lunchActivityName);
 
@@ -311,22 +311,20 @@ static void RefreshCurve(void)
 		S_TestPageBuffer->currenttestdata->statues = status_end;
 		S_TestPageBuffer->motorAction.motorActionEnum = PutCardOutOfDeviceDef;
 		S_TestPageBuffer->motorAction.motorParm = S_TestPageBuffer->currenttestdata->testLocation;
-		StartMotorAction(&S_TestPageBuffer->motorAction, true, 3, 100/portTICK_RATE_MS);
+		StartMotorAction(&S_TestPageBuffer->motorAction, false, false);
 		
 		memcpy(&(S_TestPageBuffer->currenttestdata->testData.testDateTime), &(getSystemRunTimeData()->systemDateTime), sizeof(DateTime));
 
 		//保留一份数据给打印机打印
 		memcpy(&(S_TestPageBuffer->testDataForPrintf), &(S_TestPageBuffer->currenttestdata->testData), sizeof(TestData));
-		
-		RefreshPageText();
-		
+
 		//保存数据,并且更新数据数目头信息
 		writeTestDataToFile(&(S_TestPageBuffer->currenttestdata->testData));
-		
+		RefreshPageText();
 		if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == ResultIsOK)
 		{
-			if((S_TestPageBuffer->systemSetData.isAutoPrint == true) && (S_TestPageBuffer->isPrintfData == false))
-				printfTestData();
+			if(S_TestPageBuffer->systemSetData.isAutoPrint == true)
+				PrintfData(&(S_TestPageBuffer->testDataForPrintf));
 		}
 		else if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == PeakError)
 		{
@@ -446,16 +444,7 @@ static void AddDataToLine(unsigned short data)
 static void printfTestData(void)
 {
 	if(S_TestPageBuffer->testDataForPrintf.testResultDesc != NoResult)
-	{
-		if(S_TestPageBuffer->isPrintfData == false)
-		{
-			S_TestPageBuffer->isPrintfData = true;
-			SendKeyCode(6);
-			PrintfData(&(S_TestPageBuffer->testDataForPrintf));
-			SendKeyCode(16);
-			S_TestPageBuffer->isPrintfData = false;
-		}
-	}
+		PrintfData(&(S_TestPageBuffer->testDataForPrintf));
 	else
 		SendKeyCode(4);
 }

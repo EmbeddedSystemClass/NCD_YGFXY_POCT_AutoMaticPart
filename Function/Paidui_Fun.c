@@ -61,7 +61,7 @@ void PaiDuiHandler(void)
 			}
 			
 			//如果正在倒计时
-			if((temp->statues == status_timedown) || (temp->statues == status_waitTest))
+			if(temp->statues == status_timedown)
 			{
 				tempvalue = timer_surplus(&(temp->timeDown_timer));
 				
@@ -70,12 +70,12 @@ void PaiDuiHandler(void)
 					temp->statues = status_timeup;
 					timer_restart(&(temp->timeUp_timer));				//启动超时计时器
 				}
-				else if(tempvalue <= 10)
+				else if(tempvalue <= StartTestTime)
 				{
 					if(NULL == GetCurrentTestItem())
 					{
 						SetCurrentTestItem(temp);
-						temp->statues = status_testting;
+						temp->statues = statusPrepareTest;
 						
 						if(false == CheckStrIsSame(paiduiActivityName, getCurrentActivityName(), strlen(paiduiActivityName)))
 						{
@@ -96,10 +96,10 @@ void PaiDuiHandler(void)
 			{
 				tempvalue = GetMinWaitTime();
 				
-				if((tempvalue > 30) && (GetCurrentTestItem() == NULL))
+				if((tempvalue > DisableCreateNewTestTime) && (GetCurrentTestItem() == NULL))
 				{
 					SetCurrentTestItem(temp);
-					temp->statues = status_testting;
+					temp->statues = statusPrepareTest;
 				}
 			}
 		}

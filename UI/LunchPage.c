@@ -129,23 +129,19 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		else
 		{
 			page->error = CreateANewTest(&page->currentTestDataBuffer);
-			//创建成功
 			if(Error_OK == page->error)
 			{
-				page->motorAction.motorActionEnum = WaitCardPutInDef;
-				page->motorAction.motorParm = page->currentTestDataBuffer->cardLocation;
-				if(My_Pass != StartMotorAction(&page->motorAction, true, 1, 0/portTICK_RATE_MS))
-					SendKeyCode(2);
-				else
-				{
-					SendKeyCode(1);
-					page->isCreate = true;
-				}
+				page->tempOperator = &page->currentTestDataBuffer->testData.operator;
+				startActivity(createSelectUserActivity, createIntent(&(page->tempOperator), 4), createSampleActivity);
 			}
 			else if(Error_PaiduiFull == page->error)
 				startActivity(createPaiDuiActivity, NULL, NULL);
-			else
+			else if(Error_PaiDuiBusy == page->error)
 				SendKeyCode(2);
+			else if(Error_PaiduiTesting == page->error)
+				SendKeyCode(3);
+			else
+				SendKeyCode(1);
 		}
 	}
 }
@@ -161,13 +157,6 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(page->isCreate && isMotorMoveEnd(0 / portTICK_RATE_MS))
-	{
-		page->isCreate = false;
-		page->tempOperator = &page->currentTestDataBuffer->testData.operator;
-		startActivity(createSelectUserActivity, createIntent(&(page->tempOperator), 4), createSampleActivity);
-	}
-	
 	if(TimerOut == timer_expired(&(page->timer)))
 	{
 		//startActivity(createSleepActivity, NULL, NULL);
@@ -186,7 +175,6 @@ static void activityFresh(void)
 static void activityHide(void)
 {
 	SendKeyCode(16);
-page->isCreate = false;
 }
 
 /***************************************************************************************************
@@ -203,7 +191,6 @@ static void activityResume(void)
 	page->currentTestDataBuffer = NULL;
 	
 	timer_restart(&(page->timer));
-	page->isCreate = false;
 	SelectPage(82);
 }
 
@@ -218,7 +205,6 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
-	//清除当前页面的告警弹出框
 	SendKeyCode(16);
 	activityBufferFree();
 }
@@ -277,6 +263,6 @@ static void activityBufferFree(void)
 static void DspPageText(void)
 {
 	sprintf(page->buf, "V%d.%d.%02d", GB_SoftVersion/1000, GB_SoftVersion%1000/100, GB_SoftVersion%100);
-	DisText(0x1110, page->buf, strlen(page->buf)+1);
+	DisText(0x1110, page->buf, 7);
 }
 

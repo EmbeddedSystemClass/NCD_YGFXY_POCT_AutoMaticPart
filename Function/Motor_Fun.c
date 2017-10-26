@@ -22,9 +22,7 @@
 /******************************************Static Variables****************************************/
 /**************************************************************************************************/
 static xSemaphoreHandle xMotorMutex;
-static MotorAction motorAction;																//电机指令保存
-static xQueueHandle xMotorQueue;																//发送队列
-static MotorActionResultEnum motorActionResult = MotorActionResultNone;						//电机指令发送缓存
+static MotorAction S_MotorAction;																//电机指令保存
 static bool motorStopActionPermission = false;
 /**************************************************************************************************/
 /******************************************Static Methods******************************************/
@@ -33,7 +31,6 @@ static void MotorMoveToWaitCardPutIn(unsigned char num);
 static void MotorMoveToStartTestLocation(unsigned char num);
 static void PutCardOutOfDevice(unsigned char num);
 static void MotorMoveToOriginLocation(unsigned char num);
-static void motorMoveToDisablePutInCard(unsigned char num);
 static void motorMoveToPutDownCardInPlace(void);
 /**************************************************************************************************/
 /**************************************************************************************************/
@@ -43,7 +40,6 @@ static void motorMoveToPutDownCardInPlace(void);
 /**************************************************************************************************/
 void MotorActionInit(void)
 {
-	xMotorQueue = xQueueCreate( 10, ( unsigned portBASE_TYPE ) sizeof(MotorAction));
 	vSemaphoreCreateBinary(xMotorMutex);
 	while(pdPASS == xSemaphoreTake(xMotorMutex, 0))
 		;
@@ -51,59 +47,74 @@ void MotorActionInit(void)
 
 void MotorActionFunction(void)
 {
-	if(pdPASS == xQueueReceive(xMotorQueue, &motorAction, portMAX_DELAY))
+	if(S_MotorAction.motorActionEnum != MotorActionNone)
 	{
-		switch(motorAction.motorActionEnum)
+		switch(S_MotorAction.motorActionEnum)
 		{
-			case Motor1MoveDef :			motor1MoveToNum(motorAction.motorParm, true);	break;
+			case Motor1MoveDef :			motor1MoveToNum(S_MotorAction.motorParm, true);	break;
 				
-			case Motor2MoveDef :			motor2MoveTo(1, 2, motorAction.motorParm, true);	break;
+			case Motor2MoveDef :			motor2MoveTo(1, 2, S_MotorAction.motorParm, true);	break;
 				
-			case Motor4MoveDef :			motor4MoveTo(motorAction.motorParm, true);	break;
+			case Motor4MoveDef :			motor4MoveTo(S_MotorAction.motorParm, true);	break;
 			
-			case WaitCardPutInDef :			MotorMoveToWaitCardPutIn(motorAction.motorParm);	break;
+			case WaitCardPutInDef :			MotorMoveToWaitCardPutIn(S_MotorAction.motorParm);	break;
 				
-			case StartTestDef :				MotorMoveToStartTestLocation(motorAction.motorParm);	break;
+			case StartTestDef :				MotorMoveToStartTestLocation(S_MotorAction.motorParm);	break;
 				
-			case PutCardOutOfDeviceDef :	PutCardOutOfDevice(motorAction.motorParm);	break;
+			case PutCardOutOfDeviceDef :	PutCardOutOfDevice(S_MotorAction.motorParm);	break;
 			
-			case OriginLocationDef :		MotorMoveToOriginLocation(motorAction.motorParm);	break;
-			
-			case DisablePutInCardDef :		motorMoveToDisablePutInCard(motorAction.motorParm);	break;
+			case OriginLocationDef :		MotorMoveToOriginLocation(S_MotorAction.motorParm);	break;
 											
 			case PutDownCardInPlaceDef :	motorMoveToPutDownCardInPlace();	break;
 				
 			default: 						break;
 		}
 		
+		S_MotorAction.motorActionEnum = MotorActionNone;
+		
 		xSemaphoreGive(xMotorMutex);
 	}
+	
+	vTaskDelay(100 / portTICK_RATE_MS);
 }
 
-MyRes StartMotorAction(MotorAction * motorAction, bool isStopAction, unsigned char waitCnt, portTickType waitBlockTime)
+MyRes StartMotorAction(MotorAction * motorAction, bool isStopWhenBusy, bool waitActionDone)
 {
 	if(motorAction == NULL)
 		return My_Fail;
 	
-	while(pdPASS == xSemaphoreTake(xMotorMutex, 0))
-		;
-	
-	if(isStopAction)
+	if(S_MotorAction.motorActionEnum != MotorActionNone)
 	{
-		motorStopActionPermission = true;
-		motor1StopMove();
-		motor2StopMove();
-	}
-	else
-		motorStopActionPermission = false;
-	
-	while(waitCnt--)
-	{
-		if(pdPASS == xQueueSend(xMotorQueue, motorAction, waitBlockTime))
-			return My_Pass;
+		if(isStopWhenBusy)
+		{
+			motorStopActionPermission = true;
+			motor1StopMove();
+			motor2StopMove();
+			
+			xSemaphoreTake(xMotorMutex, portMAX_DELAY);
+		}
+		else
+			return My_Fail;
 	}
 	
-	return My_Fail;
+	S_MotorAction.motorActionEnum = motorAction->motorActionEnum;
+	S_MotorAction.motorParm = motorAction->motorParm;
+		
+	if(waitActionDone)
+	{
+		xSemaphoreTake(xMotorMutex, portMAX_DELAY);
+	}
+	
+	return My_Pass;
+}
+
+MyRes StartMotorActionWithParm(MotorActionEnum motorActionEnum, unsigned int motorParm, bool isStopWhenBusy, bool waitActionDone)
+{
+	MotorAction tempMotorAction;
+	tempMotorAction.motorActionEnum = motorActionEnum;
+	tempMotorAction.motorParm = motorParm;
+	
+	return StartMotorAction(&tempMotorAction, isStopWhenBusy, waitActionDone);
 }
 
 bool isMotorMoveEnd(portTickType waitBlockTime)
@@ -112,46 +123,6 @@ bool isMotorMoveEnd(portTickType waitBlockTime)
 		return true;
 	else
 		return false;
-}
-
-bool isMotorInRightLocation(unsigned int motor1Location, unsigned int motor2Location, unsigned int motor4Location)
-{
-	Motor * motor = getMotor(Motor_1);
-
-	if(motor1Location != MotorLocationNone)
-	{
-		if(motor1Location != motor->motorLocation)
-			return false;
-	}
-	
-	motor = getMotor(Motor_2);
-	if(motor2Location != MotorLocationNone)
-	{
-		if(motor2Location != motor->motorLocation)
-			return false;
-	}
-	
-	#if(Motor4Type == Motor4UsartMotor)
-		
-		if(motor4Location != MotorLocationNone)
-		{
-			if(motor4Location != readMotorLocation())
-				return false;
-		}
-		
-	#elif(Motor4Type == Motor4IOMotor)
-		
-		motor = getMotor(Motor_4);
-		if(motor4Location != MotorLocationNone)
-		{
-			if(motor4Location != motor->motorLocation)
-				return false;
-		}
-		
-	#endif
-	
-	
-	return true;
 }
 
 
@@ -181,6 +152,10 @@ static void MotorMoveToWaitCardPutIn(unsigned char num)
 static void MotorMoveToStartTestLocation(unsigned char num)
 {
 	motorStopActionPermission = false;
+	
+	#if(Motor4Type == Motor4UsartMotor)
+		motor4Reset();
+	#endif
 	
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
@@ -246,24 +221,6 @@ static void MotorMoveToOriginLocation(unsigned char num)
 	}
 }
 
-static void motorMoveToDisablePutInCard(unsigned char num)
-{
-	motorStopActionPermission = false;
-	
-	motor2MoveTo(1, 2, Motor2_PutDownCardLocation, true);
-	if(motorStopActionPermission == true)
-			return;
-	
-	motor4MoveTo(Motor4_OpenLocation, true);
-	
-	motor2MoveTo(1, 2, Motor2_MidLocation, true);
-	if(motorStopActionPermission == true)
-			return;
-	
-	motor1MoveToNum(num, true);
-	if(motorStopActionPermission == true)
-			return;
-}
 
 static void motorMoveToPutDownCardInPlace(void)
 {

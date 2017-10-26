@@ -8,7 +8,7 @@
 	MyRes motor4Reset(void);
 	unsigned short readMotorLocation(void);
 #elif(Motor4Type == Motor4IOMotor)
-
+	void motor4MoveStep(bool isFront, unsigned short stepNum, bool isWait);
 #endif
 
 void motor4MoveTo(unsigned short location, bool isWait);

@@ -108,12 +108,12 @@ void SelfTest_Function(void)
 			goto END;
 		}
 		
-/*		//检测led
+		//检测led
 		if(My_Pass != testLed())
 		{
 			setSelfTestStatus(Light_Error);
 			goto END;
-		}*/
+		}
 
 		//测试传动模块
 		if(My_Pass != testMotol(s_SelfTestBuf))
@@ -155,6 +155,7 @@ static MyRes loadSystemData(SelfTestBuf * selfTestBuf)
 		upDateSystemSetData(&selfTestBuf->systemSetData);									//将读取的配置更新到内存中
 
 	setSystemDeviceInfoStatus(true);
+	selfTestBuf->systemSetData.testLedLightIntensity = 1200;
 	//无论是否成功读取到配置文件，都保存SD卡一次，用以测试SD卡是否正常
 	if(My_Pass == SaveSystemSetData(&selfTestBuf->systemSetData))
 		return My_Pass;
@@ -210,30 +211,32 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	
 	if(selfTestBuf->i <= 0)
 		return My_Fail;
-	selfTestBuf->motorAction.motorActionEnum = Motor4MoveDef;
-	selfTestBuf->motorAction.motorParm = Motor4_OpenLocation;
-	if(My_Fail == StartMotorAction(&selfTestBuf->motorAction, false, 3, 100/portTICK_RATE_MS))
-		return My_Fail;
-	
-	while(false == isMotorMoveEnd(2000 / portTICK_RATE_MS));
+
+	StartMotorActionWithParm(Motor4MoveDef, Motor4_OpenLocation, false, true);
 
 #elif(Motor4Type == Motor4IOMotor)
-	selfTestBuf->motorAction.motorActionEnum = Motor4MoveDef;
-	selfTestBuf->motorAction.motorParm = MotorLocationZero;
-	if(My_Fail == StartMotorAction(&selfTestBuf->motorAction, false, 3, 100/portTICK_RATE_MS))
+	
+	motor4MoveStep(false, 10000, false);
+	selfTestBuf->i = 10;
+	selfTestBuf->motor = getMotor(Motor_4);
+	while(selfTestBuf->i-- && selfTestBuf->motor->motorLocation != 0)
+		vTaskDelay(100 / portTICK_RATE_MS);
+	
+	if(selfTestBuf->motor->motorLocation != 0)
+	{
+		motor4MoveStep(true, 4000, false);
+		vTaskDelay(1000 / portTICK_RATE_MS);
+	}
+	
+	motor4MoveStep(false, 10000, true);
+	
+	if(!Motor4Sensor1Triggered)
 		return My_Fail;
-	
-	while(false == isMotorMoveEnd(2000 / portTICK_RATE_MS));
-	
-	selfTestBuf->motorAction.motorParm = Motor4_CloseLocation;
-	if(My_Fail == StartMotorAction(&selfTestBuf->motorAction, false, 3, 100/portTICK_RATE_MS))
-		return My_Fail;
-	
-	while(false == isMotorMoveEnd(2000 / portTICK_RATE_MS));
+
+	StartMotorActionWithParm(Motor4MoveDef, Motor4_CloseLocation, false, true);
 #endif
 	
 	//step 1 定位爪子位置
-	
 	selfTestBuf->juli = 0;
 	selfTestBuf->motor = getMotor(Motor_2);
 
@@ -256,16 +259,8 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 		return My_Fail;
 
 	//step 2 判断插卡口是否有卡
-	selfTestBuf->motorAction.motorActionEnum = PutDownCardInPlaceDef;
-	selfTestBuf->motorAction.motorParm = 0;
-	selfTestBuf->i = 5;
 	if(Motor1Sensor2Triggered && readCaedCheckStatus() == ON)
-	{
-		if(My_Fail == StartMotorAction(&selfTestBuf->motorAction, false, 3, 100/portTICK_RATE_MS))
-			return My_Fail;
-		
-		while(false == isMotorMoveEnd(20000 / portTICK_RATE_MS));
-	}
+		StartMotorActionWithParm(PutDownCardInPlaceDef, 0, false, true);
 
 	//step 3 去掉退卡口，无论有无卡
 	if(Motor1Sensor1Triggered)
@@ -282,15 +277,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	selfTestBuf->motorAction.motorActionEnum = Motor1MoveDef;
 	for(selfTestBuf->j=0; selfTestBuf->j<Motor1_HalfLocation; selfTestBuf->j++)
 	{
-		selfTestBuf->motorAction.motorParm = 2*selfTestBuf->j + 1;
-
-		if(My_Fail == StartMotorAction(&selfTestBuf->motorAction, false, 3, 1000/portTICK_RATE_MS))
-			return My_Fail;
-
-		vTaskDelay(1000 / portTICK_RATE_MS);
-		
-		while(false == isMotorMoveEnd(20000 / portTICK_RATE_MS));
-		
+		StartMotorActionWithParm(Motor1MoveDef, 2*selfTestBuf->j + 1, false, true);
 		selfTestBuf->locationStatus[selfTestBuf->j] = readCaedCheckStatus();
 	}
 	
@@ -305,10 +292,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 			if(selfTestBuf->motorAction.motorParm > Motor1_MaxLocation)
 				selfTestBuf->motorAction.motorParm -= Motor1_MaxLocation;
 
-			if(My_Fail == StartMotorAction(&selfTestBuf->motorAction, false, 3, 1000/portTICK_RATE_MS))
-				return My_Fail;
-
-			while(false == isMotorMoveEnd(20000 / portTICK_RATE_MS));
+			selfTestBuf->i = StartMotorActionWithParm(PutCardOutOfDeviceDef, selfTestBuf->motorAction.motorParm, false, true);
 		}
 	}
 	

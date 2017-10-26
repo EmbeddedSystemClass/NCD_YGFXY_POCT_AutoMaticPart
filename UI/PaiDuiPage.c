@@ -12,6 +12,7 @@
 #include	"PreReadCardPage.h"
 #include	"SampleIDPage.h"
 #include	"CardCheck_Driver.h"
+#include	"ReadBarCode_Fun.h"
 #include	"MyTools.h"
 #include	"MyTest_Data.h"
 #include	"LunchPage.h"
@@ -84,6 +85,7 @@ MyRes createPaiDuiActivity(Activity * thizActivity, Intent * pram)
 static void activityStart(void)
 {
 	S_PaiDuiPageBuffer->isMotorStartted = false;
+	clearBarCodeQueue();
 	SelectPage(93);
 	displayPageText();
 }
@@ -111,7 +113,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			SendKeyCode(4);
 		}
 		//即将测试，不允许返回
-		else if(GetMinWaitTime() < 40)
+		else if(GetMinWaitTime() < DisableReturnTime)
 		{
 			SendKeyCode(3);
 		}
@@ -130,26 +132,20 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		S_PaiDuiPageBuffer->error = CreateANewTest(&S_PaiDuiPageBuffer->currentTestDataBuffer);
 		//创建成功
 		if(Error_OK == S_PaiDuiPageBuffer->error)
-		{
-			S_PaiDuiPageBuffer->motorAction.motorActionEnum = WaitCardPutInDef;
-			S_PaiDuiPageBuffer->motorAction.motorParm = S_PaiDuiPageBuffer->currentTestDataBuffer->cardLocation;
-			if(My_Pass == StartMotorAction(&S_PaiDuiPageBuffer->motorAction, true, 1, 0/portTICK_RATE_MS))
-				S_PaiDuiPageBuffer->isCreate = true;
-			else
-				SendKeyCode(1);
-		}
+			startActivity(createSampleActivity, NULL, NULL);
 		//排队位置满，不允许
 		else if(Error_PaiduiFull == S_PaiDuiPageBuffer->error)
 			SendKeyCode(2);
-		//创建失败
-		else if(Error_Mem == S_PaiDuiPageBuffer->error)
-			SendKeyCode(1);
 		//有卡即将测试
 		else if(Error_PaiDuiBusy == S_PaiDuiPageBuffer->error)
 			SendKeyCode(3);
 		//测试中禁止添加
 		else if(Error_PaiduiTesting == S_PaiDuiPageBuffer->error)
 			SendKeyCode(4);
+		//创建失败
+		else
+			SendKeyCode(1);
+		
 	}
 }
 
@@ -163,16 +159,40 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 *Date: 2016年12月21日09:01:16
 ***************************************************************************************************/
 static void activityFresh(void)
-{
-	if(S_PaiDuiPageBuffer->isCreate && isMotorMoveEnd(0 / portTICK_RATE_MS))
-		startActivity(createSampleActivity, NULL, NULL);
-						
+{				
+	//接收条码，自动新建
+	if(ReadBarCodeFunction(S_PaiDuiPageBuffer->tempSampleId, 100) > 0)
+	{
+		S_PaiDuiPageBuffer->error = CreateANewTest(&S_PaiDuiPageBuffer->currentTestDataBuffer);
+		//创建成功
+		if(Error_OK == S_PaiDuiPageBuffer->error)
+		{
+			memcpy(&S_PaiDuiPageBuffer->currentTestDataBuffer->testData.sampleid, S_PaiDuiPageBuffer->tempSampleId, MaxSampleIDLen);
+			startActivity(createSampleActivity, NULL, NULL);
+			vTaskDelay(100 / portTICK_RATE_MS);
+			return;
+		}
+		//排队位置满，不允许
+		else if(Error_PaiduiFull == S_PaiDuiPageBuffer->error)
+			SendKeyCode(2);
+		//有卡即将测试
+		else if(Error_PaiDuiBusy == S_PaiDuiPageBuffer->error)
+			SendKeyCode(3);
+		//测试中禁止添加
+		else if(Error_PaiduiTesting == S_PaiDuiPageBuffer->error)
+			SendKeyCode(4);
+		//创建失败
+		else
+			SendKeyCode(1);
+	}
+	
+	
 	if(S_PaiDuiPageBuffer->count % 5 == 0)
 	{
 		S_PaiDuiPageBuffer->currentTestDataBuffer = GetCurrentTestItem();
 		if(S_PaiDuiPageBuffer->currentTestDataBuffer)
 		{
-			if(S_PaiDuiPageBuffer->currentTestDataBuffer->statues == status_testting)
+			if(S_PaiDuiPageBuffer->currentTestDataBuffer->statues == statusPrepareTest)
 			{
 				if(S_PaiDuiPageBuffer->isMotorStartted)
 				{
@@ -190,7 +210,7 @@ static void activityFresh(void)
 				{
 					S_PaiDuiPageBuffer->motorAction.motorActionEnum = StartTestDef;
 					S_PaiDuiPageBuffer->motorAction.motorParm = S_PaiDuiPageBuffer->currentTestDataBuffer->testLocation;
-					if(My_Pass == StartMotorAction(&S_PaiDuiPageBuffer->motorAction, true, 1, 100/portTICK_RATE_MS))
+					if(My_Pass == StartMotorAction(&S_PaiDuiPageBuffer->motorAction, false, false))
 						S_PaiDuiPageBuffer->isMotorStartted = true;
 
 					//显示转盘
@@ -325,39 +345,6 @@ static void activityBufferFree(void)
 	S_PaiDuiPageBuffer = NULL;
 }
 
-static void freshPage(void)
-{
-	S_PaiDuiPageBuffer->motor1Location = getMotorxLocation(Motor_1);
-	if(S_PaiDuiPageBuffer->lastMotorLocation != S_PaiDuiPageBuffer->motor1Location)
-	{
-		S_PaiDuiPageBuffer->lastMotorLocation = S_PaiDuiPageBuffer->motor1Location;
-		//显示转盘
-		if(S_PaiDuiPageBuffer->motor1Location % 2 == 1)
-			BasicPic(0x1510, 1, 94, 10, 10, 457, 461, 37, 69);
-		else
-			BasicPic(0x1510, 1, 94, 477, 10, 924, 461, 37, 69);
-	
-		//显示数字转盘
-		DspNum(0x1506, S_PaiDuiPageBuffer->motor1Location-1, 2);
-	
-		for(S_PaiDuiPageBuffer->index=0; S_PaiDuiPageBuffer->index<9; S_PaiDuiPageBuffer->index++)
-		{
-			S_PaiDuiPageBuffer->tempPaiduiUnitData = GetTestItemByIndex(S_PaiDuiPageBuffer->index);
-
-			if(S_PaiDuiPageBuffer->tempPaiduiUnitData)
-			{
-				S_PaiDuiPageBuffer->tempvalue1 = 9 - S_PaiDuiPageBuffer->index;
-				S_PaiDuiPageBuffer->tempvalue1 *= 2;
-				S_PaiDuiPageBuffer->tempvalue1 += S_PaiDuiPageBuffer->motor1Location;
-				S_PaiDuiPageBuffer->tempvalue1 -= 1;
-				if(S_PaiDuiPageBuffer->tempvalue1 >= 18)
-					S_PaiDuiPageBuffer->tempvalue1 -= 18;
-
-				WriteVarIcoNum(0x1520 + S_PaiDuiPageBuffer->index, S_PaiDuiPageBuffer->tempvalue1);
-			}
-		}
-	}
-}
 
 static void displayPageText(void)
 {
@@ -371,7 +358,7 @@ static void displayPageText(void)
 	//显示数字转盘
 	DspNum(0x1506, S_PaiDuiPageBuffer->motor1Location-1, 2);
 	
-	for(S_PaiDuiPageBuffer->index=0; S_PaiDuiPageBuffer->index<9; S_PaiDuiPageBuffer->index++)
+	for(S_PaiDuiPageBuffer->index=0; S_PaiDuiPageBuffer->index<PaiDuiWeiNum; S_PaiDuiPageBuffer->index++)
 	{
 		S_PaiDuiPageBuffer->tempPaiduiUnitData = GetTestItemByIndex(S_PaiDuiPageBuffer->index);
 
@@ -414,7 +401,7 @@ static void displayPageText(void)
 
 static void displayTimeDownText(void)
 {
-	for(S_PaiDuiPageBuffer->index=0; S_PaiDuiPageBuffer->index<9; S_PaiDuiPageBuffer->index++)
+	for(S_PaiDuiPageBuffer->index=0; S_PaiDuiPageBuffer->index<PaiDuiWeiNum; S_PaiDuiPageBuffer->index++)
 	{
 		S_PaiDuiPageBuffer->tempPaiduiUnitData = GetTestItemByIndex(S_PaiDuiPageBuffer->index);
 
@@ -424,8 +411,11 @@ static void displayTimeDownText(void)
 			if(isInTimeOutStatus(S_PaiDuiPageBuffer->tempPaiduiUnitData))
 				S_PaiDuiPageBuffer->tempvalue1 = timer_Count(&(S_PaiDuiPageBuffer->tempPaiduiUnitData->timeUp_timer));
 			else
-				S_PaiDuiPageBuffer->tempvalue1 = timer_surplus(&(S_PaiDuiPageBuffer->tempPaiduiUnitData->timeDown_timer));						
-			DspNum(0x16e0 + S_PaiDuiPageBuffer->index, S_PaiDuiPageBuffer->tempvalue1, 2);
+				S_PaiDuiPageBuffer->tempvalue1 = timer_surplus(&(S_PaiDuiPageBuffer->tempPaiduiUnitData->timeDown_timer));
+			S_PaiDuiPageBuffer->tempvalue2 = S_PaiDuiPageBuffer->tempvalue1/60;
+			S_PaiDuiPageBuffer->tempvalue2 <<= 8;
+			S_PaiDuiPageBuffer->tempvalue2 += S_PaiDuiPageBuffer->tempvalue1%60;
+			DspNum(0x16e0 + S_PaiDuiPageBuffer->index, S_PaiDuiPageBuffer->tempvalue2, 2);
 		}
 		else
 			DspNum(0x16e0 + S_PaiDuiPageBuffer->index, 0, 2);

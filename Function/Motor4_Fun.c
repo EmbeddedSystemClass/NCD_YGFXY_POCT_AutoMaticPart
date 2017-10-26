@@ -36,7 +36,6 @@
 	static unsigned char motor4RxBuf[8];
 	static unsigned short motorCrc = 0;
 	static unsigned short tempCrc = 0;
-	static xSemaphoreHandle xMutex;									//ª•≥‚¡ø
 
 #elif(Motor4Type == Motor4IOMotor)
 
@@ -71,7 +70,7 @@ MyRes motor4Reset(void)
 	xQueueReset(GetUsart2RXQueue());
 	SendDataToQueue(GetUsart2TXQueue(), NULL, motor4TxBuf, 8, 1, 100 / portTICK_RATE_MS, 0, EnableUsart2TXInterrupt);
 
-	if(My_Pass == ReceiveDataFromQueue(GetUsart2RXQueue(), NULL, motor4RxBuf, 8, NULL, 1, 2000 / portTICK_RATE_MS, 0))
+	if(My_Pass == ReceiveDataFromQueue(GetUsart2RXQueue(), NULL, motor4RxBuf, 8, NULL, 1, 2000 / portTICK_RATE_MS, 0, 100 / portTICK_RATE_MS))
 	{
 		motorCrc = motor4RxBuf[6];
 		motorCrc <<= 8;
@@ -105,7 +104,7 @@ void motor4MoveTo(unsigned short location, bool isWait)
 		xQueueReset(GetUsart2RXQueue());
 		SendDataToQueue(GetUsart2TXQueue(), NULL, motor4TxBuf, 8, 1, 100 / portTICK_RATE_MS, 0, EnableUsart2TXInterrupt);
 		
-		if(My_Pass == ReceiveDataFromQueue(GetUsart2RXQueue(), NULL, motor4RxBuf, 8, NULL, 1, 3000 / portTICK_RATE_MS, 0))
+		if(My_Pass == ReceiveDataFromQueue(GetUsart2RXQueue(), NULL, motor4RxBuf, 8, NULL, 1, 3000 / portTICK_RATE_MS, 0, 100 / portTICK_RATE_MS))
 		{
 			motorCrc = motor4RxBuf[6];
 			motorCrc <<= 8;
@@ -135,7 +134,7 @@ unsigned short readMotorLocation(void)
 	xQueueReset(GetUsart2RXQueue());
 	SendDataToQueue(GetUsart2TXQueue(), NULL, motor4TxBuf, 8, 1, 100 / portTICK_RATE_MS, 0, EnableUsart2TXInterrupt);
 
-	if(My_Pass == ReceiveDataFromQueue(GetUsart2RXQueue(), NULL, motor4TxBuf, 8, NULL, 1, 500 / portTICK_RATE_MS, 0))
+	if(My_Pass == ReceiveDataFromQueue(GetUsart2RXQueue(), NULL, motor4TxBuf, 8, NULL, 1, 500 / portTICK_RATE_MS, 0, 100 / portTICK_RATE_MS))
 	{
 		motorCrc = motor4TxBuf[6];
 		motorCrc <<= 8;
@@ -160,8 +159,8 @@ void motor4MoveTo(unsigned short location, bool isWait)
 {
 	motor4 = getMotor(Motor_4);
 
-	if(location == 0)
-		motor4->motorLocation = 60000;
+	if(0 == location)
+		motor4->motorLocation = 6000;
 	
 	if(motor4->motorLocation == location)
 		return;
@@ -179,6 +178,33 @@ void motor4MoveTo(unsigned short location, bool isWait)
 	motor4->periodCnt = 0;
 	motor4->motorTargetLocation = location;
 	motor4->moveStepNum = 65000;
+	
+	while(isWait && motor4->motorLocation != motor4->motorTargetLocation)
+		vTaskDelay(100 / portTICK_RATE_MS);
+}
+
+void motor4MoveStep(bool isFront, unsigned short stepNum, bool isWait)
+{
+	motor4 = getMotor(Motor_4);
+
+	motor4->isFront = isFront;
+	motor4->motorLocation = 0;
+	motor4->motorTargetLocation = 0;
+	
+	if(motor4->isFront)
+	{
+		setMotor4DirGPIO(ON);
+		motor4->motorTargetLocation = stepNum;
+	}
+	else
+	{
+		setMotor4DirGPIO(OFF);
+		motor4->motorLocation = stepNum;
+	}
+	vTaskDelay(10 / portTICK_RATE_MS);
+	
+	motor4->periodCnt = 0;
+	motor4->moveStepNum = stepNum;
 	
 	while(isWait && motor4->motorLocation != motor4->motorTargetLocation)
 		vTaskDelay(100 / portTICK_RATE_MS);

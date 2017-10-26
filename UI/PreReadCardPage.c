@@ -123,8 +123,11 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			else if(S_PreReadPageBuffer->lcdinput[1] == 0x0000)
 			{
 				DeleteCurrentTest();
-				
+
 				backToActivity(lunchActivityName);
+				
+				if(IsPaiDuiTestting())
+					startActivity(createPaiDuiActivity, NULL, NULL);
 			}
 		}
 	}
@@ -143,13 +146,15 @@ static void activityFresh(void)
 {	
 	CheckQRCode();
 	
-	if(S_PreReadPageBuffer->scancode != CardCodeScanning)
+	if(S_PreReadPageBuffer->scancode != CardScanNone)
 	{
 		if(isMotorMoveEnd(0 / portTICK_RATE_MS))
 		{
 			if(S_PreReadPageBuffer->scancode == CardCodeScanOK)
 			{
 				S_PreReadPageBuffer->currenttestdata->statues = status_start;
+				//保存最新的操作人
+				upDateLastOperator(&S_PreReadPageBuffer->currenttestdata->testData.operator);
 				startActivity(createPaiDuiActivity, NULL, NULL);
 			}
 			else
@@ -264,18 +269,18 @@ static void CheckQRCode(void)
 			memcpy(&(S_PreReadPageBuffer->currenttestdata->testData.qrCode), &(S_PreReadPageBuffer->temperweima), sizeof(QRCode));
 					
 			//设置倒计时时间
-			timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime*60);
+			timer_SetAndStart(&(S_PreReadPageBuffer->currenttestdata->timeDown_timer), S_PreReadPageBuffer->currenttestdata->testData.qrCode.CardWaitTime);
 			
 			S_PreReadPageBuffer->motorAction.motorActionEnum = OriginLocationDef;
 			S_PreReadPageBuffer->motorAction.motorParm = S_PreReadPageBuffer->currenttestdata->cardLocation+1;
-			StartMotorAction(&S_PreReadPageBuffer->motorAction, true, 3, 100/portTICK_RATE_MS);
 		}
 		else
 		{
 			S_PreReadPageBuffer->motorAction.motorActionEnum = WaitCardPutInDef;
 			S_PreReadPageBuffer->motorAction.motorParm = S_PreReadPageBuffer->currenttestdata->cardLocation;
-			StartMotorAction(&S_PreReadPageBuffer->motorAction, true, 3, 100/portTICK_RATE_MS);
 		}
+		
+		StartMotorAction(&S_PreReadPageBuffer->motorAction, false, false);
 	}
 }
 
@@ -297,7 +302,7 @@ static void ShowCardInfo(void)
 	sprintf(S_PreReadPageBuffer->buf, "%s-%s\0", S_PreReadPageBuffer->temperweima.PiHao, S_PreReadPageBuffer->temperweima.piNum);
 	DisText(0x1430, S_PreReadPageBuffer->buf, strlen(S_PreReadPageBuffer->buf)+1);
 	
-	sprintf(S_PreReadPageBuffer->buf, "%d S\0", S_PreReadPageBuffer->temperweima.CardWaitTime*60);
+	sprintf(S_PreReadPageBuffer->buf, "%d S\0", S_PreReadPageBuffer->temperweima.CardWaitTime);
 	DisText(0x1440, S_PreReadPageBuffer->buf, strlen(S_PreReadPageBuffer->buf)+1);
 		
 	sprintf(S_PreReadPageBuffer->buf, "20%02d年%02d月%02d日\0", S_PreReadPageBuffer->temperweima.CardBaoZhiQi.year, 

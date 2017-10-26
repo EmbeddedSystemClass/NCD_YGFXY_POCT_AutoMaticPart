@@ -16,7 +16,7 @@ typedef struct QRCode_Tag
 	unsigned char 	ChannelNum;									//通道号(0-7)
 	float			ItemFenDuan[2];								//分段峰高比
 	float			ItemBiaoQu[3][3];							//标准曲线
-	unsigned char 	CardWaitTime;								//检测卡反应时间
+	unsigned short 	CardWaitTime;								//检测卡反应时间
 	unsigned short 	CLineLocation;								//c线位置
 	char			PiHao[PiHaoLen];							//批次号
 	char			piNum[PiNumLen];							//批内编号

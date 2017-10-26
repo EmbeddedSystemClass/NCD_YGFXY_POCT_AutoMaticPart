@@ -6,7 +6,7 @@
 
 void motor1MoveToNum(unsigned char num, bool isWait);
 void motor1StopMove(void);
-
+	
 #endif
 
 /****************************************end of file************************************************/

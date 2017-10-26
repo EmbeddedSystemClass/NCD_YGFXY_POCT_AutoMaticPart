@@ -47,12 +47,16 @@ unsigned char ReadBarCodeFunction(char * codebuf, unsigned char len)
 	
 	if(codebuf)
 	{
-		memset(codebuf, 0, len);
-		
-		ReceiveDataFromQueue(GetUsart1RXQueue(), NULL, codebuf, len, &rxlen, 1, 20 / portTICK_RATE_MS,50 / portTICK_RATE_MS);	
+		ReceiveDataFromQueue(GetUsart1RXQueue(), NULL, codebuf, len, &rxlen, 1, 10 / portTICK_RATE_MS, 0 / portTICK_RATE_MS, 100 / portTICK_RATE_MS);
+		codebuf[rxlen] = 0;
 	}
 	
 	return rxlen;
+}
+
+void clearBarCodeQueue(void)
+{
+	xQueueReset(GetUsart1RXQueue());
 }
 
 

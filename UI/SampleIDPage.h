@@ -10,10 +10,13 @@
 typedef struct SampleIDPage_tag {
 	char tempbuf[150];
 	unsigned int tempv1;
+	unsigned char sampleIdLen;
 	PaiduiUnitData * currenttestdata;												//当前测试数据
 	unsigned short lcdinput[100];
-	bool isMotorOk;
+	bool isConfirmed;
+	MyRes isMotorStartted;
 	MotorAction motorAction;
+	unsigned int cnt;
 }SampleIDPage;
 
 MyRes createSampleActivity(Activity * thizActivity, Intent * pram);

@@ -115,6 +115,7 @@ static void activityFresh(void)
 		RefreshTimeText();
 		if(TimerOut == timer_expired(S_TimeDownPageData->S_Timer))
 		{
+			S_TimeDownPageData->currenttestdata->statues = status_testting;
 			startActivity(createTestActivity, NULL, NULL);
 		}
 	}

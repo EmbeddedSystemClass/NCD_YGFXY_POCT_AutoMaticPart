@@ -24,7 +24,7 @@ static PaiduiUnitData * (PaiduiTestDataBuffer[PaiDuiWeiNum]);					//测试数据缓存
 
 static PaiduiUnitData * CurrentTestDataBuffer;									//当前测试
 
-static Operator * lastOperator = NULL;											//上次选择的操作人
+static Operator lastOperator;											//上次选择的操作人
 /***************************************************************************************************/
 /**************************************内部函数*************************************************/
 /***************************************************************************************************/
@@ -43,7 +43,7 @@ CreateTestErrorType CreateANewTest(PaiduiUnitData ** TestDataBuffer)
 	if(CurrentTestDataBuffer != NULL)
 		return Error_PaiduiTesting;
 
-	if(40 > GetMinWaitTime())
+	if(DisableCreateNewTestTime > GetMinWaitTime())
 		return Error_PaiDuiBusy;
 		
 	if(true == isSomePaiduiInOutTimeStatus())
@@ -71,11 +71,9 @@ CreateTestErrorType CreateANewTest(PaiduiUnitData ** TestDataBuffer)
 					CurrentTestDataBuffer->testLocation -= PaiDuiWeiNum*2;
 				
 				//保存最新的操作人
-				if(lastOperator != NULL)
-					memcpy(&CurrentTestDataBuffer->testData.operator, lastOperator, OneOperatorStructSize);
+				if(lastOperator.crc != 0)
+					memcpy(&CurrentTestDataBuffer->testData.operator, &lastOperator, OneOperatorStructSize);
 
-				lastOperator = &CurrentTestDataBuffer->testData.operator;	
-				
 				if(TestDataBuffer)
 					*TestDataBuffer = CurrentTestDataBuffer;
 					
@@ -95,6 +93,12 @@ PaiduiUnitData * GetTestItemByIndex(unsigned char index)
 	return PaiduiTestDataBuffer[index];
 }
 
+void upDateLastOperator(Operator * operator)
+{
+	if(operator)
+		memcpy(&lastOperator, operator, OneOperatorStructSize);
+}
+
 /***************************************************************************************************
 *FunctionName:  isSomePaiduiInOutTimeStatus
 *Description:  判断是否有卡处于超时阶段
@@ -111,7 +115,7 @@ bool isSomePaiduiInOutTimeStatus(void)
 	for(index = 0; index < PaiDuiWeiNum; index++)
 	{
 		if((PaiduiTestDataBuffer[index])&&
-			(PaiduiTestDataBuffer[index]->timeUp_timer.start != 0))
+			(PaiduiTestDataBuffer[index]->statues == status_timeup))
 		{
 			return true;
 		}
@@ -123,6 +127,18 @@ bool isSomePaiduiInOutTimeStatus(void)
 unsigned short GetMinWaitTime(void)
 {
 	unsigned short min = 0xffff;
+	unsigned char index = 0;
+	unsigned short temp = 0;
+	
+	for(index = 0; index < PaiDuiWeiNum; index++)
+	{
+		if(PaiduiTestDataBuffer[index] && PaiduiTestDataBuffer[index]->statues == status_timedown)
+		{
+			temp = timer_surplus(&PaiduiTestDataBuffer[index]->timeDown_timer);
+			if(temp < min)
+				min = temp;
+		}
+	}
 	return min;
 }
 

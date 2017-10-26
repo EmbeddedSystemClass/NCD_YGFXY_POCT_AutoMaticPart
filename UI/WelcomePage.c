@@ -87,28 +87,21 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(page)
+	page->lcdinput[0] = pbuf[4];
+	page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
+		
+	page->lcdinput[1] = pbuf[6];
+	page->lcdinput[1] = (page->lcdinput[1]<<8) + pbuf[7];
+		
+	if(0x81 == pbuf[3])
 	{
-		/*命令*/
-		page->lcdinput[0] = pbuf[4];
-		page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
-		
-		page->lcdinput[1] = pbuf[6];
-		page->lcdinput[1] = (page->lcdinput[1]<<8) + pbuf[7];
-		
-		if(0x81 == pbuf[3])
-		{
-			//页面id
-			if(0x03 == pbuf[4])
-			{
-				page->currentPageId = page->lcdinput[1];	
-			}
-		}
-		else if(0x83 == pbuf[3])
-		{
-			if((page->lcdinput[0] >= 0x1010) && (page->lcdinput[0] <= 0x1014))
-				while(1);
-		}
+		if(0x03 == pbuf[4])
+			page->currentPageId = page->lcdinput[1];	
+	}
+	else if(0x83 == pbuf[3])
+	{
+		if((page->lcdinput[0] >= 0x1010) && (page->lcdinput[0] <= 0x1014))
+			while(1);
 	}
 }
 
@@ -123,7 +116,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(80 == page->currentPageId)
+	if(81 == page->currentPageId)
 	{
 		page->selfTestStatus = getSelfTestStatus();
 		
@@ -152,32 +145,22 @@ static void activityFresh(void)
 		}
 		//加载数据错误，说明sd异常
 		else if(SD_ERROR == page->selfTestStatus)
-		{
-			SelectPage(81);
-				
-			vTaskDelay(1000 / portTICK_RATE_MS);
-				
+		{	
 			SendKeyCode(5);
 		}
 		//led异常，告警发光模块错误
 		else if(Light_Error == page->selfTestStatus)
 		{
-			SelectPage(81);
-			vTaskDelay(1000 / portTICK_RATE_MS);
 			SendKeyCode(4);
 		}
 		//采集异常，告警采集模块错误
 		else if(AD_ERROR == page->selfTestStatus)
 		{
-			SelectPage(81);
-			vTaskDelay(1000 / portTICK_RATE_MS);
 			SendKeyCode(3);
 		}
 		//传动异常，告警传动模块错误
 		else if(Motol_ERROR == page->selfTestStatus)
 		{
-			SelectPage(81);
-			vTaskDelay(1000 / portTICK_RATE_MS);
 			SendKeyCode(1);
 		}
 	}
