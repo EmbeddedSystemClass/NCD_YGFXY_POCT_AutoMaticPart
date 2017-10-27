@@ -14,6 +14,7 @@ typedef enum
 	WaitCardPutInDef = 0x11,								/*等待插卡状态*/
 	StartTestDef = 0x12,									/*开始测试状态*/
 	PutCardOutOfDeviceDef = 0x13,							/*将卡排除设备*/
+	PutCardOutOfDeviceAfterTestDef = 0x15,					/*将卡排除设备,只用于测试完毕*/
 	OriginLocationDef = 0x14,								/*恢复待机状态*/
 	PutDownCardInPlaceDef = 0x16,							/*将卡放在排队位*/
 }MotorActionEnum;

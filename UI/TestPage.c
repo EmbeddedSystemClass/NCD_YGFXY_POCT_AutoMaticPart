@@ -309,7 +309,7 @@ static void RefreshCurve(void)
 	if(My_Pass == TakeTestResult(&(S_TestPageBuffer->currenttestdata->testData.testResultDesc)))
 	{
 		S_TestPageBuffer->currenttestdata->statues = status_end;
-		S_TestPageBuffer->motorAction.motorActionEnum = PutCardOutOfDeviceDef;
+		S_TestPageBuffer->motorAction.motorActionEnum = PutCardOutOfDeviceAfterTestDef;
 		S_TestPageBuffer->motorAction.motorParm = S_TestPageBuffer->currenttestdata->testLocation;
 		StartMotorAction(&S_TestPageBuffer->motorAction, false, false);
 		

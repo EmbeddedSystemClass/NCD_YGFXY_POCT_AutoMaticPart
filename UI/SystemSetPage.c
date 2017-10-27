@@ -186,6 +186,11 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 					unLockLCDOneTime();
 					SendKeyCode(2);
 				}
+				else if(pdPASS == CheckStrIsSame(&pbuf[7] , ChangeValueShowTypePassWord ,GetBufLen(&pbuf[7] , 2*pbuf[6])))
+				{
+					setIsShowRealValue(true);
+					SendKeyCode(2);
+				}
 				else
 					SendKeyCode(1);
 			}
