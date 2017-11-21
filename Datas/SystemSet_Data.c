@@ -10,6 +10,7 @@
 /***************************************************************************************************/
 #include	"SystemSet_Data.h"
 
+#include	"StringDefine.h"
 #include	"MyTools.h"
 #include	"CRC16.h"
 
@@ -47,9 +48,7 @@ void setDefaultSystemSetData(SystemSetData * systemSetData)
 	if(systemSetData)
 	{
 		memset(systemSetData, 0, SystemSetDataStructSize);
-		
-		snprintf(systemSetData->deviceId, DeviceIdLen+1, "NCD-Device");
-		
+
 		systemSetData->isAutoPrint = true;
 		systemSetData->ledLightIntensity = 100;
 		systemSetData->ledSleepTime = 60;
@@ -82,6 +81,10 @@ void upDateSystemSetData(SystemSetData * systemSetData)
 	}
 }
 
+unsigned short getSystemTestLedLightIntensity(void)
+{
+	return GBSystemSetData.ledLightIntensity;
+}
 /***************************************************************************************************
 *FunctionName: setIsShowRealValue, IsShowRealValue
 *Description: 是否显示真实值
@@ -101,9 +104,4 @@ bool IsShowRealValue(void)
 	return isShowRealValue;
 }
 
-void readSystemDeviceId(char * device)
-{
-	if(device)
-		memcpy(device, GBSystemSetData.deviceId, DeviceIdLen);
-}
 /****************************************end of file************************************************/

@@ -9,7 +9,6 @@
 #pragma pack(1)
 typedef struct SystemSetData_Tag
 {		
-	char deviceId[DeviceIdLen];											//设备信息
 	WireNetSet wireNetSet;												//有线网设置
 	ServerSet serverSet;												//服务器设置
 	bool isAutoPrint;													//是否自动打印
@@ -28,9 +27,10 @@ void setDefaultSystemSetData(SystemSetData * systemSetData);
 SystemSetData * getGBSystemSetData(void);
 void readGbSystemSetData(SystemSetData * systemSetData);
 void upDateSystemSetData(SystemSetData * systemSetData);
+unsigned short getSystemTestLedLightIntensity(void);
 void setIsShowRealValue(bool isShow);
 bool IsShowRealValue(void);
-void readSystemDeviceId(char * device);
+
 #endif
 
 /****************************************end of file************************************************/

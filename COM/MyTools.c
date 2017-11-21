@@ -69,6 +69,25 @@ bool CheckStrIsSame(const void *str1 , const void * str2 , unsigned short len)
 	return true;
 }
 
+/***************************************************************************************************
+*FunctionName：clearStringEndWord
+*Description：去掉字符串末尾的回车，主要用于条码枪的数据
+*Input：None
+*Output：None
+*Author：xsx
+*Data：2016年4月21日14:54:56
+***************************************************************************************************/
+void clearStringEndWord(char * str, unsigned short len)
+{
+	for(unsigned short i=0; i<len; i++)
+	{
+		if(*str == 0x0d || *str == 0x0a)
+			*str = 0;
+		
+		str++;
+	}
+}
+
 unsigned short getMaxMinValue(unsigned short * datas, unsigned short len, Point * max, Point * min)
 {
 	unsigned short i=0;
@@ -195,9 +214,11 @@ void findFeng(unsigned short * datas, unsigned short startIndex, unsigned short 
 	}
 }
 
-MyRes parseIpString(IP * ip, char * ipStr, char * tempP)
+MyRes parseIpString(IP * ip, char * ipStr)
 {
-	if(ip == NULL || ipStr == NULL ||tempP == NULL)
+	char * tempP = NULL;
+	
+	if(ip == NULL || ipStr == NULL)
 		return My_Fail;
 	
 	tempP = strtok(ipStr, ".");

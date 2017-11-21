@@ -135,7 +135,7 @@ MyRes readRecordDataFromFileByPageRequest(const char * fileName, PageRequest * p
 	
 	myfile = MyMalloc(MyFileStructSize);
 
-	if(myfile && fileName && pageRequest && deviceRecordHeader && page)
+	if(myfile && fileName && deviceRecordHeader && page)
 	{
 		memset(myfile, 0, MyFileStructSize);
 		page->totalPageSize = 0;
@@ -158,26 +158,32 @@ MyRes readRecordDataFromFileByPageRequest(const char * fileName, PageRequest * p
 			else if(pageRequest == NULL)
 			{
 				myfile->tempValue1 = DeviceRecordHeaderStructSize;
-				//根据用户上传索引读取数据
-				if(deviceRecordHeader->userUpLoadIndex < deviceRecordHeader->itemSize)
-				{
-					myfile->tempValue1 += deviceRecordHeader->userUpLoadIndex * ItemByteSize;
-					f_lseek(&(myfile->file), myfile->tempValue1);
 				
-					myfile->tempValue1 = UserePageContentIndex;
-					myfile->tempValue1 *= ItemByteSize;
-					f_read(&(myfile->file), page->content, myfile->tempValue1, &(myfile->br));
+				if(page->isForNCD)
+				{
+					//根据纽康度上传索引读取数据
+					if(deviceRecordHeader->ncdUpLoadIndex < deviceRecordHeader->itemSize)
+					{
+						//计算偏移地址
+						myfile->tempValue1 += deviceRecordHeader->ncdUpLoadIndex * ItemByteSize;
+						f_lseek(&(myfile->file), myfile->tempValue1);
+						
+						for(myfile->i=0; myfile->i<MaxUpLoadTestDataNum; myfile->i++)
+							f_read(&(myfile->file), page->content[myfile->i], ItemByteSize, &(myfile->br));
+					}
 				}
-				
-				//根据纽康度上传索引读取数据
-				if(deviceRecordHeader->ncdUpLoadIndex < deviceRecordHeader->itemSize)
+				else
 				{
-					myfile->tempValue1 += deviceRecordHeader->ncdUpLoadIndex * ItemByteSize;
-					f_lseek(&(myfile->file), myfile->tempValue1);
+					//根据用户上传索引读取数据
+					if(deviceRecordHeader->userUpLoadIndex < deviceRecordHeader->itemSize)
+					{
+						//计算偏移地址
+						myfile->tempValue1 += deviceRecordHeader->userUpLoadIndex * ItemByteSize;
+						f_lseek(&(myfile->file), myfile->tempValue1);
 
-					myfile->tempValue1 = UserePageContentIndex;
-					myfile->tempValue1 *= ItemByteSize;
-					f_read(&(myfile->file), &page->content[UserePageContentIndex], myfile->tempValue1, &(myfile->br));
+						for(myfile->i=0; myfile->i<MaxUpLoadTestDataNum; myfile->i++)
+							f_read(&(myfile->file), page->content[myfile->i], ItemByteSize, &(myfile->br));
+					}
 				}
 			}
 			else

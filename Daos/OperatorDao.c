@@ -1,24 +1,28 @@
 /***************************************************************************************************
-*FileName: ReadBarCode_Fun.c
-*Description:
+*FileName: UserDao
+*Description: 操作人dao
 *Author: xsx_kair
-*Data:
+*Data: 2017年2月16日11:31:22
 ***************************************************************************************************/
 
 /***************************************************************************************************/
 /******************************************Header List********************************************/
 /***************************************************************************************************/
-#include	"ReadBarCode_Fun.h"
-#include	"MyTools.h"
-#include	"Usart1_Driver.h"
-#include	"QueueUnits.h"
+#include	"OperatorDao.h"
+#include	"StringDefine.h"
+
+#include	"CRC16.h"
+#include	"MyMem.h"
+
+#include	"ff.h"
 
 #include	<string.h>
 #include	"stdio.h"
+#include 	"stdlib.h"
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-static unsigned short rxlen = 0;
+
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -30,38 +34,89 @@ static unsigned short rxlen = 0;
 /***************************************************************************************************/
 /***************************************************************************************************/
 
-/***************************************************************************************************
-*FunctionName: ReadBarCodeFunction
-*Description: 读取条码枪的数据
-*Input: codebuf -- 数据保存地址
-*		len -- 要读取的数据长度
-*Output: 
-*Return: 成功读取数据的长度
-*Author: xsx
-*Date: 2016年12月16日16:00:36
-***************************************************************************************************/
-unsigned char ReadBarCodeFunction(char * codebuf, unsigned char len)
+MyRes SaveAllOperatorToFile(Operator * operator)
 {
-	rxlen = 0;
+	FatfsFileInfo_Def * myfile = NULL;
+	MyRes statues = My_Fail;
 	
-	if(codebuf)
+	myfile = MyMalloc(MyFileStructSize);
+	
+	if(myfile && operator)
 	{
-		ReceiveDataFromQueue(GetUsart1RXQueue(), NULL, codebuf, len, &rxlen, 1, 10 / portTICK_RATE_MS, 0 / portTICK_RATE_MS, 100 / portTICK_RATE_MS);
-		
-		if(rxlen > 0)
+		memset(myfile, 0, MyFileStructSize);
+
+		myfile->res = f_open(&(myfile->file), OperatorFileName, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
+			
+		if(FR_OK == myfile->res)
 		{
-			clearStringEndWord(codebuf, rxlen);
-			rxlen = strlen(codebuf);
+			f_lseek(&(myfile->file), 0);
+			
+			myfile->res = f_write(&myfile->file, operator, AllOperatorStructSize, &(myfile->bw));
+				
+			if(FR_OK == myfile->res && myfile->bw == AllOperatorStructSize)
+				statues = My_Pass;
+				
+			f_close(&(myfile->file));
 		}
 	}
 	
-	return rxlen;
+	MyFree(myfile);
+	
+	return statues;
 }
 
-void clearBarCodeQueue(void)
+MyRes ReadAllOperatorFromFile(Operator * operator, unsigned short * operatorValidNum)
 {
-	xQueueReset(GetUsart1RXQueue());
+	FatfsFileInfo_Def * myfile = NULL;
+	MyRes statues = My_Fail;
+	
+	myfile = MyMalloc(MyFileStructSize);
+
+	if(myfile && operator)
+	{
+		memset(myfile, 0, MyFileStructSize);
+		memset(operator, 0, AllOperatorStructSize);
+
+		myfile->res = f_open(&(myfile->file), OperatorFileName, FA_READ);
+		
+		if(FR_OK == myfile->res)
+		{
+			f_lseek(&(myfile->file), 0);
+			
+			if(operatorValidNum)
+				*operatorValidNum = 0;
+			
+			for(unsigned char i=0; i<MaxOperatorSize; i++)
+			{
+				f_read(&(myfile->file), operator, OneOperatorStructSize, &myfile->br);
+				
+				if(operator->crc == CalModbusCRC16Fun(operator, OneOperatorStructCrcSize, NULL))
+				{
+					operator++;
+					(*operatorValidNum) += 1;
+				}
+			}
+			
+			statues = My_Pass;
+			
+			f_close(&(myfile->file));
+		}
+	}	
+	MyFree(myfile);
+	
+	return statues;
 }
 
+MyRes deleteOperatorFile(void)
+{
+	FRESULT res;
+	
+	res = f_unlink(OperatorFileName);
+	
+	if((FR_OK == res) || (FR_NO_FILE == res))
+		return My_Pass;
+	else
+		return My_Fail;
+}
 
 /****************************************end of file************************************************/

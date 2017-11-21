@@ -121,7 +121,7 @@ MyRes TakeTestPointData(void * data)
 ***************************************************************************************************/
 ResultState TestFunction(PaiduiUnitData * parm)
 {
-	unsigned short i = 0;
+	unsigned short i = 0, j;
 	unsigned short index;
 	TempCalData * S_TempCalData = NULL;															//测试过程中使用的变量
 	ResultState S_ResultState = NoResult;
@@ -153,20 +153,14 @@ ResultState TestFunction(PaiduiUnitData * parm)
 		repeat:
 
 			S_TempCalData->resultstatues = NoResult;
+
+			S_TempCalData->motorLocation = getMotorxLocation(Motor_2);
+			motor2MoveTo(14, 23, Motor2_EndTestLocation, false);
+		
 			S_TempCalData->tempvalue1 = 0;
-			S_TempCalData->motorLocation = Motor2_StartTestLocation;
-			motor2MoveTo(1, 2, S_TempCalData->motorLocation, true);
-		
-			motor2MoveTo(5, 10, Motor2_EndTestLocation, false);
-		
 			for(i=1; i<= TestStep; i++)
 			{
-				//S_TempCalData->motorLocation += TestMotorStepUp;
-				//motor2MoveTo(S_TempCalData->motorLocation, false);
-				//delay_us(TestMotorStepUp * 10);
-				//while(S_TempCalData->motor->motorLocation != S_TempCalData->motor->motorTargetLocation)
-				//	vTaskDelay(1 / portTICK_RATE_MS);	
-				vTaskDelay(4 / portTICK_RATE_MS);				
+				vTaskDelay(3 / portTICK_RATE_MS);				
 				S_TempCalData->tempvalue1 += ADS8325();
 				
 				//平均值滤波
@@ -175,15 +169,27 @@ ResultState TestFunction(PaiduiUnitData * parm)
 					index = i/AvregeNum;
 					
 					S_TempCalData->tempvalue1 /= AvregeNum;
+					
+					S_TempCalData->tempSeries[index-1] = (unsigned short)(S_TempCalData->tempvalue1);
 
-					S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[index - 1] = (unsigned short)(S_TempCalData->tempvalue1);
-							
-					SendTestPointData(&(S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[index - 1]));
+					if(index >= FilterNum)
+					{
+						S_TempCalData->tempvalue2 = 0;
+						for(j=index-FilterNum; j<index; j++)
+						{
+							S_TempCalData->tempvalue2 += S_TempCalData->tempSeries[j];
+						}
+						S_TempCalData->tempvalue2 /= FilterNum;
+						
+						S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[index - FilterNum] = S_TempCalData->tempvalue2;
+						SendTestPointData(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[index - FilterNum]);
+					}
 						
 					S_TempCalData->tempvalue1 = 0;
 				}
-				delay_us(840);
 			}
+			
+			S_TempCalData->motorLocation = getMotorxLocation(Motor_2);
 			
 			//分析曲线
 			AnalysisTestData(S_TempCalData);
@@ -199,8 +205,9 @@ ResultState TestFunction(PaiduiUnitData * parm)
 			S_ResultState = S_TempCalData->resultstatues;
 			
 			MyFree(S_TempCalData);
-			vTaskDelay(100 / portTICK_RATE_MS);
+			
 			SetLedVol(0);
+			vTaskDelay(1000 / portTICK_RATE_MS);
 
 			return S_ResultState;
 	}
@@ -249,8 +256,8 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		}
 		
 		//step.1 计算整条曲线的cv值，用于判断是否加样
-		S_TempCalData->CV_1 = calculateDataCV(S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint, 300, S_TempCalData->tempvalue1);
-		if(S_TempCalData->CV_1 < 0.025)
+		S_TempCalData->tempCV = calculateDataCV(S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint, 300, S_TempCalData->tempvalue1);
+		if(S_TempCalData->tempCV < 0.025)
 			goto END1;
 		
 		//step.2 find T
@@ -263,9 +270,9 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		{
 			S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x = S_TempCalData->paiduiUnitData->testData.qrCode.ItemLocation;
 		
-			S_TempCalData->CV_1 = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x-15], 31, 0);
+			S_TempCalData->CV_T = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x-15], 31, 0);
 
-			if(S_TempCalData->CV_1 > 0.05)
+			if(S_TempCalData->CV_T > 0.05)
 			{
 				goto END2;
 			}
@@ -281,9 +288,9 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 				
 				if(S_TempCalData->tempvalue3 >= 10)
 		        {
-					S_TempCalData->CV_1 = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x], S_TempCalData->tempvalue3, 0);
+					S_TempCalData->CV_T = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x], S_TempCalData->tempvalue3, 0);
 		        	
-			        if(S_TempCalData->CV_1 < 0.01)
+			        if(S_TempCalData->CV_T < 0.01)
 			        {
 			        	S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x = S_TempCalData->paiduiUnitData->testData.qrCode.ItemLocation;
 			        }
@@ -302,17 +309,17 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 			S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x = S_TempCalData->paiduiUnitData->testData.qrCode.CLineLocation;
 
 		S_TempCalData->tempvalue3 = S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x-15;
-		if(S_TempCalData->tempvalue3 < (300 - 31))
-			S_TempCalData->CV_1 = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x-15], 31, 0);
+		if(S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x < 284)
+			S_TempCalData->CV_C = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->tempvalue3], 31, 0);
 		else
-			S_TempCalData->CV_1 = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x-15], (300 - 31), 0);
+			S_TempCalData->CV_C = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->tempvalue3], (300 - S_TempCalData->tempvalue3), 0);
 		
-		if((S_TempCalData->CV_1 > 0.03) && (S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y == 0))
+		if((S_TempCalData->CV_C > 0.03) && (S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y == 0))
 		{
 			goto END2;
 		}
 		
-		if(S_TempCalData->CV_1 < 0.03)
+		if(S_TempCalData->CV_C < 0.03)
 		{
 			goto END2;
 		}
@@ -328,34 +335,28 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 			goto END2;
 		
 		//step.5 c+t cv > 0.2
-		S_TempCalData->tempvalue3 = S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x-15;
-		if(S_TempCalData->tempvalue3 < (300 - 31))
-			S_TempCalData->CV_1 = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->tempvalue3], 31, 0);
-		else
-			S_TempCalData->CV_1 = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->tempvalue3], (300 - 31), 0);
+		S_TempCalData->CV_T = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x-15], 31, 0);
 		
-		S_TempCalData->CV_2 = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x-15], 31, 0);
-		
-		if((S_TempCalData->CV_1 + S_TempCalData->CV_2) < 0.13)
+		if((S_TempCalData->CV_C + S_TempCalData->CV_T) < 0.13)
 			goto END2;
 		
 		//step.6 canliu
 		S_TempCalData->tempvalue1 = 0;
-		S_TempCalData->CV_1 = 0;
+		S_TempCalData->tempCV = 0;
 		for(i=20; i<S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x-30; i++)
 		{
 			S_TempCalData->tempvalue1 += S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
 			if(i >= 35)
 			{
-				S_TempCalData->CV_2 = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[20], i-20+1, S_TempCalData->tempvalue1);
-				if(S_TempCalData->CV_1 < S_TempCalData->CV_2)
-					S_TempCalData->CV_1 = S_TempCalData->CV_2;
+				S_TempCalData->CV_0 = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[20], i-20+1, S_TempCalData->tempvalue1);
+				if(S_TempCalData->tempCV < S_TempCalData->CV_0)
+					S_TempCalData->tempCV = S_TempCalData->CV_0;
 			}
 		}
-		if(S_TempCalData->CV_1 > 0.15)
+		if(S_TempCalData->tempCV > 0.15)
 			goto END2;
 		
-		//step.6 find b
+		//step.7 find b
 		S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y = 10000;
 		S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.x = 0;
 
@@ -367,20 +368,53 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 				S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
 			}
 		}
+		if(S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.x < S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x)
+			goto END2;
 		
-		//step.7 b line value : c > b, t >= b
+		//step.8 b line value : c > b, t >= b
 		if((S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y >= S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y)
 			|| (S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y > S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.y))
 		{
 		     goto END2;
 		}
+		
+		//step 9 判断微球是否过少，，补偿
+		S_TempCalData->maxdata = S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y;
+		S_TempCalData->tempvalue1 = 0;
+		if(S_TempCalData->CV_T < 0.02 && (S_TempCalData->CV_C + S_TempCalData->CV_T) < 0.35)
+		{
+			S_TempCalData->tempvalue1 = 1.1;
+
+			for(i=0; i<24; i++)
+			{
+				S_TempCalData->tempvalue2 = S_TempCalData->tempvalue1;
+				S_TempCalData->tempvalue2 *= S_TempCalData->maxdata;
+				S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y = (unsigned short)S_TempCalData->tempvalue2;
+				S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x] = S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y;
 				
+				S_TempCalData->tempvalue3 = S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x-15;
+				if(S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x < 284)
+					S_TempCalData->CV_C = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->tempvalue3], 31, 0);
+				else
+					S_TempCalData->CV_C = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->tempvalue3], (300 - S_TempCalData->tempvalue3), 0);
+				
+				if((S_TempCalData->CV_C + S_TempCalData->CV_T) >= 0.35)
+					break;
+				
+				S_TempCalData->tempvalue1 += 0.1;
+			}
+		}
+		
+		S_TempCalData->paiduiUnitData->testData.cParm = (unsigned char)(S_TempCalData->tempvalue1*10);
+		
 		/*计算结果*/
-		S_TempCalData->tempvalue2 = (S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.y - S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y);
-		S_TempCalData->tempvalue2 /= (S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y - S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y);
-				
+		S_TempCalData->tempvalue1 = (S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.y - S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y);
+		S_TempCalData->tempvalue2 = (S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y - S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y);
+		S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x] = S_TempCalData->maxdata;
+		S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y = S_TempCalData->maxdata;
+		
 		/*原始峰高比*/
-		S_TempCalData->paiduiUnitData->testData.testSeries.t_c = S_TempCalData->tempvalue2;
+		S_TempCalData->paiduiUnitData->testData.testSeries.t_c = S_TempCalData->tempvalue1 / S_TempCalData->tempvalue2;
 				
 		/*根据分段，计算原始结果*/
 		if((S_TempCalData->paiduiUnitData->testData.testSeries.t_c < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0] == 0))

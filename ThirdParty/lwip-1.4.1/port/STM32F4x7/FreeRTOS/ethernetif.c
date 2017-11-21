@@ -60,6 +60,7 @@
 #include	"Define.h"
 #include	"MyMem.h"
 #include	"CRC16.h"
+#include	"StringDefine.h"
 
 
 #define netifMTU                                (1500)
@@ -397,11 +398,10 @@ err_t ethernetif_init(struct netif *netif)
 {
 	LWIP_ASSERT("netif != NULL", (netif != NULL));
 	
-	
 #if LWIP_NETIF_HOSTNAME
   /* Initialize interface hostname */
 	
-	memcpy(netif->hostname, getGBSystemSetData()->deviceId, DeviceIdLen);
+	memcpy(netif->hostname, DefaultDeviceId, strlen(DefaultDeviceId));
   
 #endif /* LWIP_NETIF_HOSTNAME */
 

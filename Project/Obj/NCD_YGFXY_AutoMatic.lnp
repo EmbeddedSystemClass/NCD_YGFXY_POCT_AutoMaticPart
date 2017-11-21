@@ -102,6 +102,7 @@
 ".\obj\deviceadjustdao.o"
 ".\obj\deviceerrordao.o"
 ".\obj\devicequalitydao.o"
+".\obj\operatordao.o"
 ".\obj\stm32f4x7_eth.o"
 ".\obj\ethernetif.o"
 ".\obj\sys_arch.o"

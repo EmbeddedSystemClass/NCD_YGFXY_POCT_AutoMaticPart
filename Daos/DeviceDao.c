@@ -51,6 +51,7 @@ MyRes SaveDeviceToFile(Device * device)
 		{
 			f_lseek(&(myfile->file), 0);
 			
+			device->crc = CalModbusCRC16Fun(device, DeviceStructCrcSize, NULL);
 			myfile->res = f_write(&(myfile->file), device, DeviceStructSize, &(myfile->bw));
 				
 			if((FR_OK == myfile->res)&&(myfile->bw == DeviceStructSize))
@@ -89,12 +90,6 @@ MyRes ReadDeviceFromFile(Device * device)
 				statues = My_Pass;
 			
 			f_close(&(myfile->file));
-		}
-		else if(FR_NO_FILE == myfile->res)
-		{
-			device->crc = CalModbusCRC16Fun(device, DeviceStructCrcSize, NULL);
-			
-			statues = My_Pass;
 		}
 	}	
 	MyFree(myfile);

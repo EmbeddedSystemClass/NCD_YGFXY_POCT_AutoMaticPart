@@ -7,10 +7,10 @@
 #include	"DateTime.h"
 #include	"Define.h"
 
-#define	TestMotorStepUp					8
 #define	TestDataRecordPageShowNum		8							//一页8个数据
-#define	TestStep 		(Motor2_EndTestLocation - Motor2_StartTestLocation)/TestMotorStepUp
-#define	AvregeNum		4								//平均值滤波个数
+#define	TestStep 		(Motor2_EndTestLocation - Motor2_StartTestLocation)/3
+#define	AvregeNum		10								//平均值滤波个数
+#define	FilterNum		5								//平滑滤波个数
 #define	MaxPointLen		300
 
 #pragma pack(1)
@@ -33,6 +33,7 @@ typedef struct TestData_tag {
 	DateTime 		testDateTime;						//测试时间
 	unsigned short 	time;								//超时时间
 	ResultState 	testResultDesc;						//测试结果状态
+	unsigned char 	cParm;								//c补偿倍数*10
 	unsigned short 	crc;
 }TestData;
 #pragma pack()

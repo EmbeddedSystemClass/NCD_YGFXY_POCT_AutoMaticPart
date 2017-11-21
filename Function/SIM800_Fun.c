@@ -16,7 +16,7 @@
 #include	"QueueUnits.h"
 #include	"AppFileDao.h"
 #include	"System_Data.h"
-
+#include	"StringDefine.h"
 #include	"MyMem.h"
 #include	"Delay.h"
 
@@ -28,7 +28,6 @@
 /**************************************局部变量声明*************************************************/
 /***************************************************************************************************/
 static xSemaphoreHandle xGSMMutex = NULL;									//WIFI互斥量
-const char * fileStartStr = "i am zhangxiong^*^!";
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
@@ -75,7 +74,7 @@ MyRes ComWithSim800c(char * txBuf, const char *strcmp, char *rxBuf, unsigned sho
 		
 		if(txBuf)
 		{
-			while(pdPASS == ReceiveDataFromQueue(GetUsart5RXQueue(), NULL, rxBuf, maxRxLen, NULL, 1, 0, 0, 0));
+			xQueueReset(GetUsart5TXQueue());
 			
 			if(pdFAIL == SendDataToQueue(GetUsart5TXQueue(), NULL, txBuf, strlen(txBuf), 1, delayTime, 0, EnableUsart5TXInterrupt))
 				continue;
@@ -222,87 +221,87 @@ MyRes ConnectServer(char * recvBuf)
 
 MyRes CommunicateWithNcdServerInGPRS(HttpBuf * httpBuf)
 {
-	unsigned short i = 0;
-	unsigned short readSize = 0;
-	
-//	if(My_Pass == takeGSMMutex(1000 / portTICK_RATE_MS))
+	//清空队列数据
+	xQueueReset(GetUsart5TXQueue());
+		
+	//发送数据
+	httpBuf->tempInt = httpBuf->sendDataLen;
+	while(httpBuf->tempInt > 800)
 	{
-		//清空队列数据
-		while(pdPASS == ReceiveDataFromQueue(GetUsart5RXQueue(), NULL, httpBuf->recvBuf, 1000, 
-				NULL, 1, 0, 0, 0));
-		
-		//发送数据
-		readSize = httpBuf->sendDataLen;
-		while(readSize > 800)
+		if(My_Pass == SendDataToQueue(GetUsart5TXQueue(), NULL, httpBuf->sendBuf + (httpBuf->sendDataLen - httpBuf->tempInt), 
+			800, 1, 1000 / portTICK_RATE_MS, 10 / portTICK_RATE_MS, EnableUsart5TXInterrupt))
 		{
-			if(My_Pass == SendDataToQueue(GetUsart5TXQueue(), NULL, httpBuf->sendBuf + (httpBuf->sendDataLen - readSize), 
-				800, 1, 1000 / portTICK_RATE_MS, 10 / portTICK_RATE_MS, EnableUsart5TXInterrupt))
+			httpBuf->tempInt -= 800;
+			vTaskDelay(100 / portTICK_RATE_MS);
+		}
+		else
+			goto END;
+	}
+		
+	if(httpBuf->tempInt > 0)
+	{
+		if(My_Pass != SendDataToQueue(GetUsart5TXQueue(), NULL, httpBuf->sendBuf + (httpBuf->sendDataLen - httpBuf->tempInt), 
+			httpBuf->tempInt, 1, 1000 / portTICK_RATE_MS, 10 / portTICK_RATE_MS, EnableUsart5TXInterrupt))
+			goto END;
+	}
+		
+	//接收数据,最好等待1s
+	httpBuf->tempShort = 0;
+	httpBuf->recvDataLen = 0;
+	httpBuf->j = 0;
+	memset(httpBuf->recvBuf, 0, HttpRecvBufSize);
+	while(pdPASS == ReceiveDataFromQueue(GetUsart5RXQueue(), NULL, httpBuf->recvBuf, HttpRecvBufSize, 
+		&httpBuf->tempShort, 1, 20000 / portTICK_RATE_MS, 1000 / portTICK_RATE_MS, 2000 / portTICK_RATE_MS))
+	{
+		if(httpBuf->isPost)
+		{
+			httpBuf->recvDataLen += httpBuf->tempShort;
+			break;
+		}
+		
+		//如果发生的是GET请求，则说明是下载固件，需要保存
+		else
+		{
+			//查找文件长度参数
+			if(httpBuf->j < 2)
 			{
-				readSize -= 800;
-				vTaskDelay(100 / portTICK_RATE_MS);
+				httpBuf->tempP = strstr(httpBuf->recvBuf, fileLengthParmString);
+				if(httpBuf->tempP)
+				{
+					httpBuf->fileLength = strtol(httpBuf->tempP+fileLengthParmStringLen, NULL, 10);
+					httpBuf->fileLength -= fileStartStrLen;
+					httpBuf->j++;
+				}
+				
+				//查找文件头
+				httpBuf->tempP = strstr(httpBuf->recvBuf, fileStartStr);
+				if(httpBuf->tempP)
+				{
+					httpBuf->tempInt = httpBuf->tempP - httpBuf->recvBuf + fileStartStrLen;
+					httpBuf->tempShort -= httpBuf->tempInt;
+					WriteAppFile(httpBuf->recvBuf + httpBuf->tempInt, httpBuf->tempShort, true);
+					httpBuf->recvDataLen += httpBuf->tempShort;
+					httpBuf->j++;
+				}
 			}
 			else
-				goto END;
-		}
-		
-		if(readSize > 0)
-		{
-			if(My_Pass == SendDataToQueue(GetUsart5TXQueue(), NULL, httpBuf->sendBuf + (httpBuf->sendDataLen - readSize), 
-				readSize, 1, 1000 / portTICK_RATE_MS, 10 / portTICK_RATE_MS, EnableUsart5TXInterrupt))
 			{
-				;
+				WriteAppFile(httpBuf->recvBuf, httpBuf->tempShort, false);
+				httpBuf->recvDataLen += httpBuf->tempShort;
+				
+				if(httpBuf->recvDataLen >= httpBuf->fileLength)
+					break;
 			}
-			else
-				goto END;
 		}
+	}
 		
-		//接收数据,最好等待1s
-
-		while(pdPASS == ReceiveDataFromQueue(GetUsart5RXQueue(), NULL, httpBuf->recvBuf, 2000, 
-			&readSize, 1, 20000 / portTICK_RATE_MS, 1000 / portTICK_RATE_MS, 1000 / portTICK_RATE_MS))
-		{
-			//如果发生的是GET请求，则说明是下载固件，需要保存
-			if(!httpBuf->isPost)
-			{
-				if(i == 0)
-				{
-					//查找文件头
-					httpBuf->tempP = strstr(httpBuf->recvBuf, fileStartStr);
-					if(httpBuf->tempP)
-					{
-						httpBuf->tempInt = httpBuf->tempP - httpBuf->recvBuf + strlen(fileStartStr);
-						readSize -= httpBuf->tempInt;
-						WriteAppFile(httpBuf->recvBuf + httpBuf->tempInt, readSize, true);
-						i++;
-					}
-				}
-				else
-				{
-					WriteAppFile(httpBuf->recvBuf, readSize, false);
-				}
-			}
-			httpBuf->recvDataLen += readSize;
-		}
-		
-		END:
-//			giveGSMxMutex();
-		
+	END:
 		if(httpBuf->isPost)
 		{
 			httpBuf->tempP = strstr(httpBuf->recvBuf, "success");
 			if(httpBuf->tempP)
 				return My_Pass;
 		}
-		else
-		{
-			/*if(My_Pass == checkNewFirmwareIsSuccessDownload())
-			{
-				setIsSuccessDownloadFirmware(true);
-				statues = My_Pass;
-			}*/
-			return My_Pass;
-		}
-	}
 	
-	return My_Fail;
+		return My_Fail;
 }

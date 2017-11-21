@@ -107,7 +107,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		memset(S_ServerSetPageBuffer->buf, 0, 50);
 		memcpy(S_ServerSetPageBuffer->buf, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
 		
-		if(My_Pass == parseIpString(&S_ServerSetPageBuffer->serverSet.serverIP, S_ServerSetPageBuffer->buf, S_ServerSetPageBuffer->tempP))
+		if(My_Pass == parseIpString(&S_ServerSetPageBuffer->serverSet.serverIP, S_ServerSetPageBuffer->buf))
 			S_ServerSetPageBuffer->ischanged = 1;
 		else
 		{

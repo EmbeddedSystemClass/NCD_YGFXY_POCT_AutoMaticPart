@@ -25,9 +25,11 @@
 #include	"Motor2_Fun.h"
 #include	"Motor4_Fun.h"
 #include	"DeviceErrorDao.h"
+#include	"TestDataDao.h"
 #include	"SIM800_Fun.h"
 #include	"MyMem.h"
 #include	"CRC16.h"
+#include	"StringDefine.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -146,21 +148,45 @@ void SelfTest_Function(void)
 ***************************************************************************************************/
 static MyRes loadSystemData(SelfTestBuf * selfTestBuf)
 {
-	ReadSystemSetData(&selfTestBuf->systemSetData);
+	for(selfTestBuf->i=0; selfTestBuf->i<3; selfTestBuf->i++)
+	{
+		vTaskDelay(500 / portTICK_RATE_MS);
+		
+		//读取设备信息
+		if(My_Fail == ReadDeviceFromFile(&selfTestBuf->device))
+			continue;
+		
+		if(My_Fail == ReadSystemSetData(&selfTestBuf->systemSetData))
+			continue;
 
-	//如果crc错误表示读取失败，或者设备第一次开机，不存在配置文件，则恢复出厂设置
-	if(selfTestBuf->systemSetData.crc != CalModbusCRC16Fun(&selfTestBuf->systemSetData, SystemSetDataStructCrcSize, NULL))
-		setDefaultSystemSetData(&selfTestBuf->systemSetData);								//恢复出厂设置
-	else
-		upDateSystemSetData(&selfTestBuf->systemSetData);									//将读取的配置更新到内存中
-
-	setSystemDeviceInfoStatus(true);
-	selfTestBuf->systemSetData.testLedLightIntensity = 1200;
-	//无论是否成功读取到配置文件，都保存SD卡一次，用以测试SD卡是否正常
-	if(My_Pass == SaveSystemSetData(&selfTestBuf->systemSetData))
+		if(selfTestBuf->device.crc != CalModbusCRC16Fun(&selfTestBuf->device, DeviceStructCrcSize, NULL))
+		{
+			memset(&selfTestBuf->device, 0, DeviceStructSize);
+			memcpy(selfTestBuf->device.deviceId, DefaultDeviceId, strlen(DefaultDeviceId));
+			
+			selfTestBuf->device.crc = CalModbusCRC16Fun(&selfTestBuf->device, DeviceStructCrcSize, NULL);
+			
+			if(My_Fail == SaveDeviceToFile(&selfTestBuf->device))
+				continue;
+		}
+		
+		//更新内存中设备id的副本
+		setSystemDeviceId(selfTestBuf->device.deviceId);
+		
+		//如果crc错误表示读取失败，或者设备第一次开机，不存在配置文件，则恢复出厂设置
+		if(selfTestBuf->systemSetData.crc != CalModbusCRC16Fun(&selfTestBuf->systemSetData, SystemSetDataStructCrcSize, NULL))
+		{
+			setDefaultSystemSetData(&selfTestBuf->systemSetData);								//恢复出厂设置
+			if(My_Fail == SaveSystemSetData(&selfTestBuf->systemSetData))
+				continue;
+		}
+		else
+			upDateSystemSetData(&selfTestBuf->systemSetData);									//将读取的配置更新到内存中
+		
 		return My_Pass;
-	else
-		return My_Fail;
+	}
+	
+	return My_Fail;
 }
 
 /***************************************************************************************************

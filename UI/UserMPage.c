@@ -6,7 +6,7 @@
 #include	"MyMem.h"
 #include	"CRC16.h"
 #include	"SystemSetPage.h"
-#include	"DeviceDao.h"
+#include	"OperatorDao.h"
 #include	"MyTools.h"
 #include	"SleepPage.h"
 
@@ -33,7 +33,6 @@ static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 static void showCurrentPageList(void);
-static void clearPageList(void);
 static void showCurrentOperatorInfo(void);
 static void deleteCurrentOperator(void);
 static MyRes addOrModifyOperator(void);
@@ -79,11 +78,11 @@ MyRes createUserManagerActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	page->myDeviceLock = getMyDeviceLock();
-	page->isLocked = false;
-	timer_SetAndStart(&(page->timer), 1);
-	
-	clearPageList();
+	ReadAllOperatorFromFile(page->operatorList, &page->allValidNum);
+			
+	page->pageIndex = 0;
+
+	showCurrentPageList();
 	
 	SelectPage(106);
 }
@@ -112,9 +111,9 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	/*上翻也*/
 	else if(page->lcdinput[0] == 0x1d03)
 	{
-		if(page->isLocked && page->pageindex > 0)
+		if(page->pageIndex > 0)
 		{
-			page->pageindex--;
+			page->pageIndex--;
 
 			showCurrentPageList();
 		}
@@ -122,29 +121,26 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	/*下翻页*/
 	else if(page->lcdinput[0] == 0x1d04)
 	{
-		if(page->isLocked && ((page->pageindex+1) < MaxOperatorPageSize))
+		page->tempV1 = (page->pageIndex + 1) * MaxPageShowOperatorSize;
+		if(page->tempV1 < page->allValidNum)
 		{
-			page->tempOperator = &page->device.operators[(page->pageindex+1)*MaxPageShowOperatorSize];
-			
-			if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
-			{
-				page->pageindex++; 
+			page->pageIndex++;
 
-				showCurrentPageList();
-			}
+			showCurrentPageList();
 		}
 	}
 	/*选择操作人*/
 	else if((page->lcdinput[0] >= 0x1d07)&&(page->lcdinput[0] <= 0x1d0B))
 	{
-		page->tempOperator = &page->device.operators[(page->pageindex)*MaxPageShowOperatorSize + page->lcdinput[0] - 0x1d07];
+		page->tempV1 = page->pageIndex * MaxPageShowOperatorSize + page->lcdinput[0] - 0x1d07;
+		page->tempOperator = &page->operatorList[page->tempV1];
 		
 		if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
 		{
-			page->tempV1 = page->lcdinput[0] - 0x1d07+1;
-			BasicPic(0x1d40, 1, 137, 11, 10, 303, 79, 157, 135+(page->tempV1-1)*72);
+			page->selectIndex = page->lcdinput[0] - 0x1d07;
+			BasicPic(0x1d40, 1, 137, 11, 10, 303, 79, 157, 135+page->selectIndex*72);
 			
-			page->currentOperator = page->tempOperator;
+			memcpy(&page->operatorDetail, page->tempOperator, OneOperatorStructSize);
 			
 			showCurrentOperatorInfo();
 		}	
@@ -152,13 +148,12 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	/*删除*/
 	else if(page->lcdinput[0] == 0x1d01)
 	{
-		if(page->isLocked)
-			deleteCurrentOperator();
+		deleteCurrentOperator();
 	}
 	//修改或者添加
 	else if(page->lcdinput[0] == 0x1d02)
 	{
-		if(strlen(page->newOperator.name) > 0)
+		if(strlen(page->operatorDetail.name) > 0)
 		{
 			if(My_Pass == addOrModifyOperator())
 				SendKeyCode(1);
@@ -171,32 +166,32 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//姓名
 	else if(page->lcdinput[0] == 0x1d50)
 	{
-		getLcdInputData(page->newOperator.name, &pbuf[7]);
+		getLcdInputData(page->operatorDetail.name, &pbuf[7]);
 	}
 	//年龄
 	else if(page->lcdinput[0] == 0x1d60)
 	{
-		getLcdInputData(page->newOperator.age, &pbuf[7]);
+		getLcdInputData(page->operatorDetail.age, &pbuf[7]);
 	}
 	//性别
 	else if(page->lcdinput[0] == 0x1d70)
 	{
-		getLcdInputData(page->newOperator.sex, &pbuf[7]);
+		getLcdInputData(page->operatorDetail.sex, &pbuf[7]);
 	}
 	//联系方式
 	else if(page->lcdinput[0] == 0x1d80)
 	{
-		getLcdInputData(page->newOperator.phone, &pbuf[7]);
+		getLcdInputData(page->operatorDetail.phone, &pbuf[7]);
 	}
 	//职位
 	else if(page->lcdinput[0] == 0x1d90)
 	{
-		getLcdInputData(page->newOperator.job, &pbuf[7]);
+		getLcdInputData(page->operatorDetail.job, &pbuf[7]);
 	}
 	//备注
 	else if(page->lcdinput[0] == 0x1da0)
 	{
-		getLcdInputData(page->newOperator.department, &pbuf[7]);
+		getLcdInputData(page->operatorDetail.department, &pbuf[7]);
 	}
 }
 
@@ -211,23 +206,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(TimerOut == timer_expired(&(page->timer)))
-	{
-		//先给设备信息文件上锁，防止其他线程修改数据
-		if((page->isLocked == false) && (My_Pass == LockObject(page->myDeviceLock, &page, 5)))
-		{
-			/*读取所有操作人*/
-			ReadDeviceFromFile(&page->device);
-			
-			page->pageindex = 0;
 
-			showCurrentPageList();
-			
-			page->isLocked = true;
-		}
-		
-		timer_restart(&(page->timer));
-	}
 }
 
 /***************************************************************************************************
@@ -269,8 +248,6 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
-	UnLockObject(page->myDeviceLock, &page);
-	
 	activityBufferFree();
 }
 
@@ -333,15 +310,19 @@ static void activityBufferFree(void)
 ***************************************************************************************************/
 static void showCurrentPageList(void)
 {
-	page->tempV1 = page->pageindex*MaxPageShowOperatorSize;
+	page->tempV1 = page->pageIndex*MaxPageShowOperatorSize;
 	
-	page->tempOperator = &(page->device.operators[page->tempV1]);
+	page->tempOperator = &page->operatorList[page->tempV1];
 	
 	/*显示列表数据*/
+	page->pageValidNum = 0;
 	for(page->tempV1=0; page->tempV1<MaxPageShowOperatorSize; page->tempV1++)
 	{
 		if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
+		{
 			snprintf(page->buf, OperatorNameLen, "%s", page->tempOperator->name);
+			page->pageValidNum++;
+		}
 		else
 			memset(page->buf, 0, 10);
 		
@@ -350,29 +331,10 @@ static void showCurrentPageList(void)
 		page->tempOperator++;
 	}
 	
-	page->currentOperator = NULL;
+	page->selectIndex = -1;
+	BasicPic(0x1d40, 0, 137, 11, 10, 303, 79, 157, 135);
 	
-	showCurrentOperatorInfo();
-}
-
-/***************************************************************************************************
-*FunctionName:  clearPageList
-*Description:  清除列表数据
-*Input:  
-*Output:  
-*Return:  
-*Author:  xsx
-*Date: 2017年7月7日 08:43:04
-***************************************************************************************************/
-static void clearPageList(void)
-{
-	/*显示列表数据*/
-	for(page->tempV1=0; page->tempV1<MaxPageShowOperatorSize; page->tempV1++)
-	{
-		ClearText(0x1d10+8*page->tempV1);
-	}
-	
-	page->currentOperator = NULL;
+	memset(&page->operatorDetail, 0, OneOperatorStructSize);
 	
 	showCurrentOperatorInfo();
 }
@@ -388,27 +350,25 @@ static void clearPageList(void)
 ***************************************************************************************************/
 static void showCurrentOperatorInfo(void)
 {
-	if(page->currentOperator)
+	if(page->operatorDetail.crc == CalModbusCRC16Fun(&page->operatorDetail, OneOperatorStructCrcSize, NULL))
 	{
-		snprintf(page->buf, OperatorNameLen, "%s", page->currentOperator->name);
+		sprintf(page->buf, "%s", page->operatorDetail.name);
 		DisText(0x1d50, page->buf, strlen(page->buf)+1);
 			
-		snprintf(page->buf, 10, "%s", page->currentOperator->age);
+		sprintf(page->buf, "%s", page->operatorDetail.age);
 		DisText(0x1d60, page->buf, strlen(page->buf)+1);
 			
-		snprintf(page->buf, 10, "%s", page->currentOperator->sex);
+		sprintf(page->buf, "%s", page->operatorDetail.sex);
 		DisText(0x1d70, page->buf, strlen(page->buf)+1);
 			
-		snprintf(page->buf, 20, "%s", page->currentOperator->phone);
+		sprintf(page->buf, "%s", page->operatorDetail.phone);
 		DisText(0x1d80, page->buf, strlen(page->buf)+1);
 			
-		snprintf(page->buf, 30, "%s", page->currentOperator->job);
+		sprintf(page->buf, "%s", page->operatorDetail.job);
 		DisText(0x1d90, page->buf, strlen(page->buf)+1);
 			
-		snprintf(page->buf, 20, "%s", page->currentOperator->department);
+		sprintf(page->buf, "%s", page->operatorDetail.department);
 		DisText(0x1da0, page->buf, strlen(page->buf)+1);
-		
-		memcpy(&page->newOperator, page->currentOperator, OneOperatorStructSize);
 	}
 	else
 	{
@@ -423,10 +383,6 @@ static void showCurrentOperatorInfo(void)
 		ClearText(0x1d90);
 				
 		ClearText(0x1da0);
-		
-		BasicPic(0x1d40, 0, 137, 11, 10, 303, 79, 157, 135);
-		
-		memset(&page->newOperator, 0, OneOperatorStructSize);
 	}
 }
 
@@ -441,26 +397,18 @@ static void showCurrentOperatorInfo(void)
 ***************************************************************************************************/
 static void deleteCurrentOperator(void)
 {
-	if(page->currentOperator && page->currentOperator != &(page->newOperator))
+	if(page->selectIndex >= 0 && page->selectIndex < MaxPageShowOperatorSize)
 	{
-		//删除当前操作人
-		page->currentOperator->crc = 0;
+		page->tempV1 = page->pageIndex * MaxPageShowOperatorSize + page->selectIndex;
+		page->tempV2 = MaxOperatorSize - page->tempV1 - 1;
+		page->tempV2 *= OneOperatorStructSize;
+		memcpy(&page->operatorList[page->tempV1], &page->operatorList[page->tempV1+1], page->tempV2);
+		page->operatorList[MaxOperatorSize-1].crc = 0;
 		
-		//重新排列操作人
-		page->tempOperator = page->currentOperator;
-		page->tempOperator++;
-		memset(page->operatorCopy, 0, MaxOperatorSize*OneOperatorStructSize);
-		page->tempV1 = OneOperatorStructSize * (&page->device.operators[MaxOperatorSize-1] - page->currentOperator);
-		memcpy(page->operatorCopy, page->tempOperator, page->tempV1);
+		SaveAllOperatorToFile(page->operatorList);
+		ReadAllOperatorFromFile(page->operatorList, &page->allValidNum);
 		
-		memcpy(page->currentOperator, page->operatorCopy, page->tempV1);
-		
-		page->device.crc = CalModbusCRC16Fun(&(page->device), DeviceStructCrcSize, NULL);
-		
-		if(My_Pass != SaveDeviceToFile(&(page->device)))
-			ReadDeviceFromFile(&page->device);
-		
-		page->pageindex = 0;
+		page->pageIndex = 0;
 
 		showCurrentPageList();
 	}
@@ -477,57 +425,42 @@ static void deleteCurrentOperator(void)
 ***************************************************************************************************/
 static MyRes addOrModifyOperator(void)
 {
-	page->newOperator.crc = CalModbusCRC16Fun(&page->newOperator, OneOperatorStructCrcSize, NULL);
+	page->operatorDetail.crc = CalModbusCRC16Fun(&page->operatorDetail, OneOperatorStructCrcSize, NULL);
 	
 	//查找是否存在名字一样的人
 	page->tempV2 = MaxOperatorSize;
-	page->tempOperator = page->device.operators;
-	for(page->tempV1 = 0; page->tempV1 < MaxOperatorSize; page->tempV1++)
+	page->tempOperator = &page->operatorList[0];
+	for(page->i=0; page->i<MaxOperatorSize; page->i++)
 	{
 		if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
 		{
-			if(CheckStrIsSame(page->newOperator.name, page->tempOperator->name, OperatorNameLen))
-			{
-				memcpy(page->tempOperator, &page->newOperator, OneOperatorStructSize);
-				
+			if(CheckStrIsSame(page->operatorDetail.name, page->tempOperator->name, OperatorNameLen))
 				break;
-			}
 		}
-		else if(page->tempV2 == MaxOperatorSize)
-			page->tempV2 = page->tempV1;
+		else
+			break;
 		
 		page->tempOperator++;
 	}
 	
-	//如果不存在，说明要新建
-	if(page->tempV1 >= MaxOperatorSize)
-	{
-		//如果数量已满，则无法添加
-		if(page->tempV2 == MaxOperatorSize)
-			return My_Fail;
-		else
-			memcpy(&page->device.operators[page->tempV2], &page->newOperator, OneOperatorStructSize);
-	}
-	page->device.operator.id = 0x0102;
-	page->device.operator.name[0] = 0x03;
-	page->device.operator.age[0] = 0x04;
-	page->device.operator.sex[0] = 0x05;
-	page->device.operator.phone[0] = 0x06;
-	page->device.operator.department[0] = 0x07;
-	page->device.operator.crc = 0x0809;
-	page->device.department[0] = 0x03;
-	page->device.crc = CalModbusCRC16Fun(&(page->device), DeviceStructCrcSize, NULL);
-		
-	if(My_Pass == SaveDeviceToFile(&page->device))
-	{
-		page->pageindex = 0;
-
-		showCurrentPageList();
+	//如果找不到一样的名字，且没有空位
+	if(page->i >= MaxOperatorSize)
+		return My_Fail;
+	else
+		memcpy(&page->operatorList[page->i], &page->operatorDetail, OneOperatorStructSize);
 	
+	if(My_Pass == SaveAllOperatorToFile(page->operatorList))
+	{
+		ReadAllOperatorFromFile(page->operatorList, &page->allValidNum);
+		page->pageIndex = 0;
+		showCurrentPageList();
 		return My_Pass;
 	}
 	else
 	{
+		ReadAllOperatorFromFile(page->operatorList, &page->allValidNum);
+		page->pageIndex = 0;
+		showCurrentPageList();
 		return My_Fail;
 	}
 		

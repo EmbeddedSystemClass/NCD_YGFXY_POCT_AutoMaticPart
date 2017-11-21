@@ -74,9 +74,8 @@ MyRes createDeviceInfoActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	memcpy(&(S_ShowDeviceInfoPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
-
-	ReadDeviceFromFile(&(S_ShowDeviceInfoPageBuffer->device));
+	S_ShowDeviceInfoPageBuffer->tempDevice = &S_ShowDeviceInfoPageBuffer->device;
+	ReadDeviceFromFile(&S_ShowDeviceInfoPageBuffer->device);
 		
 	showDeviceInfo();
 	
@@ -118,7 +117,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			S_ShowDeviceInfoPageBuffer->tempValue = GetBufLen(&pbuf[7] , 2*pbuf[6]);
 			if((S_ShowDeviceInfoPageBuffer->tempValue == 6) && ( pdPASS == CheckStrIsSame(&pbuf[7], AdminPassWord, 6)))
 			{
-				startActivity(createSetDeviceIDActivity, NULL, NULL);
+				startActivity(createSetDeviceIDActivity, createIntent(&S_ShowDeviceInfoPageBuffer->tempDevice, 4), NULL);
 			}
 			else
 				SendKeyCode(1);
@@ -131,7 +130,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*修改*/
 		else if(S_ShowDeviceInfoPageBuffer->lcdinput[0] == 0x1a01)
 		{
-			startActivity(createSetDeviceInfoActivity, NULL, NULL);
+			startActivity(createSetDeviceInfoActivity, createIntent(&S_ShowDeviceInfoPageBuffer->tempDevice, 4), NULL);
 		}
 	}
 }
@@ -147,10 +146,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(S_ShowDeviceInfoPageBuffer)
-	{
 
-	}
 }
 
 /***************************************************************************************************
@@ -177,10 +173,8 @@ static void activityHide(void)
 *Date: 2016年12月21日09:01:58
 ***************************************************************************************************/
 static void activityResume(void)
-{
-	memcpy(&(S_ShowDeviceInfoPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
-		
-	ReadDeviceFromFile(&(S_ShowDeviceInfoPageBuffer->device));
+{	
+	ReadDeviceFromFile(&S_ShowDeviceInfoPageBuffer->device);
 
 	showDeviceInfo();
 	
@@ -248,7 +242,7 @@ static void activityBufferFree(void)
 static void showDeviceInfo(void)
 {
 	/*显示设备id*/
-	DisText(0x1a40, S_ShowDeviceInfoPageBuffer->systemSetData.deviceId, DeviceIdLen);
+	DisText(0x1a40, S_ShowDeviceInfoPageBuffer->device.deviceId, DeviceIdLen);
 		
 	/*显示设备名称*/
 	DisText(0x1a50, "荧光免疫定量分析仪\0", 19);

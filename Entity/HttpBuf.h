@@ -9,27 +9,30 @@
 #include	"Define.h"
 #include	"TestData.h"
 
+#define		HttpSendBufSize		4096
+#define		HttpRecvBufSize		2048
+
 #pragma pack(1)
 typedef struct HttpBuf_Tag
 {
-	char deviceId[DeviceIdLen];
-	SystemData systemData;
-	Device device;
+	Device * device;
 	Page page;
 	DeviceRecordHeader deviceRecordHeader;
 	TestData * testDataPoint;
-	RemoteSoftInfo remoteSoftInfo;
-	char sendBuf[4096];						//发送数据缓冲区
-	unsigned int sendDataLen;					//发送数据长度
-	char recvBuf[2048];						//发送数据缓冲区
-	unsigned int recvDataLen;					//发送数据长度
-	char tempBuf2[100];
+	RemoteSoftInfo * remoteSoftInfo;
+	char sendBuf[HttpSendBufSize];						//发送数据缓冲区
+	unsigned int sendDataLen;							//发送数据长度
+	char recvBuf[HttpRecvBufSize];						//发送数据缓冲区
+	unsigned int recvDataLen;							//发送数据长度
+	unsigned int fileLength;							//http协议头中表明的下载文件的长度
+	char tempBuf[500];
 	bool isPost;
 	char * tempP;
 	char * tempP2;
 	unsigned short i;
 	unsigned short j;
 	unsigned int tempInt;
+	unsigned short tempShort;
 }HttpBuf;
 #pragma pack()
 

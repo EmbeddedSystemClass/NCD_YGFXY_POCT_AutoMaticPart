@@ -21,10 +21,10 @@
 #include	"DeviceAdjustDao.h"
 #include	"DeviceErrorDao.h"
 #include	"DeviceQualityDao.h"
-#include	"System_Data.h"
 #include	"DateTime.h"
 #include	"MyMem.h"
 #include	"MyTools.h"
+#include	"CRC16.h"
 
 #include	<string.h>
 #include	"stdio.h"
@@ -68,36 +68,36 @@ void readAndUpdateSystemDateTimeFun(void)
 
 MyRes SystemFactoryReset(void)
 {
-	SystemSetData * systemSetData = NULL;
-	SystemSetData * GBSystemSetData = NULL;
+	SystemResetBuf * systemResetBuf = NULL;
 	
-	systemSetData = MyMalloc(SystemSetDataStructSize*2);
-	if(systemSetData)
+	systemResetBuf = MyMalloc(SystemResetBufStructSize);
+	if(systemResetBuf)
 	{
-		GBSystemSetData = systemSetData;
-		GBSystemSetData++;
-		
-		setDefaultSystemSetData(systemSetData);
-		
-		readGbSystemSetData(GBSystemSetData);
+		systemResetBuf->systemSetData = (SystemSetData *)systemResetBuf->buffer;
 
-		memcpy(systemSetData->deviceId, GBSystemSetData->deviceId, DeviceIdLen);
-
-		systemSetData->testLedLightIntensity = GBSystemSetData->testLedLightIntensity;
+		setDefaultSystemSetData(systemResetBuf->systemSetData);
+		systemResetBuf->systemSetData->testLedLightIntensity = getSystemTestLedLightIntensity();
 		
-		if(My_Pass != SaveSystemSetData(systemSetData))
+		if(My_Pass != SaveSystemSetData(systemResetBuf->systemSetData))
 		{
-			MyFree(systemSetData);
+			MyFree(systemResetBuf);
 			return My_Fail;
 		}
-		else
-			MyFree(systemSetData);
 	}
 	else
 		return My_Fail;
 	
-	if(My_Fail == deleteDeviceFile())
+	systemResetBuf->device = (Device *)systemResetBuf->buffer;
+	memset(systemResetBuf->device, 0, DeviceStructSize);
+	getSystemDeviceId(systemResetBuf->device->deviceId);
+	systemResetBuf->device->crc = CalModbusCRC16Fun(systemResetBuf->device, DeviceStructCrcSize, NULL);
+	if(My_Fail == SaveDeviceToFile(systemResetBuf->device))
+	{
+		MyFree(systemResetBuf);
 		return My_Fail;
+	}
+	
+	MyFree(systemResetBuf);
 
 	if(My_Fail == deleteTestDataFile())
 		return My_Fail;

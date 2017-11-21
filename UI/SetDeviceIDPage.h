@@ -6,10 +6,9 @@
 #include	"Device.h"
 
 typedef struct SetDeviceIDPage_tag {
-	SystemSetData systemSetData;
+	Device * device;
 	char tempbuf[150];								//临时指针
 	char deviceId[DeviceIdLen];							//新输入的设备id
-	unsigned char ismodify;
 	unsigned short lcdinput[100];
 }SetDeviceIDPage;
 

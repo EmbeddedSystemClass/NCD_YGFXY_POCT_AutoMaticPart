@@ -82,7 +82,7 @@ static void activityStart(void)
 	S_WaitPageData->isMotorStartted = My_Fail;
 	S_WaitPageData->isBack = false;
 	
-	timer_SetAndStart(&S_WaitPageData->timer2, 90);							//90S不插卡，取消当前测试
+	timer_SetAndStart(&S_WaitPageData->timer2, 180);							//90S不插卡，取消当前测试
 	
 	SelectPage(88);
 }

@@ -18,7 +18,7 @@ typedef struct
 }Operator;
 #pragma pack()
 
-#define	MaxPageNum	4
+#define	MaxPageNum	4																//用户页数
 #define	MaxPageShowOperatorSize	5													//一页显示用户数目
 #define	MaxOperatorSize	MaxPageNum*MaxPageShowOperatorSize							//最多保存的用户数目
 

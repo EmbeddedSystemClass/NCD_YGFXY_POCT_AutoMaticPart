@@ -44,7 +44,7 @@ static void vNcdClientTask( void *pvParameters );
 
 char StartvNcdClientTask(void)
 {
-	return xTaskCreate( vNcdClientTask, NcdClientTaskName, configMINIMAL_STACK_SIZE*2, NULL, vNcdClientTask_PRIORITY, NULL );
+	return xTaskCreate( vNcdClientTask, NcdClientTaskName, configMINIMAL_STACK_SIZE*5, NULL, vNcdClientTask_PRIORITY, NULL );
 }
 
 

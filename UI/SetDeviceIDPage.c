@@ -7,9 +7,8 @@
 #include	"System_Data.h"
 #include	"MyMem.h"
 #include	"ShowDeviceInfoPage.h"
-#include	"SleepPage.h"
 #include	"ReadBarCode_Fun.h"
-#include	"SystemSet_Dao.h"
+#include	"DeviceDao.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -23,7 +22,7 @@
 static SetDeviceIDPage * S_SetDeviceIDPage = NULL;
 /******************************************************************************************/
 /*****************************************局部函数声明*************************************/
-static void dspDeviceId(char * idStr);
+static void dspDeviceId(void);
 
 static void activityStart(void);
 static void activityInput(unsigned char *pbuf , unsigned short len);
@@ -58,6 +57,11 @@ MyRes createSetDeviceIDActivity(Activity * thizActivity, Intent * pram)
 	{
 		InitActivity(thizActivity, "SetDeviceIDActivity\0", activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
 		
+		if(pram)
+		{
+			readIntent(pram, &S_SetDeviceIDPage->device);
+		}
+		
 		return My_Pass;
 	}
 	
@@ -75,11 +79,8 @@ MyRes createSetDeviceIDActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	memcpy(&(S_SetDeviceIDPage->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
-		
-	while(ReadBarCodeFunction((char *)(S_SetDeviceIDPage->tempbuf), 100) > 0)
-		;
-	dspDeviceId(S_SetDeviceIDPage->systemSetData.deviceId);
+	clearBarCodeQueue();
+	dspDeviceId();
 	
 	SelectPage(104);
 }
@@ -109,34 +110,24 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*确认*/
 		else if(S_SetDeviceIDPage->lcdinput[0] == 0x1C01)
 		{
-			if(S_SetDeviceIDPage->ismodify == 1)
+			if(My_Pass == SaveDeviceToFile(S_SetDeviceIDPage->device))
 			{
-				//读取最新的系统参数
-				memcpy(&(S_SetDeviceIDPage->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
+				setSystemDeviceId(S_SetDeviceIDPage->device->deviceId);
 				
-				//更新副本中的is
-				memcpy(S_SetDeviceIDPage->systemSetData.deviceId, S_SetDeviceIDPage->deviceId, DeviceIdLen);
-				if(My_Pass == SaveSystemSetData(&(S_SetDeviceIDPage->systemSetData)))
-				{
-					SendKeyCode(1);
-
-					S_SetDeviceIDPage->ismodify = 0;
-				}
-				else
-					SendKeyCode(2);
+				SendKeyCode(1);
 			}
+			else
+				SendKeyCode(2);
 		}
 		/*id输入*/
 		else if(S_SetDeviceIDPage->lcdinput[0] == 0x1C10)
 		{
-			memset(S_SetDeviceIDPage->deviceId, 0 , DeviceIdLen);
-			
+			memset(S_SetDeviceIDPage->device->deviceId, 0 , DeviceIdLen);
+
 			if(DeviceIdLen >= GetBufLen(&pbuf[7] , 2*pbuf[6]))
-				memcpy(S_SetDeviceIDPage->deviceId, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
+				memcpy(S_SetDeviceIDPage->device->deviceId, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
 			else
-				memcpy(S_SetDeviceIDPage->deviceId, &pbuf[7], DeviceIdLen);
-				
-			S_SetDeviceIDPage->ismodify = 1;
+				memcpy(S_SetDeviceIDPage->device->deviceId, &pbuf[7], DeviceIdLen);
 		}
 	}
 }
@@ -155,11 +146,9 @@ static void activityFresh(void)
 	//读取设备id条码
 	if(ReadBarCodeFunction((char *)(S_SetDeviceIDPage->tempbuf), 100) > 0)
 	{
-		memcpy(S_SetDeviceIDPage->deviceId, S_SetDeviceIDPage->tempbuf, DeviceIdLen);
+		memcpy(S_SetDeviceIDPage->device->deviceId, S_SetDeviceIDPage->tempbuf, DeviceIdLen);
 			
-		dspDeviceId(S_SetDeviceIDPage->deviceId);
-			
-		S_SetDeviceIDPage->ismodify = 1;
+		dspDeviceId();
 	}
 }
 
@@ -249,8 +238,8 @@ static void activityBufferFree(void)
 }
 
 
-static void dspDeviceId(char * idStr)
+static void dspDeviceId(void)
 {
-	snprintf(S_SetDeviceIDPage->tempbuf, DeviceIdLen+1, "%s", idStr);
+	snprintf(S_SetDeviceIDPage->tempbuf, DeviceIdLen+1, "%s", S_SetDeviceIDPage->device->deviceId);
 	DisText(0x1C10, S_SetDeviceIDPage->tempbuf, strlen(S_SetDeviceIDPage->tempbuf)+1);
 }

@@ -4,6 +4,19 @@
 #include	"Define.h"
 
 #define		DeviceTypeString						"YGFXY_2\0"								//半自动设备
+#define		DefaultDeviceId							DeviceTypeString
+
+#define		fileLengthParmString					"Content-Length: \0"
+#define		fileLengthParmStringLen					16
+#define		fileStartStr							"i am zhangxiong^*^!\0"
+#define		fileStartStrLen							19
+
+
+#if(DeviceLanguage == DEVICE_CN)
+	#define	DeviceLanguageString	"CH"
+#elif(DeviceLanguage == DEVICE_EN)
+	#define	DeviceLanguageString	"EN"
+#endif
 
 #define		AdminPassWord							"201300\0"								//管理员密码，用于修改设备id
 #define		AdjustPassWord							"201301\0"								//校准密码
@@ -17,10 +30,25 @@
 /*SD卡文件名*/
 #define	TestDataFileName							"0:/TD.ncd\0"
 #define	DeviceFileName								"0:/Device.ncd\0"
+#define	OperatorFileName							"0:/Oper.ncd\0"
 #define	DeviceAdjustFileName						"0:/Dadj.ncd\0"
 #define	DeviceErrorFileName							"0:/Derr.ncd\0"
 #define	DeviceMainenanceFileName					"0:/Dmai.ncd\0"
 #define	DeviceQualityFileName						"0:/Dqua.ncd\0"
+
+#if (NCDServerType == NCDServerFinal)
+#define		NcdServerReadTimeUrlStr				"/NCD_Server/up_dtime\0"
+#define		NcdServerUpDeviceUrlStr				"/NCD_Server/up_device\0"
+#define		NcdServerUpTestDataUrlStr			"/NCD_Server/UpLoadYGFXY\0"
+#define		NcdServerQuerySoftUrlStr			"/NCD_Server/deviceSoftInfo\0"
+#define		NcdServerDownSoftUrlStr				"/NCD_Server/DownloadSoftFile\0"
+#elif (NCDServerType == NCDServerDebug)
+#define		NcdServerReadTimeUrlStr				"/NCD_ServerDebug/up_dtime\0"
+#define		NcdServerUpDeviceUrlStr				"/NCD_ServerDebug/up_device\0"
+#define		NcdServerUpTestDataUrlStr			"/NCD_ServerDebug/UpLoadYGFXY\0"
+#define		NcdServerQuerySoftUrlStr			"/NCD_ServerDebug/deviceSoftInfo\0"
+#define		NcdServerDownSoftUrlStr				"/NCD_ServerDebug/DownloadSoftFile\0"
+#endif
 
 #if(DeviceLanguage == DEVICE_CN)
 	#define	DeviceNameStr 							"荧光免疫定量分析仪\0"
@@ -42,6 +70,10 @@
 	#define	QualityClearString						"\0"
 	#define	QualityTimeDownString					"倒计时\0"
 	#define	QualityTimeUpString						"超时\0"
+	#define	QualityPrepareCancelString				"等待取消\0"
+	#define	QualityCancellingString					"正在取消\0"
+	#define	QualityQRScanningString					"正在读取二维码\0"
+	#define	QualityOverString						"测试结束\0"
 	
 	
 	#define	QRReadErrorAndChangeCardString			"二维码读取失败，更换\0"
@@ -72,6 +104,10 @@
 	#define	QualityClearString						"\0"
 	#define	QualityTimeDownString					"Count Down\0"
 	#define	QualityTimeUpString						"Count Up\0"
+	#define	QualityPrepareCancelString				"Wait Cancel\0"
+	#define	QualityCancellingString					"Cancelling\0"
+	#define	QualityQRScanningString					"Scanning QR\0"
+	#define	QualityOverString						"Test Over\0"
 	
 	#define	QRReadErrorAndChangeCardString			"QR Read Fail, please Change\0"
 	#define	QRReadSuccessString						"QR Read Success\0"

@@ -6,7 +6,7 @@
 #include	"UI_Data.h"
 #include	"MyMem.h"
 #include	"RemoteSoft_Data.h"
-#include	"SystemSet_Data.h"
+#include	"System_Data.h"
 
 #include	<string.h>
 #include	"stdio.h"
@@ -233,7 +233,8 @@ static void dspPageText(void)
 	writeDataToLcd(0x2941, page->buf, 6);
 
 	//ÏÔÊ¾¶þÎ¬Âë
-	snprintf(page->buf, 50, "http://www.whnewcando.com/?%s", getGBSystemSetData()->deviceId);
+	sprintf(page->buf, "http://www.whnewcando.com/?");
+	getSystemDeviceId(page->buf + strlen(page->buf));
 	writeDataToLcd(0x2950, page->buf, strlen(page->buf)+1);
 }
 

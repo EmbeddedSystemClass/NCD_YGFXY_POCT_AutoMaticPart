@@ -20,7 +20,8 @@ typedef struct QualityPageBuffer_tag {
 	PaiduiUnitData * tempPaiduiUnitData;					//当前数据缓存
 	double resultSum;										//有效测试结果和
 	double resultNum;										//有效测试数目
-
+	bool isCancel;											//是否取消质控
+	unsigned char statuesNullNum;							//空状态数目
 	double tempValue1;
 	double tempValue2;
 	float tempFloat1;

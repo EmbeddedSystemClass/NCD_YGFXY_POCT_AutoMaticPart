@@ -82,24 +82,16 @@ void setSystemWireLinkStatus(LinkStatus linkStatus)
 	systemData.wireNetInfo.lineStatus = linkStatus;
 }
 
-void setSystemDeviceInfoStatus(bool isNew)
+void setSystemDeviceId(char * device)
 {
-	systemData.deviceInfoIsNew = isNew;
+	if(device)
+		memcpy(systemData.deviceId, device, DeviceIdLen);
+}
+void getSystemDeviceId(char * device)
+{
+	if(device)
+		memcpy(device, systemData.deviceId, DeviceIdLen);
 }
 
-bool getSystemDeviceInfoStatus(void)
-{
-	return systemData.deviceInfoIsNew;
-}
-
-void setSystemTimeIsRead(bool isNew)
-{
-	systemData.timeIsReaded = isNew;
-}
-
-bool getSystemTimeIsRead(void)
-{
-	return systemData.timeIsReaded;
-}
 
 /****************************************end of file************************************************/

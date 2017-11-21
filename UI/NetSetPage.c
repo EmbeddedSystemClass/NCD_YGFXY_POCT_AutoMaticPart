@@ -117,7 +117,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		{
 			memset(S_NetSetPageBuffer->buf, 0, 50);
 			memcpy(S_NetSetPageBuffer->buf, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			if(My_Pass != parseIpString(&S_NetSetPageBuffer->wireNetSet.staticIP, S_NetSetPageBuffer->buf, S_NetSetPageBuffer->tempP))
+			if(My_Pass != parseIpString(&S_NetSetPageBuffer->wireNetSet.staticIP, S_NetSetPageBuffer->buf))
 			{
 				memset(&S_NetSetPageBuffer->wireNetSet.staticIP, 0, 4);
 				ClearText(0x1E10);

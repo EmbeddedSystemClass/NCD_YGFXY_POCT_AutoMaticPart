@@ -120,6 +120,19 @@ MyRes StartMotorActionWithParm(MotorActionEnum motorActionEnum, unsigned int mot
 	return StartMotorAction(&tempMotorAction, isStopWhenBusy, waitActionDone);
 }
 
+MyRes FormatParmAndStartMotorAction(MotorAction * motorAction, MotorActionEnum motorActionEnum, unsigned int motorParm, bool isStopWhenBusy, bool waitActionDone)
+{
+	if(motorAction)
+	{
+		motorAction->motorActionEnum = motorActionEnum;
+		motorAction->motorParm = motorParm;
+		
+		return StartMotorAction(motorAction, isStopWhenBusy, waitActionDone);
+	}
+	else
+		return My_Fail;
+}
+
 bool isMotorMoveEnd(portTickType waitBlockTime)
 {
 	if(pdPASS == xSemaphoreTake(xMotorMutex, waitBlockTime))

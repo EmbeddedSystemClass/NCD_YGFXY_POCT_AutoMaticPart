@@ -7,7 +7,7 @@
 #include	"MyTest_Data.h"
 #include	"CRC16.h"
 #include	"UserMPage.h"
-#include	"DeviceDao.h"
+#include	"OperatorDao.h"
 #include	"Intent.h"
 
 #include 	"FreeRTOS.h"
@@ -81,10 +81,9 @@ MyRes createSelectUserActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	/*读取设备信息*/
-	ReadDeviceFromFile(&page->device);
+	ReadAllOperatorFromFile(page->operatorList, &page->allValidNum);
 	
-	page->pageindex = 0;
+	page->pageIndex = 0;
 	
 	ShowList();
 	
@@ -123,9 +122,9 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*上翻也*/
 		else if(page->lcdinput[0] == 0x1203)
 		{			
-			if(page->pageindex > 0)
+			if(page->pageIndex > 0)
 			{
-				page->pageindex--;
+				page->pageIndex--;
 						
 				ShowList();
 			}
@@ -133,16 +132,12 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		/*下翻页*/
 		else if(page->lcdinput[0] == 0x1204)
 		{			
-			if((page->pageindex + 1) < MaxPageNum)
+			page->tempV1 = (page->pageIndex + 1) * MaxPageShowOperatorSize;
+			if(page->tempV1 < MaxOperatorSize)
 			{
-				page->tempOperator = &page->device.operators[(page->pageindex + 1)*MaxPageShowOperatorSize];
-			
-				if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
-				{
-					page->pageindex++;
-						
-					ShowList();
-				}
+				page->pageIndex++;
+
+				ShowList();
 			}
 		}
 		/*确定*/
@@ -155,14 +150,15 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		}
 		/*选择操作人*/
 		else if((page->lcdinput[0] >= 0x1205)&&(page->lcdinput[0] <= 0x1209))
-		{			
-			page->tempOperator = &page->device.operators[(page->pageindex)*MaxPageShowOperatorSize + page->lcdinput[0] - 0x1205];
+		{		
+			page->tempV1 = page->pageIndex * MaxPageShowOperatorSize + page->lcdinput[0] - 0x1205;
+			page->tempOperator = &page->operatorList[page->tempV1];
 		
 			if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
 			{
-				page->tempV1 = page->lcdinput[0] - 0x1205+1;
-				BasicPic(0x1240, 0, 137, 11, 10, 303, 79, 363, 141+(page->tempV1-1)*72);
-				BasicPic(0x1240, 1, 137, 11, 10, 303, 79, 363, 141+(page->tempV1-1)*72);
+				page->selectIndex = page->lcdinput[0] - 0x1205;
+				BasicPic(0x1d40, 1, 137, 11, 10, 303, 79, 157, 135+page->selectIndex*72);
+				BasicPic(0x1240, 1, 137, 11, 10, 303, 79, 363, 141+page->selectIndex*72);
 				
 				memcpy(page->targetOperator, page->tempOperator, OneOperatorStructSize);
 			}
@@ -214,10 +210,9 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
-	/*读取所有操作人*/
-	ReadDeviceFromFile(&page->device);
+	ReadAllOperatorFromFile(page->operatorList, &page->allValidNum);
 	
-	page->pageindex = 0;
+	page->pageIndex = 0;
 	
 	ShowList();
 	
@@ -299,15 +294,19 @@ static void activityBufferFree(void)
 ***************************************************************************************************/
 static void ShowList(void)
 {
-	page->tempV1 = page->pageindex*MaxPageShowOperatorSize;
-
-	page->tempOperator = &(page->device.operators[page->tempV1]);
+	page->tempV1 = page->pageIndex*MaxPageShowOperatorSize;
 	
-	//显示列表数据
+	page->tempOperator = &page->operatorList[page->tempV1];
+	
+	/*显示列表数据*/
+	page->pageValidNum = 0;
 	for(page->tempV1=0; page->tempV1<MaxPageShowOperatorSize; page->tempV1++)
 	{
 		if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
+		{
 			snprintf(page->tempBuf, OperatorNameLen, "%s", page->tempOperator->name);
+			page->pageValidNum++;
+		}
 		else
 			memset(page->tempBuf, 0, 10);
 		
@@ -316,6 +315,7 @@ static void ShowList(void)
 		page->tempOperator++;
 	}
 	
+	page->selectIndex = -1;
 	BasicPic(0x1240, 0, 137, 11, 10, 303, 79, 363, 141+(page->tempV1-1)*72);
 }
 

@@ -92,7 +92,7 @@ void motor2MoveTo(unsigned char highTime, unsigned char lowTime, unsigned short 
 	}
 	else
 		setMotor2DirGPIO(OFF);
-	vTaskDelay(10 / portTICK_RATE_MS);
+	//vTaskDelay(10 / portTICK_RATE_MS);
 	
 	motor2->periodCnt = 0;
 	motor2->parm1 = 0;
@@ -104,7 +104,7 @@ void motor2MoveTo(unsigned char highTime, unsigned char lowTime, unsigned short 
 	
 	while(isWait && motor2->motorLocation != motor2->motorTargetLocation)
 	{
-		vTaskDelay(100 / portTICK_RATE_MS);
+		vTaskDelay(1 / portTICK_RATE_MS);
 		if(motor2StopMovePermission)
 		{
 			motor2->moveStepNum = 0;

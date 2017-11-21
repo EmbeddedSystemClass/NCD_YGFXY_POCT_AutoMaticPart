@@ -267,8 +267,8 @@ static void readAndShowGsmInfo(void)
 	}
 
 	//测试是不是AT模式
-	if(!checkIsATMode(S_NetInfoPageBuffer->sim800InitBuf.recvBuf))
-		goto END;
+//	if(!checkIsATMode(S_NetInfoPageBuffer->sim800InitBuf.recvBuf))
+//		goto END;
 	
 	readGSMInd(&S_NetInfoPageBuffer->sim800InitBuf, &S_NetInfoPageBuffer->GsmInd);
 	readGSMIccid(&S_NetInfoPageBuffer->sim800InitBuf, S_NetInfoPageBuffer->ICCID);

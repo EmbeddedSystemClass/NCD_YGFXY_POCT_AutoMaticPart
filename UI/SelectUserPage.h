@@ -10,13 +10,16 @@
 #include	"Motor_Fun.h"
 
 typedef struct UserPage_tag {
-	Device device;													//设备信息
+	unsigned char pageIndex;										//页面索引
+	signed char selectIndex;										//当前页面选择索引
+	unsigned char pageValidNum;										//当前页面有效数据个数
+	unsigned short allValidNum;										//所有读取到的有效数据个数
+	Operator operatorList[MaxOperatorSize];							//操作人列表数据
 	Operator * tempOperator;										//临时指针
 	Operator * targetOperator;										//选择操作人后目标缓存
 	unsigned short lcdinput[100];									//lcd输入解析
 	char tempBuf[20];
 	unsigned short tempV1;
-	unsigned char pageindex;										//页面索引
 	PaiduiUnitData * currenttestdata;
 	MotorAction motorAction;
 }UserPageBuffer;

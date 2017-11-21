@@ -8,7 +8,7 @@
 #include	"Timer.h"
 
 typedef struct SetDeviceInfoPageBuffer_tag {
-	Device device;
+	Device * device;
 	Operator operator;														//临时数据
 	char deviceunit[DeviceAddrLen];									//设备使用单位
 	bool ismodify;

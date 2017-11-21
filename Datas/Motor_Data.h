@@ -21,8 +21,8 @@ typedef enum
 
 /*电机2相关定义*/
 #define	Motor2_PutCardOutLocation			100								//将卡排除设备
-#define	Motor2_EndTestLocation				27600							//停止测试位置
-#define	Motor2_StartTestLocation			18000							//开始测试位置
+#define	Motor2_EndTestLocation				28200							//停止测试位置27150
+#define	Motor2_StartTestLocation			19050							//开始测试位置18000
 #define	Motor2_CatchCardLocation			Motor2_EndTestLocation			//抓卡准备测试
 #define	Motor2_PutDownCardLocation2			33500							//从测试的一边将卡在排队位放好
 #define	Motor2_MidLocation					38000							//中心位置

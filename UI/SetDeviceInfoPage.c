@@ -31,7 +31,6 @@ static MyRes activityBufferMalloc(void);
 static void activityBufferFree(void);
 
 static void showDeviceInfoText(void);
-static void clearDeviceInfoText(void);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -56,6 +55,11 @@ MyRes createSetDeviceInfoActivity(Activity * thizActivity, Intent * pram)
 	{
 		InitActivity(thizActivity, "SetDeviceInfoActivity\0", activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
 		
+		if(pram)
+		{
+			readIntent(pram, &page->device);
+		}
+		
 		return My_Pass;
 	}
 	
@@ -73,11 +77,7 @@ MyRes createSetDeviceInfoActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	page->myDeviceLock = getMyDeviceLock();
-	page->isLocked = false;
-	timer_SetAndStart(&page->timer, 1);
-	
-	clearDeviceInfoText();
+	showDeviceInfoText();
 	
 	SelectPage(102);
 }
@@ -105,64 +105,47 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	/*确认*/
 	else if(page->lcdinput[0] == 0x1B01)
 	{			
-		if(page->ismodify && page->isLocked)
-		{		
-			memcpy(&(page->device.operator), &(page->operator), OneOperatorStructSize);
-		
-			memcpy(page->device.addr, page->deviceunit, DeviceAddrLen);
-			
-			page->device.crc = CalModbusCRC16Fun(&(page->device), DeviceStructCrcSize, NULL);
-			if(My_Pass == SaveDeviceToFile(&page->device))
-			{
-				SendKeyCode(1);
-				page->ismodify = false;
-				backToFatherActivity();
-			}
-			else
-				SendKeyCode(2);
+		if(My_Pass == SaveDeviceToFile(page->device))
+		{
+			SendKeyCode(1);
 		}
+		else
+			SendKeyCode(2);
 	}
 	/*姓名*/
 	else if(page->lcdinput[0] == 0x1B10)
 	{
-		getLcdInputData(page->operator.name, &pbuf[7]);
-		page->ismodify = true;
+		getLcdInputData(page->device->operator.name, &pbuf[7]);
 	}
 	/*年龄*/
 	else if(page->lcdinput[0] == 0x1B20)
 	{
-		getLcdInputData(page->operator.age, &pbuf[7]);
-		page->ismodify = true;
+		getLcdInputData(page->device->operator.age, &pbuf[7]);
 	}
 	/*性别*/
 	else if(page->lcdinput[0] == 0x1B30)
 	{
-		getLcdInputData(page->operator.sex, &pbuf[7]);
-		page->ismodify = true;
+		getLcdInputData(page->device->operator.sex, &pbuf[7]);
 	}
 	/*联系方式*/
 	else if(page->lcdinput[0] == 0x1B40)
 	{
-		getLcdInputData(page->operator.phone, &pbuf[7]);
-		page->ismodify = true;
+		getLcdInputData(page->device->operator.phone, &pbuf[7]);
 	}
 	/*职位*/
 	else if(page->lcdinput[0] == 0x1B50)
 	{
-		getLcdInputData(page->operator.job, &pbuf[7]);
-		page->ismodify = true;
+		getLcdInputData(page->device->operator.job, &pbuf[7]);
 	}
 	/*备注*/
 	else if(page->lcdinput[0] == 0x1B60)
 	{
-		getLcdInputData(page->operator.department, &pbuf[7]);
-		page->ismodify = true;
+		getLcdInputData(page->device->operator.department, &pbuf[7]);
 	}
 	/*设备使用地址*/
 	else if(page->lcdinput[0] == 0x1B70)
 	{
-		getLcdInputData(page->deviceunit, &pbuf[7]);
-		page->ismodify = true;
+		getLcdInputData(page->device->addr, &pbuf[7]);
 	}
 }
 
@@ -177,25 +160,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 ***************************************************************************************************/
 static void activityFresh(void)
 {
-	if(TimerOut == timer_expired(&page->timer))
-	{
-		//先给设备信息文件上锁，防止其他线程修改数据
-		if((page->isLocked == false) && (My_Pass == LockObject(page->myDeviceLock, &page, 1)))
-		{
-			/*读取所有操作人*/
-			ReadDeviceFromFile(&(page->device));
-			
-			//将数据拷贝到临时数据区
-			memcpy(&page->operator, &page->device.operator, OneOperatorStructSize);
-			memcpy(page->deviceunit, page->device.addr, DeviceAddrLen);
-			
-			showDeviceInfoText();
-			
-			page->isLocked = true;
-		}
-		
-		timer_restart(&(page->timer));
-	}
+
 }
 
 /***************************************************************************************************
@@ -287,42 +252,25 @@ static void activityBufferFree(void)
 
 static void showDeviceInfoText(void)
 {
-	snprintf(page->tempBuf, 50, "%s", page->device.operator.name);
+	snprintf(page->tempBuf, 50, "%s", page->device->operator.name);
 	DisText(0x1b10, page->tempBuf, strlen(page->tempBuf)+1);
 
-	snprintf(page->tempBuf, 5, "%s", page->device.operator.age);
+	snprintf(page->tempBuf, 5, "%s", page->device->operator.age);
 	DisText(0x1b20, page->tempBuf, strlen(page->tempBuf)+1);
 
-	snprintf(page->tempBuf, 6, "%s", page->device.operator.sex);
+	snprintf(page->tempBuf, 6, "%s", page->device->operator.sex);
 	DisText(0x1b30, page->tempBuf, strlen(page->tempBuf)+1);
 
-	snprintf(page->tempBuf, 15, "%s", page->device.operator.phone);
+	snprintf(page->tempBuf, 15, "%s", page->device->operator.phone);
 	DisText(0x1b40, page->tempBuf, strlen(page->tempBuf)+1);
 	
-	snprintf(page->tempBuf, 20, "%s", page->device.operator.job);
+	snprintf(page->tempBuf, 20, "%s", page->device->operator.job);
 	DisText(0x1b50, page->tempBuf, strlen(page->tempBuf)+1);
 
-	snprintf(page->tempBuf, 50, "%s", page->device.operator.department);
+	snprintf(page->tempBuf, 50, "%s", page->device->operator.department);
 	DisText(0x1b60, page->tempBuf, strlen(page->tempBuf)+1);
 	
-	snprintf(page->tempBuf, 100, "%s", page->device.addr);
+	snprintf(page->tempBuf, 100, "%s", page->device->addr);
 	DisText(0x1b70, page->tempBuf, strlen(page->tempBuf)+1);
-}
-
-static void clearDeviceInfoText(void)
-{
-	ClearText(0x1b10);
-
-	ClearText(0x1b20);
-
-	ClearText(0x1b30);
-
-	ClearText(0x1b40);
-	
-	ClearText(0x1b50);
-
-	ClearText(0x1b60);
-	
-	ClearText(0x1b70);
 }
 

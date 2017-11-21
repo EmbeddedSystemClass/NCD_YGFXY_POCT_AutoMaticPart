@@ -72,7 +72,7 @@ void PaiDuiHandler(void)
 				}
 				else if(tempvalue <= StartTestTime)
 				{
-					if(NULL == GetCurrentTestItem())
+					if(NULL == GetCurrentTestItem() || temp == GetCurrentTestItem())
 					{
 						SetCurrentTestItem(temp);
 						temp->statues = statusPrepareTest;

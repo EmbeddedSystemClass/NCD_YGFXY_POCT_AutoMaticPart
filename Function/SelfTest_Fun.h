@@ -41,6 +41,7 @@ typedef struct SelfTestBuf_Tag
 	SystemSetData systemSetData;
 	DeviceAdjust deviceAdjust;
 	DeviceError deviceError;
+	Device device;
 	unsigned short juli;
 	Motor * motor;
 	MotorAction motorAction;
@@ -50,6 +51,7 @@ typedef struct SelfTestBuf_Tag
 	unsigned char i;
 	unsigned char j;
 	MyBitAction locationStatus[Motor1_HalfLocation];
+	MyRes status;
 }SelfTestBuf;
 #pragma pack()
 

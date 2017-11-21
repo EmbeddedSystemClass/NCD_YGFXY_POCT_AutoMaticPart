@@ -6,8 +6,8 @@
 #include	"ff.h"
 
 /*V1.0.03*/
-#define	GB_SoftVersion	(unsigned short)1000
-#define	GB_SoftVersion_Build	"Build17090401\0"
+#define	GB_SoftVersion	(unsigned short)1002
+#define	GB_SoftVersion_Build	"Build17112101\0"
 
 /*服务器信息*/
 #define	NCD_ServerIp_1		116
@@ -16,26 +16,10 @@
 #define	NCD_ServerIp_4		201
 #define NCD_ServerPort		8080
 
-#define	HttpResponeOK				"HTTP/1.1 200 OK\0"
-
-//poct
-#define	ReadTimeUrl					"DeviceReadTime\0"
-#define	QueryDeviceByDeviceIdUrl	"DeviceQueryDeviceByDeviceId\0"
-#define	UpLoadDeviceAdjustUrl		"UpLoadDeviceAdjust\0"
-#define	UpLoadDeviceErrorUrl		"UpLoadDeviceError\0"
-#define	UpLoadYGFXYDataUrl			"upLoadYGFXY_Data\0"
-#define	UpLoadDeviceMaintenanceUrl	"UpLoadDeviceMaintenance\0"
-#define	UpLoadDeviceQualityUrl		"UpLoadDeviceQuality\0"
-
-//ncd server
-#define	NcdUpLoadYGFXYDataUrl		"UpLoadYGFXY\0"
-#define	QueryRemoteSoftVersionUrl	"QuerySoftInfo\0"
-#define	DownRemoteSoftFileUrl		"DownloadSoftFile\0"
-
 
 #define	Motor4IOMotor					0x90							//IO口控制的爪子
 #define	Motor4UsartMotor				0x91							//串口控制的爪子
-#define	Motor4Type						Motor4UsartMotor
+#define	Motor4Type						Motor4IOMotor
 
 #define	DEVICE_EN						100
 #define	DEVICE_CN						101
@@ -45,8 +29,14 @@
 #define	Device_Demo						0x28
 #define	DeviceUseType					Device_Demo
 
+#define	NCDServerFinal					0x88
+#define	NCDServerDebug					0x89
+#define	NCDServerType					NCDServerDebug
+
 #define	PaiDuiWeiNum					9							//排队位置数目
 #define	MaxQualityCount					PaiDuiWeiNum
+
+#define	MaxUpLoadTestDataNum			1							//测试数据一次上传数目，must less than PageContentItemNum
 /**********************************************************************************************************/
 /******************************************操作结果变量*************************************************/
 /**********************************************************************************************************/
@@ -103,12 +93,15 @@ typedef enum
 	statusWaitCardPutOut = 4,						//等待插卡
 	statusWaitScanQR = 3,							//等待扫描二维码结果
 	statusMotorPutCardDown = 6,						//读取二维码成功后，等待电机运动将卡放在排队位
+	statusMotorOrigin = 7,							//等待电机回原点
 	status_start = 5,								//启动排队
 	status_timedown = 10,							//倒计时状态
 	status_timeup = 15,								//超时状态
 	status_testting = 16,							//开始测试
 	statusPrepareTest = 18,							//进入测试状态，倒计时时间小于10s，切换到倒计时界面等待
 	statusTestMotor = 20,							//等待电机走到测试位置
+	statusPutCardOut = 21,							//将卡排除设备
+	statusWaitCardOut = 22,							//等待卡排除设备
 	status_end = 17,
 }MyPaiDuiStatues;
 
@@ -236,15 +229,15 @@ typedef struct
 
 #define	DeviceRecordHeaderStructSize		sizeof(DeviceRecordHeader)								//最多保存的用户数目
 #define	DeviceRecordHeaderStructCrcSize		DeviceRecordHeaderStructSize - 2						//最多保存的用户数目
-#define	PageContentItemNum					10
-#define	UserePageContentIndex				5
+#define	PageContentItemNum					10														//一次最多读取的数目
 #pragma pack(1)
 typedef struct
 {
-	unsigned int totalPageSize;
-	unsigned int totalItemSize;
-	unsigned int readItemSize;
-	void * content[PageContentItemNum];
+	unsigned int totalPageSize;																		//总页数
+	unsigned int totalItemSize;																		//总数
+	unsigned int readItemSize;																		//读到的数目
+	bool isForNCD;																					//true读取纽康度数据，false读取用户数据
+	void * content[PageContentItemNum];																//数据
 }Page;
 #pragma pack()
 
