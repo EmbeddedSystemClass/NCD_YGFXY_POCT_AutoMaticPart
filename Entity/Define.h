@@ -6,8 +6,8 @@
 #include	"ff.h"
 
 /*V1.0.03*/
-#define	GB_SoftVersion	(unsigned short)1002
-#define	GB_SoftVersion_Build	"Build17112101\0"
+#define	GB_SoftVersion	(unsigned short)1003
+#define	GB_SoftVersion_Build	"Build17112102\0"
 
 /*服务器信息*/
 #define	NCD_ServerIp_1		116
@@ -27,11 +27,11 @@
 
 #define	Device_Final					0x27
 #define	Device_Demo						0x28
-#define	DeviceUseType					Device_Demo
+#define	DeviceUseType					Device_Final
 
 #define	NCDServerFinal					0x88
 #define	NCDServerDebug					0x89
-#define	NCDServerType					NCDServerDebug
+#define	NCDServerType					NCDServerFinal
 
 #define	PaiDuiWeiNum					9							//排队位置数目
 #define	MaxQualityCount					PaiDuiWeiNum
