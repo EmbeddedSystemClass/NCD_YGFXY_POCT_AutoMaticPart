@@ -15,6 +15,7 @@ typedef struct PaiduiUnitData_tag {
 	unsigned char index;																	//测试数据的索引
 	unsigned char cardLocation;																//放卡的位置号
 	unsigned char testLocation;																//对应的测试位置号
+	unsigned short ledValue;																//测试led亮度
 	MyPaiDuiStatues statues;																//测试阶段
 }PaiduiUnitData;
 #pragma pack()

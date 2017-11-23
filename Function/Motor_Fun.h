@@ -17,6 +17,7 @@ typedef enum
 	PutCardOutOfDeviceAfterTestDef = 0x15,					/*将卡排除设备,只用于测试完毕*/
 	OriginLocationDef = 0x14,								/*恢复待机状态*/
 	PutDownCardInPlaceDef = 0x16,							/*将卡放在排队位*/
+	PutDownCardInTestPlaceDef = 0x17,						/*将卡在测试端放好*/
 }MotorActionEnum;
 
 typedef enum

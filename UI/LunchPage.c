@@ -6,7 +6,7 @@
 #include	"LCD_Driver.h"
 #include	"Define.h"
 #include	"MyMem.h"
-
+#include	"StringDefine.h"
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"
 #include	"SampleIDPage.h"
@@ -14,10 +14,6 @@
 #include	"RecordPage.h"
 #include	"SleepPage.h"
 #include	"PaiDuiPage.h"
-
-#include 	"FreeRTOS.h"
-#include 	"task.h"
-#include 	"queue.h"
 
 #include	<string.h>
 #include	"stdio.h"
@@ -159,7 +155,7 @@ static void activityFresh(void)
 {
 	if(TimerOut == timer_expired(&(page->timer)))
 	{
-		//startActivity(createSleepActivity, NULL, NULL);
+		startActivity(createSleepActivity, NULL, NULL);
 	}
 }
 

@@ -6,8 +6,8 @@
 #include	"ff.h"
 
 /*V1.0.03*/
-#define	GB_SoftVersion	(unsigned short)1003
-#define	GB_SoftVersion_Build	"Build17112102\0"
+#define	GB_SoftVersion	(unsigned short)1004
+#define	GB_SoftVersion_Build	"Build17112301\0"
 
 /*服务器信息*/
 #define	NCD_ServerIp_1		116
@@ -65,6 +65,7 @@ typedef enum
 	OFF = 0
 }MyBitAction;
 
+#define	FreeRTOSZeroDelay	0
 /**********************************************************************************************************/
 /******************************************fatfs结构体定义*************************************************/
 /**********************************************************************************************************/
@@ -87,8 +88,8 @@ typedef struct
 typedef enum
 {
 	statusNull = 0,									//没开始,默认状态
-	statusNone = 19,									//没开始,默认状态
-	statusMotorMoveQR = 1,							//电机正在运行到等待插卡口
+	statusNone = 19,								//没开始,默认状态
+	statusMotorMoveWaitCard = 1,					//电机正在运行到等待插卡口
 	statusWaitCardPutIn = 2,						//等待插卡
 	statusWaitCardPutOut = 4,						//等待插卡
 	statusWaitScanQR = 3,							//等待扫描二维码结果
@@ -102,6 +103,8 @@ typedef enum
 	statusTestMotor = 20,							//等待电机走到测试位置
 	statusPutCardOut = 21,							//将卡排除设备
 	statusWaitCardOut = 22,							//等待卡排除设备
+	statusWaitPutCardInTestPlace = 23,				//等待卡在测试端放好
+	statusInputSampleID = 24,						//正在输入样品ID
 	status_end = 17,
 }MyPaiDuiStatues;
 

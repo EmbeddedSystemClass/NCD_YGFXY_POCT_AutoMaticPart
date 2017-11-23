@@ -15,7 +15,7 @@
 #include	"MyMem.h"
 #include	"CRC16.h"
 #include	"MyTools.h"
-
+#include	"StringDefine.h"
 #include	"Quality_Data.h"
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"

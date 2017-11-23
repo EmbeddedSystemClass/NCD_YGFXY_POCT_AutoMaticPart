@@ -3,7 +3,7 @@
 
 #include	"SampleIDPage.h"
 #include	"WaittingCardPage.h"
-
+#include	"StringDefine.h"
 #include	"LCD_Driver.h"
 #include	"UI_Data.h"
 #include	"System_Data.h"
@@ -83,6 +83,7 @@ static void activityStart(void)
 	SelectPage(86);
 	
 	S_SampleIDPage->currenttestdata = GetCurrentTestItem();
+	S_SampleIDPage->currenttestdata->statues = statusInputSampleID;
 	
 	S_SampleIDPage->sampleIdLen = 0;
 	clearBarCodeQueue();

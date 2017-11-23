@@ -53,16 +53,9 @@
 
 void readAndUpdateSystemDateTimeFun(void)
 {
-	DateTime * dateTime = NULL;
+	DateTime * dateTime = getSystemTime(NULL);
 	
-	dateTime = MyMalloc(DateTimeStructSize);
-	if(dateTime)
-	{
-		if(My_Pass == RTC_GetTimeData(dateTime))
-			setSystemTime(dateTime);
-	}
-	
-	MyFree(dateTime);
+	RTC_GetTimeData(dateTime);
 }
 
 

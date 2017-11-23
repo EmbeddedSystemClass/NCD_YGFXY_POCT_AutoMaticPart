@@ -815,6 +815,16 @@
               <FileType>1</FileType>
               <FilePath>..\UI\SleepPage.c</FilePath>
             </File>
+            <File>
+              <FileName>AdjustLedPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\AdjustLedPage.c</FilePath>
+            </File>
+            <File>
+              <FileName>ChannelPage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\UI\ChannelPage.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

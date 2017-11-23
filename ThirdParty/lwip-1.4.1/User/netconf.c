@@ -66,8 +66,8 @@ static void LwIP_Init(WireNetSet * wireNetSet)
 	if(wireNetSet->isStaticIp)
 	{
 		IP4_ADDR(&ipaddr, wireNetSet->staticIP.ip_1, wireNetSet->staticIP.ip_2, wireNetSet->staticIP.ip_3, wireNetSet->staticIP.ip_4);
-		IP4_ADDR(&netmask, NETMASK_ADDR0, NETMASK_ADDR1 , NETMASK_ADDR2, NETMASK_ADDR3);
-		IP4_ADDR(&gw, wireNetSet->staticIP.ip_1, wireNetSet->staticIP.ip_2, wireNetSet->staticIP.ip_3, 1);
+		IP4_ADDR(&netmask, wireNetSet->NetMask.ip_1, wireNetSet->NetMask.ip_2, wireNetSet->NetMask.ip_3, wireNetSet->NetMask.ip_4);
+		IP4_ADDR(&gw, wireNetSet->staticGateWay.ip_1, wireNetSet->staticGateWay.ip_2, wireNetSet->staticGateWay.ip_3, wireNetSet->staticGateWay.ip_4);
 	}
 	else
 	{
@@ -76,7 +76,7 @@ static void LwIP_Init(WireNetSet * wireNetSet)
 		gw.addr = 0;
 	}
 	
-//	setSystemWireIP(ipaddr.addr);
+	setSystemWireIP(ipaddr.addr);
 
 	netif_add(&xnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
 
@@ -155,11 +155,12 @@ void ETH_link_callback(struct netif *netif)
 		else
 		{
 			IP4_ADDR(&ipaddr, myWireNetSet.staticIP.ip_1, myWireNetSet.staticIP.ip_2, myWireNetSet.staticIP.ip_3, myWireNetSet.staticIP.ip_4);
-			IP4_ADDR(&netmask, NETMASK_ADDR0, NETMASK_ADDR1 , NETMASK_ADDR2, NETMASK_ADDR3);
-			IP4_ADDR(&gw, myWireNetSet.staticIP.ip_1, myWireNetSet.staticIP.ip_2, myWireNetSet.staticIP.ip_3, 1);
+			IP4_ADDR(&netmask, myWireNetSet.NetMask.ip_1, myWireNetSet.NetMask.ip_2, myWireNetSet.NetMask.ip_3, myWireNetSet.NetMask.ip_4);
+			IP4_ADDR(&gw, myWireNetSet.staticGateWay.ip_1, myWireNetSet.staticGateWay.ip_2, myWireNetSet.staticGateWay.ip_3, myWireNetSet.staticGateWay.ip_4);
 		}
 
-//		setSystemWireIP(ipaddr.addr);
+		setSystemWireIP(ipaddr.addr);
+		setSystemWireLinkStatus(Link_Up);
 		
 		netif_set_addr(&xnetif, &ipaddr , &netmask, &gw);
     
@@ -177,8 +178,8 @@ void ETH_link_callback(struct netif *netif)
 		}
 		
 		ipaddr.addr = 0;
-//		setSystemWireIP(ipaddr.addr);
-
+		setSystemWireIP(ipaddr.addr);
+		setSystemWireLinkStatus(Link_Down);
 		/*  When the netif link is down this function must be called.*/
 		netif_set_down(&xnetif);
 	}

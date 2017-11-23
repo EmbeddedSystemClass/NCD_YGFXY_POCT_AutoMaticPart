@@ -5,7 +5,7 @@
 
 #include	"LCD_Driver.h"
 #include	"DeviceMaintenanceDao.h"
-
+#include	"StringDefine.h"
 #include	"Define.h"
 #include	"MyMem.h"
 #include	"CRC16.h"

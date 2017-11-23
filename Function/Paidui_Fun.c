@@ -14,6 +14,7 @@
 #include	"Motor_Fun.h"
 #include	"PaiduiUnitData.h"
 #include	"UI_Data.h"
+#include	"StringDefine.h"
 
 #include	"MyTools.h"
 

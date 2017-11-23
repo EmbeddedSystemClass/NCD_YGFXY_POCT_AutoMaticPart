@@ -47,6 +47,11 @@ DeviceQuality * getGB_DeviceQuality(void)
 	return GB_DeviceQuality;
 }
 
+Operator * getDeviceQualityOperator(void)
+{
+	return &GB_DeviceQuality->operator;
+}
+
 void deleteGB_DeviceQuality(void)
 {
 	MyFree(GB_DeviceQuality);

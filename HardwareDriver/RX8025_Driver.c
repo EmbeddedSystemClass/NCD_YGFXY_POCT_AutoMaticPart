@@ -428,7 +428,7 @@ MyRes RTC_SetTimeData2(char * buf)
 		return status;
 }
 
-MyRes RTC_GetTimeData(DateTime * time)
+void RTC_GetTimeData(DateTime * time)
 {
 	unsigned char buf[16];
 	unsigned char tempV = 0;
@@ -439,39 +439,47 @@ MyRes RTC_GetTimeData(DateTime * time)
 	if((tempV >= 16) && (tempV <= 99))
 		time->year = tempV;  
 	else
-		return My_Fail;
+		goto END;
 	
 	tempV = BCD2HEX(buf[5]);
 	if((tempV >= 1) && (tempV <= 12))
 		time->month = tempV;
 	else
-		return My_Fail;
+		goto END;
 	
 	tempV = BCD2HEX(buf[4]);
 	if((tempV >= 1) && (tempV <= 31))
 		time->day = tempV;
 	else
-		return My_Fail;
+		goto END;
 	
 	tempV = BCD2HEX(buf[2]);
 	if(tempV <= 23)
 		time->hour = tempV;
 	else
-		return My_Fail;
+		goto END;
 	
 	tempV = BCD2HEX(buf[1]);
 	if(tempV <= 59)
 		time->min = tempV;
 	else
-		return My_Fail;
+		goto END;
 	
 	tempV = BCD2HEX(buf[0]);
 	if(tempV <= 59)
 		time->sec = tempV;
 	else
-		return My_Fail;
+		goto END;
 	
-	return My_Pass;
+	return;
+	
+	END:
+		time->year = 0;
+		time->month = 1;
+		time->day = 1;
+		time->hour = 0;
+		time->min = 0;
+		time->sec = 0;
 }
 
 /****************************************end of file************************************************/

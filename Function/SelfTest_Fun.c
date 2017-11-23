@@ -45,7 +45,6 @@
 /***************************************************************************************************/
 static ERROR_SelfTest SelfTestStatus = SelfTestting;							//保存每个自检状态
 static FATFS S_Fatfs;															/* File system object */
-static SelfTestBuf * s_SelfTestBuf = NULL;
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
@@ -53,8 +52,11 @@ static void setSelfTestStatus(ERROR_SelfTest status);
 static MyRes loadSystemData(SelfTestBuf * selfTestBuf);
 static MyRes testLed(void);
 static MyRes testMotol(SelfTestBuf * selfTestBuf);
+
+#if (DeviceUseType == Device_Demo)
 static void deviceAdjustSelf(SelfTestBuf * selfTestBuf);
 static void deviceErrorTest(SelfTestBuf * selfTestBuf);
+#endif
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************正文********************************************************/
@@ -81,16 +83,12 @@ ERROR_SelfTest getSelfTestStatus(void)
 ***************************************************************************************************/
 void SelfTest_Function(void)
 {
-	unsigned char errorCnt = 10;
+	SelfTestBuf * s_SelfTestBuf = NULL;
 	
 	setSelfTestStatus(SelfTestting);
 	createGSMMutex();
 	
-	while(s_SelfTestBuf == NULL && errorCnt--)
-	{
-		s_SelfTestBuf = MyMalloc(sizeof(SelfTestBuf));
-		vTaskDelay(100 / portTICK_RATE_MS);
-	}
+	s_SelfTestBuf = MyMalloc(sizeof(SelfTestBuf));
 	
 	if(s_SelfTestBuf == NULL)
 		setSelfTestStatus(SelfTest_Error);
@@ -124,11 +122,12 @@ void SelfTest_Function(void)
 			goto END;
 		}
 		
+		#if (DeviceUseType == Device_Demo)
 		//设备校准
 		deviceAdjustSelf(s_SelfTestBuf);
 		
 		deviceErrorTest(s_SelfTestBuf);
-		
+		#endif
 		//自检完成，发送结果
 		setSelfTestStatus(SelfTest_OK);
 		
@@ -325,6 +324,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	return My_Pass;
 }
 
+#if (DeviceUseType == Device_Demo)
 static void deviceAdjustSelf(SelfTestBuf * selfTestBuf)
 {
 	selfTestBuf->deviceAdjust.normalv = getGBSystemSetData()->testLedLightIntensity;
@@ -360,3 +360,4 @@ static void deviceErrorTest(SelfTestBuf * selfTestBuf)
 		
 	writeDeviceErrorToFile(&selfTestBuf->deviceError);
 }
+#endif

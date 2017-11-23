@@ -46,7 +46,7 @@ unsigned char ReadBarCodeFunction(char * codebuf, unsigned char len)
 	
 	if(codebuf)
 	{
-		ReceiveDataFromQueue(GetUsart1RXQueue(), NULL, codebuf, len, &rxlen, 1, 10 / portTICK_RATE_MS, 0 / portTICK_RATE_MS, 100 / portTICK_RATE_MS);
+		ReceiveDataFromQueue(GetUsart1RXQueue(), NULL, codebuf, len, &rxlen, 1, 10 / portTICK_RATE_MS, FreeRTOSZeroDelay, 100 / portTICK_RATE_MS);
 		
 		if(rxlen > 0)
 		{

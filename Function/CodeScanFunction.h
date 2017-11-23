@@ -5,6 +5,7 @@
 #include	"Define.h"
 #include	"Timer.h"
 #include	"Motor_Fun.h"
+#include	"DateTime.h"
 
 #define	MAX_QR_CODE_LENGHT	150					//二维码最大长度
 #define	MAX_SCAN_QR_TIME	10					//扫描二维码时间
@@ -22,6 +23,7 @@ typedef struct ReadQRCodeBuffer_tag {
 	unsigned char motorDir;										//电机方向
 	unsigned char tempV1;
 	MotorAction motorAction;
+	DateTime dateTime;
 }ReadQRCodeBuffer;
 
 #define	ReadQRCodeBufferStructSize	sizeof(ReadQRCodeBuffer)

@@ -124,6 +124,30 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 				SendKeyCode(3);
 			}
 		}
+		//gateway
+		else if(S_NetSetPageBuffer->lcdinput[0] == 0x1E20)
+		{
+			memset(S_NetSetPageBuffer->buf, 0, 50);
+			memcpy(S_NetSetPageBuffer->buf, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
+			if(My_Pass != parseIpString(&S_NetSetPageBuffer->wireNetSet.NetMask, S_NetSetPageBuffer->buf))
+			{
+				memset(&S_NetSetPageBuffer->wireNetSet.NetMask, 0, 4);
+				ClearText(0x1E10);
+				SendKeyCode(3);
+			}
+		}
+		//dns
+		else if(S_NetSetPageBuffer->lcdinput[0] == 0x1E30)
+		{
+			memset(S_NetSetPageBuffer->buf, 0, 50);
+			memcpy(S_NetSetPageBuffer->buf, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
+			if(My_Pass != parseIpString(&S_NetSetPageBuffer->wireNetSet.staticGateWay, S_NetSetPageBuffer->buf))
+			{
+				memset(&S_NetSetPageBuffer->wireNetSet.staticGateWay, 0, 4);
+				ClearText(0x1E10);
+				SendKeyCode(3);
+			}
+		}
 		/*È·ÈÏÐÞ¸Ä*/
 		else if(S_NetSetPageBuffer->lcdinput[0] == 0x1E05)
 		{

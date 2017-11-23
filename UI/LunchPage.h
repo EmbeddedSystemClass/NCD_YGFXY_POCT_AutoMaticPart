@@ -9,8 +9,8 @@ typedef struct LunchPageBuffer_tag {
 	Timer timer;
 	unsigned char presscount;
 	PaiduiUnitData * currentTestDataBuffer;							//当前测试数据地址
-	char buf[100];
-	unsigned short lcdinput[100];
+	char buf[10];
+	unsigned short lcdinput[20];
 	CreateTestErrorType error;
 	Operator * tempOperator;
 }LunchPageBuffer;

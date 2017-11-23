@@ -9,10 +9,10 @@
 #include	"UI_Data.h"
 #include	"MyMem.h"
 #include	"Motor_Fun.h"
-
-#include	"LunchPage.h"
+#include	"StringDefine.h"
 #include	"PaiDuiPage.h"
 #include	"SampleIDPage.h"
+#include	"StringDefine.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"

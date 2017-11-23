@@ -33,6 +33,8 @@ typedef struct
 typedef struct
 {
 	IP staticIP;														//静态IP
+	IP staticGateWay;													//网关
+	IP NetMask;															//子网掩码
 	bool isStaticIp;													//ip获取方式
 }WireNetSet; 
 #pragma pack()

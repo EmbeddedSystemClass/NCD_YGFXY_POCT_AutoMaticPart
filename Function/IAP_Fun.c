@@ -53,29 +53,27 @@
 MyRes checkMd5(void)
 {
 	RemoteSoftInfo * remoteSoftInfo = NULL;		//读取的固件信息
-	char currentMd5[40];				//当前MD5
+	MyRes status = My_Fail;
 	
 	remoteSoftInfo = MyMalloc(sizeof(RemoteSoftInfo));
 	if(remoteSoftInfo)
 	{
 		//读取文件中的md5
 		memset(remoteSoftInfo, 0, sizeof(RemoteSoftInfo));
-		if(My_Fail == ReadRemoteSoftInfo(remoteSoftInfo))
-			return My_Fail;
+		if(My_Pass == ReadRemoteSoftInfo(remoteSoftInfo))
+		{
+			//计算更新固件的md5值,为节省内存，将计算后的md5保存在固件信息的desc数组内
+			md5sum(remoteSoftInfo->desc);
+		
+			//对比MD5
+			if(true == CheckStrIsSame(remoteSoftInfo->md5, remoteSoftInfo->desc, 32))
+				status = My_Pass;
+		}
 	}
-	else
-		return My_Fail;
 	
+	MyFree(remoteSoftInfo);
 	
-	//计算更新固件的md5值
-	memset(currentMd5, 0, 40);
-	md5sum(currentMd5);
-	
-	//对比MD5
-	if(true == CheckStrIsSame(remoteSoftInfo->md5, currentMd5, 32))
-		return My_Pass;
-	else
-		return My_Fail;
+	return status;	
 }
 
 /***************************************************************************************************
@@ -93,8 +91,7 @@ MyRes checkNewFirmwareIsSuccessDownload(void)
 	if(My_Pass == checkNewAppFileIsExist())
 	{
 		//如果有新固件，对比MD5
-		if(My_Pass == checkMd5())
-			return My_Pass;	
+		return checkMd5();
 	}
 	
 	return My_Fail;

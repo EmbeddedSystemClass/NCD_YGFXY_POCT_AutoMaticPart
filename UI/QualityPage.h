@@ -27,7 +27,7 @@ typedef struct QualityPageBuffer_tag {
 	float tempFloat1;
 	unsigned short i;
 	unsigned short tempShortV1;
-	unsigned short minTime;
+	Basic_ICO myico;
 	int tempIntV1;
 	bool isMotorStartted;
 	MotorAction motorAction;

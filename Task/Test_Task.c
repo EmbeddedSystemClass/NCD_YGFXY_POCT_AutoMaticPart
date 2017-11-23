@@ -79,7 +79,7 @@ static void vTestTask( void *pvParameters )
 }
 
 
-MyRes StartTest(TestData * parm)
+MyRes StartTest(PaiduiUnitData * parm)
 {
 	if(pdPASS == xQueueSend( xStartTestQueue, &parm, 10/portTICK_RATE_MS ))
 		return My_Pass;

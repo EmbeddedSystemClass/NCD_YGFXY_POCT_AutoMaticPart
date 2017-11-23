@@ -10,12 +10,11 @@
 #include	"MyTest_Data.h"
 #include	"PaiDuiPage.h"
 #include	"CardCheck_Driver.h"
-
+#include	"StringDefine.h"
 #include	"System_Data.h"
 #include	"TestDataDao.h"
 #include	"SystemSet_Dao.h"
 #include	"Test_Task.h"
-#include	"LunchPage.h"
 #include	"Printf_Fun.h"
 #include	"Motor_Fun.h"
 
@@ -98,7 +97,7 @@ static void activityStart(void)
 	//必须在获取当前测试数据地址后使用
 	InitPageText();
 		
-	StartTest(&(S_TestPageBuffer->currenttestdata->testData));
+	StartTest(S_TestPageBuffer->currenttestdata);
 	
 	SelectPage(96);
 }

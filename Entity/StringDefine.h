@@ -22,10 +22,11 @@
 #define		AdjustPassWord							"201301\0"								//校准密码
 #define		TestPassWord							"201302\0"								//老化测试密码
 #define		CheckQRPassWord							"201303\0"								//测试二维码密码
-#define		AdjLedPassWord							"201304\0"								//校准led密码··················
-#define		FactoryResetPassWord					"201305\0"							//恢复出厂设置密码
-#define		ChangeValueShowTypePassWord				"201306\0"						//切换结果显示模式，是否显示真实值
+#define		AdjLedPassWord							"201304\0"								//校准led密码
+#define		FactoryResetPassWord					"201305\0"								//恢复出厂设置密码
+#define		ChangeValueShowTypePassWord				"201306\0"								//切换结果显示模式，是否显示真实值
 #define		UnlockLCDPassWord						"201307\0"								//解锁屏幕一次
+#define		ChannelTestPassWord						"201308\0"								//通道差异测试
 
 /*SD卡文件名*/
 #define	TestDataFileName							"0:/TD.ncd\0"
@@ -75,14 +76,17 @@
 	#define	QualityQRScanningString					"正在读取二维码\0"
 	#define	QualityOverString						"测试结束\0"
 	
-	
 	#define	QRReadErrorAndChangeCardString			"二维码读取失败，更换\0"
 	#define	QRReadSuccessString						"二维码读取成功\0"
 	#define	QRItemChangedString						"项目变更，请更换\0"
 	
 	#define	TestErrorString							"测试错误\0"
 	#define	TestOkString							"测试成功\0"
+	#define	StopString								"停止\0"
 	
+	#define	NoneString								"---\0"
+	
+	#define	TestDeviceIdString						"设备编号\0"
 	
 #elif(DeviceLanguage == DEVICE_EN)
 	#define	DeviceNameStr 							"Fluor Immun Quant Analyzer\0"
@@ -115,7 +119,25 @@
 	
 	#define	TestErrorString							"Test Error\0"
 	#define	TestOkString							"Test OK\0"
+	#define	StopString								"Stopped\0"
+	
+	#define	NoneString								"---\0"
+	
+	#define	TestDeviceIdString						"Device ID\0"
+	
 #endif
+
+#define	WelcomeActivityName							"WelcomeActivity\0"
+#define	lunchActivityName							"LunchActivity\0"
+#define	SelectUserActivityName						"SelectUserActivity\0"
+#define	SystemSetActivityName						"SystemSetActivity\0"
+#define	paiduiActivityName							"PaiduiActivity\0"
+#define	MaintenanceActivityName						"MaintenanceActivity\0"
+#define MaintenanceRecordActivityName				"MaintenanceRecordActivity\0"
+#define	QualityActivityName							"QualityActivity\0"
+#define QualityRecordActivityName					"QualityRecordActivity\0"
+#define QualityDetailRecordActivityName				"QualityDetailRecordActivity\0"
+#define	ChannelTestActivityName						"ChannelTestActivity\0"
 
 #endif
 

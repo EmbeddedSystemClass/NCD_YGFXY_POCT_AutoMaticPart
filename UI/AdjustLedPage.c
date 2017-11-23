@@ -7,10 +7,12 @@
 #include	"System_Data.h"
 #include	"Motor_Fun.h"
 #include	"MyMem.h"
+#include	"Test_Fun.h"
 #include	"Test_Task.h"
 #include	"SystemSet_Data.h"
 #include	"SystemSet_Dao.h"
 #include	"CardCheck_Driver.h"
+#include	"StringDefine.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -36,7 +38,6 @@ static void activityBufferFree(void);
 
 static void clearPageText(void);
 static void dspTestStatus(char * str);
-static void DspPageText(void);
 static void analysisTestData(void);
 /******************************************************************************************/
 /******************************************************************************************/
@@ -71,14 +72,10 @@ MyRes createAdjustLedActivity(Activity * thizActivity, Intent * pram)
 
 static void activityStart(void)
 {
+	S_AdjustLedPageBuffer->currentLedValue = getSystemTestLedLightIntensity();
+	S_AdjustLedPageBuffer->paiduiUnitData.statues = statusNull;
 	clearPageText();
-	dspTestStatus("ready\0");
-	
-	S_AdjustLedPageBuffer->motorAction.motorActionEnum = WaitCardPutInDef;
-	S_AdjustLedPageBuffer->motorAction.motorParm = 1;
-					
-	//校准设置为1通道
-	S_AdjustLedPageBuffer->paiduiUnitData.testData.qrCode.ChannelNum = 0;
+	dspTestStatus(StopString);
 
 	SelectPage(140);
 }
@@ -90,51 +87,57 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//开始校准
 	if(S_AdjustLedPageBuffer->lcdinput[0] == 0x2602)
 	{
-		if(S_AdjustLedPageBuffer->isTestting == false)
+		if(S_AdjustLedPageBuffer->paiduiUnitData.statues != statusNull || S_AdjustLedPageBuffer->targetValue <= 0 || S_AdjustLedPageBuffer->targetRange <= 0)
 		{
-			//初始状态从200开始查找
-			S_AdjustLedPageBuffer->ledLevel = 200;
+			SendKeyCode(3);
+		}
+		else
+		{
+			S_AdjustLedPageBuffer->paiduiUnitData.ledValue = MiddleLedValue;
+			S_AdjustLedPageBuffer->testIndex = 0;
+			
+			//在1号位测试
+			S_AdjustLedPageBuffer->paiduiUnitData.cardLocation = 1;
+			S_AdjustLedPageBuffer->paiduiUnitData.testLocation = 10;
+			
+			//在通道0校准
+			S_AdjustLedPageBuffer->paiduiUnitData.testData.qrCode.ChannelNum = 0;
+			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusNone;
+			
+			DspNum(0x2605, S_AdjustLedPageBuffer->testIndex, 2);
+			DspNum(0x2604, S_AdjustLedPageBuffer->paiduiUnitData.ledValue, 2);
 				
-			S_AdjustLedPageBuffer->isTestting = true;
-			S_AdjustLedPageBuffer->testCnt = 1;
-			StartTest(&(S_AdjustLedPageBuffer->paiduiUnitData.testData));
-				
-			dspTestStatus("Testting\0");
-				
-			DspNum(0x2605, S_AdjustLedPageBuffer->testCnt, 2);
-			DspNum(0x2604, S_AdjustLedPageBuffer->ledLevel, 2);
+			dspTestStatus(QualityStatusPreparingString);
 		}
 	}
 	//读取目标值
 	else if(S_AdjustLedPageBuffer->lcdinput[0] == 0x2610)
 	{
-		memset(S_AdjustLedPageBuffer->buf, 0, 20);
-		memcpy(S_AdjustLedPageBuffer->buf, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			
+		getLcdInputData(S_AdjustLedPageBuffer->buf, &pbuf[7]);	
 		S_AdjustLedPageBuffer->targetValue = strtol(S_AdjustLedPageBuffer->buf , NULL, 10);
 	}
 	//读取误差值
 	else if(S_AdjustLedPageBuffer->lcdinput[0] == 0x2640)
 	{
-		memset(S_AdjustLedPageBuffer->buf, 0, 20);
-		memcpy(S_AdjustLedPageBuffer->buf, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-			
+		getLcdInputData(S_AdjustLedPageBuffer->buf, &pbuf[7]);
 		S_AdjustLedPageBuffer->targetRange = strtol(S_AdjustLedPageBuffer->buf , NULL, 10);
 	}
 	//保存校准值
 	else if(S_AdjustLedPageBuffer->lcdinput[0] == 0x2600)
 	{
-		if((S_AdjustLedPageBuffer->ledLevel >= 100) && (S_AdjustLedPageBuffer->ledLevel <= 1800))
+		if((S_AdjustLedPageBuffer->paiduiUnitData.ledValue >= MinLedValue) && (S_AdjustLedPageBuffer->paiduiUnitData.ledValue <= MaxLedValue))
 		{
 			//获取最新的系统参数
-			memcpy(&(S_AdjustLedPageBuffer->systemSetData), getGBSystemSetData(), SystemSetDataStructSize);
-				
+			readGbSystemSetData(&S_AdjustLedPageBuffer->systemSetData);
+			
 			//修改系统参数副本中值
-			S_AdjustLedPageBuffer->systemSetData.testLedLightIntensity = S_AdjustLedPageBuffer->ledLevel;
+			S_AdjustLedPageBuffer->systemSetData.testLedLightIntensity = S_AdjustLedPageBuffer->paiduiUnitData.ledValue;
 				
 			if(My_Pass == SaveSystemSetData(&(S_AdjustLedPageBuffer->systemSetData)))
 			{
 				SendKeyCode(1);
+				S_AdjustLedPageBuffer->currentLedValue = getSystemTestLedLightIntensity();
+				DspNum(0x2609, S_AdjustLedPageBuffer->currentLedValue, 2);
 			}
 			else
 				SendKeyCode(2);
@@ -143,7 +146,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//取消返回
 	else if(S_AdjustLedPageBuffer->lcdinput[0] == 0x2601)
 	{
-		if(S_AdjustLedPageBuffer->isTestting == false)
+		if(S_AdjustLedPageBuffer->paiduiUnitData.statues == statusNull)
 			backToFatherActivity();
 		else
 			SendKeyCode(3);
@@ -152,18 +155,72 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 
 static void activityFresh(void)
 {
-	if(S_AdjustLedPageBuffer->isReady == false && My_Pass == StartMotorAction(&S_AdjustLedPageBuffer->motorAction, true, 1, 0/portTICK_RATE_MS))
-		S_AdjustLedPageBuffer->isReady = true;
-	
-	if(isMotorInRightLocation(1, Motor2_WaitCardLocation, MotorLocationNone) && ON == readCaedCheckStatus())
+	if(S_AdjustLedPageBuffer->paiduiUnitData.statues == statusNone)
 	{
-		if(S_AdjustLedPageBuffer->isTestting == false)
-			dspTestStatus("Waitting\0");
+		FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, WaitCardPutInDef, S_AdjustLedPageBuffer->paiduiUnitData.cardLocation, false, false);
+		S_AdjustLedPageBuffer->paiduiUnitData.statues = statusMotorMoveWaitCard;
 	}
-		
-	if(My_Pass == TakeTestResult(&(S_AdjustLedPageBuffer->cardpretestresult)))
+	else if(S_AdjustLedPageBuffer->paiduiUnitData.statues == statusMotorMoveWaitCard)
 	{
-		analysisTestData();
+		if(isMotorMoveEnd(FreeRTOSZeroDelay))
+		{
+			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitCardPutIn;
+			dspTestStatus(QualityStatusWaitCardString);
+		}
+	}
+	else if(S_AdjustLedPageBuffer->paiduiUnitData.statues == statusWaitCardPutIn)
+	{
+		if(ReadCardCheckPin)
+		{
+			dspTestStatus(QualityStatusTestString);
+			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutDownCardInPlaceDef, S_AdjustLedPageBuffer->paiduiUnitData.cardLocation, false, false);
+			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusMotorPutCardDown;
+		}
+	}
+	else if(statusMotorPutCardDown == S_AdjustLedPageBuffer->paiduiUnitData.statues)
+	{
+		if(isMotorMoveEnd(FreeRTOSZeroDelay))
+		{
+			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusTestMotor;
+			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false, false);
+		}
+	}
+	else if(statusTestMotor == S_AdjustLedPageBuffer->paiduiUnitData.statues)
+	{
+		if(isMotorMoveEnd(FreeRTOSZeroDelay))
+		{
+			S_AdjustLedPageBuffer->paiduiUnitData.statues = status_testting;
+			StartTest(&S_AdjustLedPageBuffer->paiduiUnitData);
+		}
+	}
+	else if(status_testting == S_AdjustLedPageBuffer->paiduiUnitData.statues)
+	{
+		while(pdTRUE == TakeTestPointData(&S_AdjustLedPageBuffer->i));
+	
+		if(My_Pass == TakeTestResult(&S_AdjustLedPageBuffer->paiduiUnitData.testData.testResultDesc))
+		{
+			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutDownCardInTestPlaceDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false, false);
+			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitPutCardInTestPlace;
+		}
+	}
+	else if(statusWaitPutCardInTestPlace == S_AdjustLedPageBuffer->paiduiUnitData.statues)
+	{
+		if(isMotorMoveEnd(FreeRTOSZeroDelay))
+		{
+			analysisTestData();
+		}
+	}
+	else if(statusPutCardOut == S_AdjustLedPageBuffer->paiduiUnitData.statues)
+	{
+		FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutCardOutOfDeviceAfterTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false, false);
+		S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitCardOut;
+	}
+	else if(statusWaitCardOut == S_AdjustLedPageBuffer->paiduiUnitData.statues)
+	{
+		if(isMotorMoveEnd(FreeRTOSZeroDelay))
+		{
+			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusNull;
+		}
 	}
 }
 static void activityHide(void)
@@ -219,22 +276,14 @@ static void clearPageText(void)
 	DspNum(0x2605, 0, 2);
 	
 	//显示当前校准值
-	DspNum(0x2609, getGBSystemSetData()->testLedLightIntensity, 2);
+	DspNum(0x2609, S_AdjustLedPageBuffer->currentLedValue, 2);
 }
 
 static void dspTestStatus(char * str)
 {
-	sprintf(S_AdjustLedPageBuffer->buf, "%-15s\0", str);
+	sprintf(S_AdjustLedPageBuffer->buf, "%-15s", str);
 	
 	DisText(0x2620, S_AdjustLedPageBuffer->buf, strlen(S_AdjustLedPageBuffer->buf)+1);
-}
-
-static void DspPageText(void)
-{
-	sprintf(S_AdjustLedPageBuffer->buf, "%-10d\0", S_AdjustLedPageBuffer->maxPoint[0]);
-	DisText(0x2630, S_AdjustLedPageBuffer->buf, strlen(S_AdjustLedPageBuffer->buf)+1);
-	
-	DspNum(0x2603, S_AdjustLedPageBuffer->maxPoint[1], 2);
 }
 
 static void analysisTestData(void)
@@ -251,30 +300,31 @@ static void analysisTestData(void)
 		}
 	}
 	
-	DspPageText();
+	sprintf(S_AdjustLedPageBuffer->buf, "%d", S_AdjustLedPageBuffer->maxPoint[0]);
+	DisText(0x2630, S_AdjustLedPageBuffer->buf, strlen(S_AdjustLedPageBuffer->buf)+1);
+	
+	DspNum(0x2603, S_AdjustLedPageBuffer->maxPoint[1], 2);
 	
 	if(abs(S_AdjustLedPageBuffer->targetValue - S_AdjustLedPageBuffer->maxPoint[0]) < S_AdjustLedPageBuffer->targetRange)
 	{
-		dspTestStatus("Success\0");
-		S_AdjustLedPageBuffer->isTestting = false;
-		MotorMoveTo(MaxLocation, 1);
-		return;
+		;
 	}
 	else if(S_AdjustLedPageBuffer->targetValue > S_AdjustLedPageBuffer->maxPoint[0])
 	{
 		//继续调节
-		if(S_AdjustLedPageBuffer->paiduiUnitData.ledLight < 300)
+		if(S_AdjustLedPageBuffer->paiduiUnitData.ledValue < MaxLedValue)
 		{
-			S_AdjustLedPageBuffer->paiduiUnitData.ledLight += 10;
-			S_AdjustLedPageBuffer->testCnt++;
+			S_AdjustLedPageBuffer->paiduiUnitData.ledValue += AdjustLedStep;
+			S_AdjustLedPageBuffer->testIndex++;
 			
-			if(S_AdjustLedPageBuffer->testCnt <= 11)
+			if(S_AdjustLedPageBuffer->testIndex < MaxAdjustCnt)
 			{
-				DspNum(0x2605, S_AdjustLedPageBuffer->testCnt, 2);
-				DspNum(0x2604, S_AdjustLedPageBuffer->paiduiUnitData.ledLight, 2);
+				DspNum(0x2605, S_AdjustLedPageBuffer->testIndex, 2);
+				DspNum(0x2604, S_AdjustLedPageBuffer->paiduiUnitData.ledValue, 2);
+						
+				S_AdjustLedPageBuffer->paiduiUnitData.statues = statusTestMotor;
+				FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false, false);
 					
-				StartTest(&(S_AdjustLedPageBuffer->paiduiUnitData.testData));
-				
 				return;
 			}
 		}
@@ -282,27 +332,27 @@ static void analysisTestData(void)
 	else
 	{
 		//继续调节
-		if(S_AdjustLedPageBuffer->paiduiUnitData.ledLight > 100)
+		if(S_AdjustLedPageBuffer->paiduiUnitData.ledValue > MinLedValue)
 		{
-			S_AdjustLedPageBuffer->paiduiUnitData.ledLight -= 10;
-			S_AdjustLedPageBuffer->testCnt++;
+			S_AdjustLedPageBuffer->paiduiUnitData.ledValue -= AdjustLedStep;
+			S_AdjustLedPageBuffer->testIndex++;
 			
-			if(S_AdjustLedPageBuffer->testCnt <= 10)
+			if(S_AdjustLedPageBuffer->testIndex < MaxAdjustCnt)
 			{
-				DspNum(0x2605, S_AdjustLedPageBuffer->testCnt, 2);
-				DspNum(0x2604, S_AdjustLedPageBuffer->PaiduiUnitData.ledLight, 2);
+				DspNum(0x2605, S_AdjustLedPageBuffer->testIndex, 2);
+				DspNum(0x2604, S_AdjustLedPageBuffer->paiduiUnitData.ledValue, 2);
+						
+				S_AdjustLedPageBuffer->paiduiUnitData.statues = statusTestMotor;
+				FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false, false);
 					
-				StartTest(&(S_AdjustLedPageBuffer->paiduiUnitData.testData));
-				
 				return;
 			}
 		}
 	}
 	
-	sprintf(S_AdjustLedPageBuffer->buf, "Fail - %d\0", S_AdjustLedPageBuffer->cardpretestresult);
-	DisText(0x2620, S_AdjustLedPageBuffer->buf, strlen(S_AdjustLedPageBuffer->buf)+1);
-	S_AdjustLedPageBuffer->isTestting = false;
-	
-	MotorMoveTo(MaxLocation, 1);
+	DspNum(0x2605, S_AdjustLedPageBuffer->testIndex, 2);
+	DspNum(0x2604, S_AdjustLedPageBuffer->paiduiUnitData.ledValue, 2);
+	dspTestStatus(StopString);
+	S_AdjustLedPageBuffer->paiduiUnitData.statues = statusPutCardOut;
 }
 

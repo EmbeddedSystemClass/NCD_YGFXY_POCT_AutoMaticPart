@@ -14,7 +14,7 @@ typedef struct UserMPageBuffer_tag {
 	Operator operatorList[MaxOperatorSize];							//操作人列表数据
 	Operator operatorDetail;										//操作人详情
 	Operator * tempOperator;
-	unsigned short lcdinput[100];
+	unsigned short lcdinput[30];
 	char buf[100];
 	unsigned int tempV1;
 	unsigned int tempV2;

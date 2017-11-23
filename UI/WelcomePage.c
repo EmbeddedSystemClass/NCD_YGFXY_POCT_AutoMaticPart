@@ -6,6 +6,7 @@
 #include	"LCD_Driver.h"
 #include	"UI_Data.h"
 #include	"MyMem.h"
+#include	"StringDefine.h"
 
 #include	"LunchPage.h"
 #include	"Test_Task.h"
@@ -51,7 +52,7 @@ MyRes createWelcomeActivity(Activity * thizActivity, Intent * pram)
 	
 	if(My_Pass == activityBufferMalloc())
 	{
-		InitActivity(thizActivity, "WelcomeActivity\0", activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
+		InitActivity(thizActivity, WelcomeActivityName, activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
 		
 		return My_Pass;
 	}
@@ -129,14 +130,14 @@ static void activityFresh(void)
 		//自检完成
 		if(SelfTest_OK == page->selfTestStatus)
 		{					
-			//SetLEDLight(getGBSystemSetData()->ledLightIntensity);
+			SetLEDLight(getGBSystemSetData()->ledLightIntensity);
 			
 			StartvTestTask();
 				
 			//开启读二维码任务
 			StartCodeScanTask();
 			
-			//StartEthernet();
+			StartEthernet();
 					
 			destroyTopActivity();
 			startActivity(createLunchActivity, NULL, NULL);

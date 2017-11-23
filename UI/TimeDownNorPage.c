@@ -7,7 +7,6 @@
 
 #include	"TestPage.h"
 #include	"SystemSetPage.h"
-#include	"LunchPage.h"
 #include	"PaiDuiPage.h"
 #include	"MyMem.h"
 #include	"MyTest_Data.h"

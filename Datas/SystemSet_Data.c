@@ -83,7 +83,7 @@ void upDateSystemSetData(SystemSetData * systemSetData)
 
 unsigned short getSystemTestLedLightIntensity(void)
 {
-	return GBSystemSetData.ledLightIntensity;
+	return GBSystemSetData.testLedLightIntensity;
 }
 /***************************************************************************************************
 *FunctionName: setIsShowRealValue, IsShowRealValue

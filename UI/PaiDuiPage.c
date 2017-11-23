@@ -4,7 +4,7 @@
 #include	"PaiDuiPage.h"
 #include	"Define.h"
 #include	"LCD_Driver.h"
-
+#include	"StringDefine.h"
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"
 #include	"MyMem.h"
@@ -15,7 +15,6 @@
 #include	"ReadBarCode_Fun.h"
 #include	"MyTools.h"
 #include	"MyTest_Data.h"
-#include	"LunchPage.h"
 #include	"System_Data.h"
 #include	"Motor_Data.h"
 

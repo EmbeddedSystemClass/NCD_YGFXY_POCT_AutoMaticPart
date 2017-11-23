@@ -14,6 +14,7 @@
 #include	"Universal_Fun.h"
 #include	"Ads8325_Driver.h"
 #include	"Paidui_Fun.h"
+#include	"MyMem.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -69,6 +70,8 @@ static void vUniversalTask( void *pvParameters )
 	{
 		LedToggle();
 
+		xPortGetFreeHeapSize();
+		MyGetFreeHeapSize();
 		if(count % 10 == 0)
 			readAndUpdateSystemDateTimeFun();
 		

@@ -144,7 +144,7 @@ ResultState TestFunction(PaiduiUnitData * parm)
 		S_TempCalData->paiduiUnitData = parm;
 		S_TempCalData->motor = getMotor(Motor_2);
 		//³õÊ¼ÅäÖÃ
-		SetLedVol(getGBSystemSetData()->testLedLightIntensity);
+		SetLedVol(S_TempCalData->paiduiUnitData->ledValue);
 		vTaskDelay(10/portTICK_RATE_MS);
 		
 		SelectChannel(S_TempCalData->paiduiUnitData->testData.qrCode.ChannelNum);

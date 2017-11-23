@@ -14,6 +14,7 @@
 #include	"Motor_Data.h"
 #include 	"Usart3_Driver.h"
 #include	"CardCheck_Driver.h"
+#include	"System_Data.h"
 
 #include	"Define.h"
 #include	"CRC16.h"
@@ -35,6 +36,7 @@
 /*****************************************局部函数声明*************************************/
 static void ReadBasicCodeData(ReadQRCodeBuffer * readQRCodeBuffer);
 static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer);
+static MyRes CheckCardIsTimeOut(ReadQRCodeBuffer * readQRCodeBuffer);
 /******************************************************************************************/
 /******************************************************************************************/
 /******************************************************************************************/
@@ -307,9 +309,31 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 		if(readQRCodeBuffer->cardQR->CRC16 != CalModbusCRC16Fun(readQRCodeBuffer->pbuf2 , readQRCodeBuffer->originalCodeLen - 
 			readQRCodeBuffer->tempV1, NULL))
 			readQRCodeBuffer->scanResult = CardCodeCRCError;		
-		//else if(My_Fail == CheckCardIsTimeOut(readQRCodeBuffer))
-		//	readQRCodeBuffer->scanResult = CardCodeTimeOut;
+		else if(My_Fail == CheckCardIsTimeOut(readQRCodeBuffer))
+			readQRCodeBuffer->scanResult = CardCodeTimeOut;
 		else
 			readQRCodeBuffer->scanResult = CardCodeScanOK;
 }
 
+static MyRes CheckCardIsTimeOut(ReadQRCodeBuffer * readQRCodeBuffer)
+{
+	if(readQRCodeBuffer)
+	{
+		getSystemTime(&readQRCodeBuffer->dateTime);
+		
+		if(readQRCodeBuffer->cardQR->CardBaoZhiQi.year == readQRCodeBuffer->dateTime.year)
+		{
+			if(readQRCodeBuffer->cardQR->CardBaoZhiQi.month == readQRCodeBuffer->dateTime.month)
+			{
+				if(readQRCodeBuffer->cardQR->CardBaoZhiQi.day >= readQRCodeBuffer->dateTime.day)
+					return My_Pass;
+			}
+			else if(readQRCodeBuffer->cardQR->CardBaoZhiQi.month > readQRCodeBuffer->dateTime.month)
+				return My_Pass;
+		}
+		else if(readQRCodeBuffer->cardQR->CardBaoZhiQi.year > readQRCodeBuffer->dateTime.year)
+			return My_Pass;
+	}
+	
+	return My_Fail;
+}

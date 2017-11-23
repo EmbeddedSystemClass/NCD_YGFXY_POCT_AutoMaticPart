@@ -3,12 +3,12 @@
 #define	_TEST_T_H
 
 #include	"Define.h"
-#include	"TestData.h"
+#include	"PaiduiUnitData.h"
 
 
 char StartvTestTask(void);
 
-MyRes StartTest(TestData * parm);
+MyRes StartTest(PaiduiUnitData * parm);
 
 MyRes TakeTestResult(ResultState *testsult);
 

@@ -13,13 +13,13 @@
 #include	"LCD_Driver.h"
 #include	"Define.h"
 #include	"MyMem.h"
-
+#include	"StringDefine.h"
 #include	"SystemSetPage.h"
 #include	"SelectUserPage.h"
 #include	"System_Data.h"
 #include	"DeviceMaintenanceDao.h"
 #include	"Maintenance_Data.h"
-
+#include	"StringDefine.h"
 #include	"CRC16.h"
 
 #include	<string.h>

@@ -16,7 +16,7 @@
 #include	"CRC16.h"
 #include	"MyTools.h"
 #include	"StringDefine.h"
-
+#include	"SystemSet_Data.h"
 #include	"Test_Fun.h"
 #include	"Quality_Data.h"
 #include	"SystemSetPage.h"
@@ -122,14 +122,14 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	if(pageBuffer->lcdinput[0] == 0x3400)
 	{
 		pageBuffer->isCancel = true;
-		
+		SendKeyCode(3);
 	}
 	//提交
 	else if(pageBuffer->lcdinput[0] == 0x3401)
 	{
 		if(pageBuffer->resultNum > 0 && pageBuffer->deviceQuality->standardValue != 0)
 		{
-			memcpy(&(pageBuffer->deviceQuality->dateTime), &(getSystemRunTimeData()->systemDateTime), DateTimeStructSize);
+			getSystemTime(&pageBuffer->deviceQuality->dateTime);
 			pageBuffer->deviceQuality->crc = CalModbusCRC16Fun(pageBuffer->deviceQuality, DeviceQualityStructCrcSize, NULL);
 			
 			if(My_Pass == writeDeviceQualityToFile(pageBuffer->deviceQuality))
@@ -180,119 +180,122 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 static void activityFresh(void)
 {
 	pageBuffer->ScheduleCount++;
-	
-	pageBuffer->minTime = 0xffff;
+
 	pageBuffer->statuesNullNum = 0;
 	for(pageBuffer->i=0; pageBuffer->i<PaiDuiWeiNum; pageBuffer->i++)
 	{
 		pageBuffer->tempPaiduiUnitData = &pageBuffer->paiduiUnitData[pageBuffer->i];
 		
-		if(pageBuffer->tempPaiduiUnitData->statues == statusNull)
+		if(pageBuffer->tempPaiduiUnitData->statues == statusNull || pageBuffer->tempPaiduiUnitData->statues == status_end)
 		{
 			pageBuffer->statuesNullNum++;
-			showStatus(QualityClearString, pageBuffer->i);
 		}
-		else if(pageBuffer->tempPaiduiUnitData->statues != status_end)
+		
+		else if(pageBuffer->tempPaiduiUnitData->statues == status_timedown || pageBuffer->tempPaiduiUnitData->statues == status_timeup)
 		{
-			if(pageBuffer->tempPaiduiUnitData->statues == status_start)
-				pageBuffer->tempPaiduiUnitData->statues = status_timedown;
-			
-			if(pageBuffer->tempPaiduiUnitData->statues == status_timedown || pageBuffer->tempPaiduiUnitData->statues == status_timeup)
+			if(pageBuffer->isCancel)
 			{
-				if(pageBuffer->isCancel)
+				if(pageBuffer->currentPaiduiUnitData == NULL)
 				{
-					if(pageBuffer->currentPaiduiUnitData == NULL)
-					{
-						pageBuffer->tempPaiduiUnitData->statues = statusPutCardOut;
-						pageBuffer->currentPaiduiUnitData = pageBuffer->tempPaiduiUnitData;
-						showStatus(QualityCancellingString, pageBuffer->tempPaiduiUnitData->index);
-						break;
-					}
-					else
-					{
-						showStatus(QualityPrepareCancelString, pageBuffer->tempPaiduiUnitData->index);
-					}
+					pageBuffer->tempPaiduiUnitData->statues = statusPutCardOut;
+					pageBuffer->currentPaiduiUnitData = pageBuffer->tempPaiduiUnitData;
+					showStatus(QualityCancellingString, pageBuffer->tempPaiduiUnitData->index);
+					break;
 				}
 				else
+					showStatus(QualityPrepareCancelString, pageBuffer->tempPaiduiUnitData->index);
+			}
+			else
+			{
+				if(pageBuffer->tempPaiduiUnitData->statues == status_timedown)
 				{
-					if(pageBuffer->tempPaiduiUnitData->statues == status_timedown)
-					{
-						pageBuffer->tempIntV1 = timer_surplus(&(pageBuffer->tempPaiduiUnitData->timeDown_timer));
-						sprintf(pageBuffer->tempBuf, "%s %02d:%02d", QualityTimeDownString, pageBuffer->tempIntV1/60, pageBuffer->tempIntV1%60);
-						if(pageBuffer->minTime > pageBuffer->tempIntV1)
-							pageBuffer->minTime = pageBuffer->tempIntV1;
+					pageBuffer->tempIntV1 = timer_surplus(&(pageBuffer->tempPaiduiUnitData->timeDown_timer));
+					sprintf(pageBuffer->tempBuf, "%s %02d:%02d", QualityTimeDownString, pageBuffer->tempIntV1/60, pageBuffer->tempIntV1%60);
 						
-						if(0 == pageBuffer->tempIntV1)
-						{
-							pageBuffer->tempPaiduiUnitData->statues = status_timeup;
-							timer_restart(&(pageBuffer->tempPaiduiUnitData->timeUp_timer));				//启动超时计时器
-						}
-						else if(pageBuffer->tempIntV1 <= 30)
-						{
-							if(NULL == pageBuffer->currentPaiduiUnitData || pageBuffer->tempPaiduiUnitData == pageBuffer->currentPaiduiUnitData)
-							{
-								pageBuffer->currentPaiduiUnitData = pageBuffer->tempPaiduiUnitData;
-								pageBuffer->tempPaiduiUnitData->statues = statusTestMotor;
-								FormatParmAndStartMotorAction(&pageBuffer->motorAction, StartTestDef, pageBuffer->currentPaiduiUnitData->testLocation, false, false);
-								showStatus(QualityTestingString, pageBuffer->currentPaiduiUnitData->index);
-							}
-						}
-						else if(pageBuffer->tempPaiduiUnitData == pageBuffer->currentPaiduiUnitData)
-							pageBuffer->currentPaiduiUnitData = NULL;
+					if(0 == pageBuffer->tempIntV1)
+					{
+						pageBuffer->tempPaiduiUnitData->statues = status_timeup;
+						timer_restart(&(pageBuffer->tempPaiduiUnitData->timeUp_timer));				//启动超时计时器
 					}
-					else if(pageBuffer->tempPaiduiUnitData->statues == status_timeup)
+					else if(pageBuffer->tempIntV1 <= 30)
 					{
-						pageBuffer->tempIntV1 = timer_Count(&(pageBuffer->tempPaiduiUnitData->timeUp_timer));
-						sprintf(pageBuffer->tempBuf, "%s %02d:%02d", QualityTimeUpString, pageBuffer->tempIntV1/60, pageBuffer->tempIntV1%60);
-						pageBuffer->minTime = 0;
+						if(statusNone == pageBuffer->currentPaiduiUnitData->statues || statusWaitCardPutIn == pageBuffer->currentPaiduiUnitData->statues)
+						{
+							pageBuffer->currentPaiduiUnitData->statues = statusNull;
+							showStatus(QualityClearString, pageBuffer->currentPaiduiUnitData->index);
+							pageBuffer->currentPaiduiUnitData = NULL;
+						}
 						
-						if(pageBuffer->currentPaiduiUnitData == NULL)
+						if(NULL == pageBuffer->currentPaiduiUnitData || pageBuffer->tempPaiduiUnitData == pageBuffer->currentPaiduiUnitData)
 						{
 							pageBuffer->currentPaiduiUnitData = pageBuffer->tempPaiduiUnitData;
 							pageBuffer->tempPaiduiUnitData->statues = statusTestMotor;
 							FormatParmAndStartMotorAction(&pageBuffer->motorAction, StartTestDef, pageBuffer->currentPaiduiUnitData->testLocation, false, false);
 							showStatus(QualityTestingString, pageBuffer->currentPaiduiUnitData->index);
-						} 
+						}
 					}
+					else if(pageBuffer->tempPaiduiUnitData == pageBuffer->currentPaiduiUnitData)
+						pageBuffer->currentPaiduiUnitData = NULL;
+				}
+				else if(pageBuffer->tempPaiduiUnitData->statues == status_timeup)
+				{
+					pageBuffer->tempIntV1 = timer_Count(&(pageBuffer->tempPaiduiUnitData->timeUp_timer));
+					sprintf(pageBuffer->tempBuf, "%s %02d:%02d", QualityTimeUpString, pageBuffer->tempIntV1/60, pageBuffer->tempIntV1%60);
 					
-					if( pageBuffer->ScheduleCount % 5 == 0)
+					if(statusNone == pageBuffer->currentPaiduiUnitData->statues || statusWaitCardPutIn == pageBuffer->currentPaiduiUnitData->statues)
 					{
-						showStatus(pageBuffer->tempBuf, pageBuffer->tempPaiduiUnitData->index);
+						pageBuffer->currentPaiduiUnitData->statues = statusNull;
+						showStatus(QualityClearString, pageBuffer->currentPaiduiUnitData->index);
+						pageBuffer->currentPaiduiUnitData = NULL;
 					}
+						
+					if(pageBuffer->currentPaiduiUnitData == NULL)
+					{
+						pageBuffer->currentPaiduiUnitData = pageBuffer->tempPaiduiUnitData;
+						pageBuffer->tempPaiduiUnitData->statues = statusTestMotor;
+						FormatParmAndStartMotorAction(&pageBuffer->motorAction, StartTestDef, pageBuffer->currentPaiduiUnitData->testLocation, false, false);
+						showStatus(QualityTestingString, pageBuffer->currentPaiduiUnitData->index);
+					} 
+				}
+					
+				if( pageBuffer->ScheduleCount % 5 == 0)
+				{
+					showStatus(pageBuffer->tempBuf, pageBuffer->i);
 				}
 			}
 		}
 	}
 	
-	if(pageBuffer->statuesNullNum >= MaxQualityCount && pageBuffer->isCancel)
-	{
-		deleteGB_DeviceQuality();
-		backToActivity(SystemSetActivityName);
-		return;
-	}
-	
 	if(pageBuffer->currentPaiduiUnitData)
 	{
-		if(pageBuffer->minTime < 30 && (statusNone == pageBuffer->currentPaiduiUnitData->statues || statusWaitCardPutIn == pageBuffer->currentPaiduiUnitData->statues))
+		if( pageBuffer->ScheduleCount % 5 == 0)
 		{
-			pageBuffer->currentPaiduiUnitData->statues = statusNull;
-			pageBuffer->currentPaiduiUnitData = NULL;
+			pageBuffer->tempShortV1 = pageBuffer->currentPaiduiUnitData->index;
+			pageBuffer->tempShortV1 *= 40;
+			pageBuffer->myico.ICO_ID = 27;
+			pageBuffer->myico.X = 584;
+			pageBuffer->myico.Y = 138 + pageBuffer->tempShortV1;
+		
+			BasicUI(0x3550 ,0x1807 , 1, &pageBuffer->myico , sizeof(Basic_ICO));
 		}
-		else if(statusNone == pageBuffer->currentPaiduiUnitData->statues)
+		
+		if(pageBuffer->currentPaiduiUnitData->statues == statusNone)
 		{
 			if(pageBuffer->isCancel)
 			{
 				pageBuffer->currentPaiduiUnitData->statues = statusNull;
+				showStatus(QualityClearString, pageBuffer->currentPaiduiUnitData->index);
 				pageBuffer->currentPaiduiUnitData = NULL;
-				return;
 			}
-			
-			FormatParmAndStartMotorAction(&pageBuffer->motorAction, WaitCardPutInDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
-			pageBuffer->currentPaiduiUnitData->statues = statusMotorMoveQR;
+			else
+			{
+				FormatParmAndStartMotorAction(&pageBuffer->motorAction, WaitCardPutInDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
+				pageBuffer->currentPaiduiUnitData->statues = statusMotorMoveWaitCard;
+			}
 		}
-		else if(statusMotorMoveQR == pageBuffer->currentPaiduiUnitData->statues)
+		else if(pageBuffer->currentPaiduiUnitData->statues == statusMotorMoveWaitCard)
 		{
-			if(isMotorMoveEnd(0 / portTICK_RATE_MS))
+			if(isMotorMoveEnd(FreeRTOSZeroDelay))
 			{
 				if(pageBuffer->cardScanResult == CardScanNone)
 				{
@@ -306,7 +309,7 @@ static void activityFresh(void)
 				}
 			}
 		}
-		else if(statusWaitCardPutIn == pageBuffer->currentPaiduiUnitData->statues)
+		else if(pageBuffer->currentPaiduiUnitData->statues == statusWaitCardPutIn)
 		{
 			if(ReadCardCheckPin)
 			{
@@ -314,132 +317,123 @@ static void activityFresh(void)
 				{
 					FormatParmAndStartMotorAction(&pageBuffer->motorAction, PutDownCardInPlaceDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
 					pageBuffer->currentPaiduiUnitData->statues = statusMotorPutCardDown;
-					return;
 				}
-			
-				pageBuffer->currentPaiduiUnitData->statues = statusWaitScanQR;
-				StartScanQRCode(&pageBuffer->currentPaiduiUnitData->testData.qrCode);
-				showStatus(QualityQRScanningString, pageBuffer->currentPaiduiUnitData->index);
+				else
+				{
+					pageBuffer->currentPaiduiUnitData->statues = statusWaitScanQR;
+					StartScanQRCode(&pageBuffer->currentPaiduiUnitData->testData.qrCode);
+					showStatus(QualityQRScanningString, pageBuffer->currentPaiduiUnitData->index);
+				}
 			}
 			else if(pageBuffer->isCancel)
 			{
-				pageBuffer->currentPaiduiUnitData->statues = statusNull;
-				pageBuffer->currentPaiduiUnitData = NULL;
-				return;
+				FormatParmAndStartMotorAction(&pageBuffer->motorAction, OriginLocationDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
+				pageBuffer->currentPaiduiUnitData->statues = statusMotorOrigin;
+				
+				showStatus(QualityCancellingString, pageBuffer->currentPaiduiUnitData->index);
 			}
 		}
-		else if(statusWaitCardPutOut == pageBuffer->currentPaiduiUnitData->statues)
+		else if(pageBuffer->currentPaiduiUnitData->statues == statusWaitCardPutOut)
 		{
 			if(!ReadCardCheckPin)
 			{
 				if(pageBuffer->isCancel)
 				{
-					pageBuffer->currentPaiduiUnitData->statues = statusNull;
-					pageBuffer->currentPaiduiUnitData = NULL;
-					return;
-				}
+					FormatParmAndStartMotorAction(&pageBuffer->motorAction, OriginLocationDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
+					pageBuffer->currentPaiduiUnitData->statues = statusMotorOrigin;
 				
-				pageBuffer->currentPaiduiUnitData->statues = statusWaitCardPutIn;
-				showStatus(QualityStatusWaitCardString, pageBuffer->currentPaiduiUnitData->index);
+					showStatus(QualityCancellingString, pageBuffer->currentPaiduiUnitData->index);
+				}
+				else
+				{
+					pageBuffer->currentPaiduiUnitData->statues = statusWaitCardPutIn;
+					showStatus(QualityStatusWaitCardString, pageBuffer->currentPaiduiUnitData->index);
+				}
 			}
 			else if(pageBuffer->isCancel)
 			{
 				FormatParmAndStartMotorAction(&pageBuffer->motorAction, PutDownCardInPlaceDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
 				pageBuffer->currentPaiduiUnitData->statues = statusMotorPutCardDown;
-				return;
 			}
 		}
-		else if(statusWaitScanQR == pageBuffer->currentPaiduiUnitData->statues)
+		else if(pageBuffer->currentPaiduiUnitData->statues == statusWaitScanQR)
 		{
 			if(My_Pass == TakeScanQRCodeResult(&pageBuffer->cardScanResult))
 			{
 				if(pageBuffer->cardScanResult == CardCodeScanOK)
 				{
-					if(pageBuffer->testIndex == 0)
+					if(strlen(pageBuffer->deviceQuality->itemName) == 0)
 					{
 						memcpy(pageBuffer->deviceQuality->itemName, pageBuffer->currentPaiduiUnitData->testData.qrCode.ItemName, ItemNameLen);
-						DisText(0x3510, pageBuffer->currentPaiduiUnitData->testData.qrCode.ItemName, ItemNameLen);
-						pageBuffer->motorAction.motorActionEnum = OriginLocationDef;
-						pageBuffer->motorAction.motorParm = pageBuffer->currentPaiduiUnitData->cardLocation+1;
+						DisText(0x3510, pageBuffer->deviceQuality->itemName, ItemNameLen);
+					}
+					
+					if(CheckStrIsSame(pageBuffer->deviceQuality->itemName, pageBuffer->currentPaiduiUnitData->testData.qrCode.ItemName, ItemNameLen))
+					{
+						FormatParmAndStartMotorAction(&pageBuffer->motorAction, OriginLocationDef, pageBuffer->currentPaiduiUnitData->cardLocation+1, false, false);
 						pageBuffer->currentPaiduiUnitData->statues = statusMotorOrigin;
 						timer_SetAndStart(&(pageBuffer->currentPaiduiUnitData->timeDown_timer), pageBuffer->currentPaiduiUnitData->testData.qrCode.CardWaitTime);
 						showStatus(QRReadSuccessString, pageBuffer->currentPaiduiUnitData->index);
+						
+						return;
 					}
-					else if(CheckStrIsSame(pageBuffer->paiduiUnitData[0].testData.qrCode.ItemName, pageBuffer->currentPaiduiUnitData->testData.qrCode.ItemName, ItemNameLen))
-					{
-						pageBuffer->motorAction.motorActionEnum = OriginLocationDef;
-						pageBuffer->motorAction.motorParm = pageBuffer->currentPaiduiUnitData->cardLocation+1;
-						pageBuffer->currentPaiduiUnitData->statues = statusMotorOrigin;
-						timer_SetAndStart(&(pageBuffer->currentPaiduiUnitData->timeDown_timer), pageBuffer->currentPaiduiUnitData->testData.qrCode.CardWaitTime);
-						showStatus(QRReadSuccessString, pageBuffer->currentPaiduiUnitData->index);
-					}
-					else
-					{
-						pageBuffer->motorAction.motorActionEnum = WaitCardPutInDef;
-						pageBuffer->motorAction.motorParm = pageBuffer->currentPaiduiUnitData->cardLocation;
-						pageBuffer->currentPaiduiUnitData->statues = statusMotorMoveQR;
-						showStatus(QRItemChangedString, pageBuffer->currentPaiduiUnitData->index);
-					}
-				}
-				else
-				{
-					pageBuffer->motorAction.motorActionEnum = WaitCardPutInDef;
-					pageBuffer->motorAction.motorParm = pageBuffer->currentPaiduiUnitData->cardLocation;
-					pageBuffer->currentPaiduiUnitData->statues = statusMotorMoveQR;
-					showStatus(QRReadErrorAndChangeCardString, pageBuffer->currentPaiduiUnitData->index);
 				}
 				
-				StartMotorAction(&pageBuffer->motorAction, false, false);
+				pageBuffer->currentPaiduiUnitData->statues = statusMotorMoveWaitCard;
+				FormatParmAndStartMotorAction(&pageBuffer->motorAction, WaitCardPutInDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
+				showStatus(QRReadErrorAndChangeCardString, pageBuffer->currentPaiduiUnitData->index);
 			}
 		}
 		else if(statusMotorPutCardDown == pageBuffer->currentPaiduiUnitData->statues)
 		{
-			if(isMotorMoveEnd(0 / portTICK_RATE_MS))
+			if(isMotorMoveEnd(FreeRTOSZeroDelay))
 			{
-				if(pageBuffer->isCancel)
-				{
-					pageBuffer->currentPaiduiUnitData->statues = statusPutCardOut;
-					return;
-				}
+				pageBuffer->currentPaiduiUnitData->statues = statusPutCardOut;
 			}
 		}
 		else if(statusMotorOrigin == pageBuffer->currentPaiduiUnitData->statues)
 		{
-			if(isMotorMoveEnd(0 / portTICK_RATE_MS))
+			if(isMotorMoveEnd(FreeRTOSZeroDelay))
 			{
+				//cancel
 				if(pageBuffer->isCancel)
 				{
-					pageBuffer->currentPaiduiUnitData->statues = statusPutCardOut;
-					return;
+					//card ? put out
+					if(ReadCardCheckPin)
+						pageBuffer->currentPaiduiUnitData->statues = statusPutCardOut;
+					//no card ? over
+					else
+					{
+						pageBuffer->currentPaiduiUnitData->statues = statusNull;
+						showStatus(QualityClearString, pageBuffer->currentPaiduiUnitData->index);
+						pageBuffer->currentPaiduiUnitData = NULL;
+					}
 				}
-				pageBuffer->currentPaiduiUnitData->statues = status_start;
-				pageBuffer->testIndex++;
+				else
+				{
+					pageBuffer->testIndex++;
+					pageBuffer->currentPaiduiUnitData->statues = status_timedown;
+				}
 			}
 		}
 		else if(statusTestMotor == pageBuffer->currentPaiduiUnitData->statues)
 		{
-			if(isMotorMoveEnd(0 / portTICK_RATE_MS))
+			if(isMotorMoveEnd(FreeRTOSZeroDelay))
 			{
 				if(pageBuffer->isCancel)
-				{
 					pageBuffer->currentPaiduiUnitData->statues = statusPutCardOut;
-					return;
-				}
-				pageBuffer->currentPaiduiUnitData->statues = statusPrepareTest;
+				else
+					pageBuffer->currentPaiduiUnitData->statues = statusPrepareTest;
 			}
 		}
 		else if(statusPrepareTest == pageBuffer->currentPaiduiUnitData->statues)
 		{
 			if(pageBuffer->isCancel)
-			{
 				pageBuffer->currentPaiduiUnitData->statues = statusPutCardOut;
-				return;
-			}
-			
-			if(TimerOut == timer_expired(&pageBuffer->currentPaiduiUnitData->timeDown_timer))
+			else if(TimerOut == timer_expired(&pageBuffer->currentPaiduiUnitData->timeDown_timer))
 			{
 				pageBuffer->currentPaiduiUnitData->statues = status_testting;
-				StartTest(&pageBuffer->currentPaiduiUnitData->testData);
+				StartTest(pageBuffer->currentPaiduiUnitData);
 			}
 		}
 		else if(status_testting == pageBuffer->currentPaiduiUnitData->statues)
@@ -453,14 +447,12 @@ static void activityFresh(void)
 		}
 		else if(statusPutCardOut == pageBuffer->currentPaiduiUnitData->statues)
 		{
+			FormatParmAndStartMotorAction(&pageBuffer->motorAction, PutCardOutOfDeviceDef, pageBuffer->currentPaiduiUnitData->testLocation, false, false);
 			pageBuffer->currentPaiduiUnitData->statues = statusWaitCardOut;
-			pageBuffer->motorAction.motorActionEnum = PutCardOutOfDeviceDef;
-			pageBuffer->motorAction.motorParm = pageBuffer->currentPaiduiUnitData->testLocation;
-			StartMotorAction(&pageBuffer->motorAction, false, false);
 		}
 		else if(statusWaitCardOut == pageBuffer->currentPaiduiUnitData->statues)
 		{
-			if(isMotorMoveEnd(0 / portTICK_RATE_MS))
+			if(isMotorMoveEnd(FreeRTOSZeroDelay))
 			{
 				if(!pageBuffer->isCancel)
 					showThisTestResult();
@@ -471,21 +463,28 @@ static void activityFresh(void)
 		}
 	}
 	else if(pageBuffer->isCancel)
-		;
+	{
+		if(pageBuffer->statuesNullNum >= MaxQualityCount)
+		{
+			deleteGB_DeviceQuality();
+			backToActivity(SystemSetActivityName);
+			return;
+		}
+	}
 	else if(pageBuffer->testIndex < MaxQualityCount)
 	{
 		//新建测试
 		pageBuffer->currentPaiduiUnitData = &pageBuffer->paiduiUnitData[pageBuffer->testIndex];
 		pageBuffer->currentPaiduiUnitData->index = pageBuffer->testIndex;
-		pageBuffer->currentPaiduiUnitData->cardLocation = 2*pageBuffer->testIndex + 1;
+		pageBuffer->currentPaiduiUnitData->cardLocation = 2*pageBuffer->currentPaiduiUnitData->index + 1;
 		pageBuffer->currentPaiduiUnitData->testLocation = pageBuffer->currentPaiduiUnitData->cardLocation;
 		pageBuffer->currentPaiduiUnitData->testLocation += PaiDuiWeiNum;
 		if(pageBuffer->currentPaiduiUnitData->testLocation > PaiDuiWeiNum*2)
 			pageBuffer->currentPaiduiUnitData->testLocation -= PaiDuiWeiNum*2;
-			
+		pageBuffer->currentPaiduiUnitData->ledValue = getSystemTestLedLightIntensity();
 		pageBuffer->currentPaiduiUnitData->statues = statusNone;
 		pageBuffer->cardScanResult = CardScanNone;
-			
+					
 		showStatus(QualityStatusPreparingString, pageBuffer->currentPaiduiUnitData->index);
 	}
 }
@@ -501,7 +500,7 @@ static void activityFresh(void)
 ***************************************************************************************************/
 static void activityHide(void)
 {
-
+	SendKeyCode(16);
 }
 
 /***************************************************************************************************
@@ -529,6 +528,7 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
+	SendKeyCode(16);
 	activityBufferFree();
 }
 
@@ -620,6 +620,8 @@ static void showAllPianCha(void)
 				pageBuffer->deviceQuality->testPicha[pageBuffer->i] = (pageBuffer->deviceQuality->testValue[pageBuffer->i] - pageBuffer->deviceQuality->standardValue) / pageBuffer->deviceQuality->standardValue;
 				sprintf(pageBuffer->tempBuf, "%.3f%%", pageBuffer->deviceQuality->testPicha[pageBuffer->i]*100);
 				DisText(0x3440 + pageBuffer->i*0x05, pageBuffer->tempBuf, strlen(pageBuffer->tempBuf)+1);
+				pageBuffer->resultNum++;
+				pageBuffer->resultSum += pageBuffer->deviceQuality->testValue[pageBuffer->i];
 			}
 			else if(pageBuffer->deviceQuality->testResult[pageBuffer->i] == Bool_False)
 			{

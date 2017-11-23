@@ -339,7 +339,7 @@ unsigned short GetBufLen(unsigned char *p ,unsigned short len)
 	unsigned short i ;
 	for(i=0; i<len; i++)
 			{
-				if(p[i] == 0xff)
+				if(p[i] == 0xff || p[i] == 0)
 				{
 					p[i] = 0;
 					return i;

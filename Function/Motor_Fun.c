@@ -33,6 +33,7 @@ static void PutCardOutOfDevice(unsigned char num);
 static void PutCardOutOfDeviceAfterTest(void);
 static void MotorMoveToOriginLocation(unsigned char num);
 static void motorMoveToPutDownCardInPlace(void);
+static void motorMoveToPutDownCardInTestPlace(void);
 /**************************************************************************************************/
 /**************************************************************************************************/
 /**************************************************************************************************/
@@ -69,6 +70,8 @@ void MotorActionFunction(void)
 			case OriginLocationDef :		MotorMoveToOriginLocation(S_MotorAction.motorParm);	break;
 											
 			case PutDownCardInPlaceDef :	motorMoveToPutDownCardInPlace();	break;
+			
+			case PutDownCardInTestPlaceDef :	motorMoveToPutDownCardInTestPlace();	break;
 				
 			default: 						break;
 		}
@@ -264,6 +267,29 @@ static void motorMoveToPutDownCardInPlace(void)
 	motor4MoveTo(Motor4_CardLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_PutDownCardLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+	
+	motor4MoveTo(Motor4_OpenLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+}
+
+static void motorMoveToPutDownCardInTestPlace(void)
+{
+	motorStopActionPermission = false;
+	
+	motor4MoveTo(Motor4_OpenLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_StartTestLocation, true);
+	if(motorStopActionPermission == true)
+			return;
+
+	motor4MoveTo(Motor4_CardLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_PutDownCardLocation2, true);
 	if(motorStopActionPermission == true)
 			return;
 	

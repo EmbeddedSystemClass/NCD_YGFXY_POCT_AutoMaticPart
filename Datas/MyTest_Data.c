@@ -70,6 +70,8 @@ CreateTestErrorType CreateANewTest(PaiduiUnitData ** TestDataBuffer)
 				if(CurrentTestDataBuffer->testLocation > PaiDuiWeiNum*2)
 					CurrentTestDataBuffer->testLocation -= PaiDuiWeiNum*2;
 				
+				//读取led值
+				CurrentTestDataBuffer->ledValue = getSystemTestLedLightIntensity();
 				//保存最新的操作人
 				if(lastOperator.crc != 0)
 					memcpy(&CurrentTestDataBuffer->testData.operator, &lastOperator, OneOperatorStructSize);
@@ -192,6 +194,7 @@ MyRes DeleteCurrentTest(void)
 	if(CurrentTestDataBuffer)
 	{
 		PaiduiTestDataBuffer[CurrentTestDataBuffer->index] = NULL;
+		CurrentTestDataBuffer->statues = statusNull;
 
 		MyFree(CurrentTestDataBuffer);
 		

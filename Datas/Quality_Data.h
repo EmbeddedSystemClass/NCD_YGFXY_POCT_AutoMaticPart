@@ -7,6 +7,7 @@
 MyRes CreateADeviceQuality(void);
 DeviceQuality * getGB_DeviceQuality(void);
 void deleteGB_DeviceQuality(void);
+Operator * getDeviceQualityOperator(void);
 
 #endif
 

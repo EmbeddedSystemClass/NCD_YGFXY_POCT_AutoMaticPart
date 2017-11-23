@@ -34,6 +34,7 @@ typedef struct TestData_tag {
 	unsigned short 	time;								//超时时间
 	ResultState 	testResultDesc;						//测试结果状态
 	unsigned char 	cParm;								//c补偿倍数*10
+	unsigned char 	noUse[512];							//预留
 	unsigned short 	crc;
 }TestData;
 #pragma pack()

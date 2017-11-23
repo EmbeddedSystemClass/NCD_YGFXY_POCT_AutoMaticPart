@@ -7,7 +7,6 @@
 #include	"UI_Data.h"
 #include	"MyMem.h"
 #include	"MyTest_Data.h"
-#include	"LunchPage.h"
 #include	"CodeScan_Task.h"
 #include	"WaittingCardPage.h"
 #include	"TimeDownNorPage.h"
@@ -15,6 +14,7 @@
 #include	"MyTools.h"
 #include	"CRC16.h"
 #include	"System_Data.h"
+#include	"StringDefine.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"

@@ -4,15 +4,11 @@
 #include	"SelectUserPage.h"
 #include	"LCD_Driver.h"
 #include	"MyMem.h"
-#include	"MyTest_Data.h"
 #include	"CRC16.h"
 #include	"UserMPage.h"
 #include	"OperatorDao.h"
 #include	"Intent.h"
-
-#include 	"FreeRTOS.h"
-#include 	"task.h"
-#include 	"queue.h"
+#include	"StringDefine.h"
 
 #include	<string.h>
 #include	"stdio.h"
@@ -57,7 +53,7 @@ MyRes createSelectUserActivity(Activity * thizActivity, Intent * pram)
 	
 	if(My_Pass == activityBufferMalloc())
 	{
-		InitActivity(thizActivity, "SelectUserActivity\0", activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
+		InitActivity(thizActivity, SelectUserActivityName, activityStart, activityInput, activityFresh, activityHide, activityResume, activityDestroy);
 		
 		if(pram)
 		{
@@ -101,73 +97,68 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(page)
+	page->lcdinput[0] = pbuf[4];
+	page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
+		
+	/*返回*/
+	if(page->lcdinput[0] == 0x1200)
 	{
-		/*命令*/
-		page->lcdinput[0] = pbuf[4];
-		page->lcdinput[0] = (page->lcdinput[0]<<8) + pbuf[5];
-		
-		/*返回*/
-		if(page->lcdinput[0] == 0x1200)
+		page->currenttestdata = GetCurrentTestItem();
+		if(NULL != page->currenttestdata)
 		{
-			page->currenttestdata = GetCurrentTestItem();
-			if(NULL != page->currenttestdata)
-			{
-				DeleteCurrentTest();
-			}
-
-			backToFatherActivity();
+			DeleteCurrentTest();
 		}
+
+		backToFatherActivity();
+	}
 		
-		/*上翻也*/
-		else if(page->lcdinput[0] == 0x1203)
-		{			
-			if(page->pageIndex > 0)
-			{
-				page->pageIndex--;
+	/*上翻也*/
+	else if(page->lcdinput[0] == 0x1203)
+	{			
+		if(page->pageIndex > 0)
+		{
+			page->pageIndex--;
 						
-				ShowList();
-			}
+			ShowList();
 		}
-		/*下翻页*/
-		else if(page->lcdinput[0] == 0x1204)
-		{			
-			page->tempV1 = (page->pageIndex + 1) * MaxPageShowOperatorSize;
-			if(page->tempV1 < MaxOperatorSize)
-			{
-				page->pageIndex++;
+	}
+	/*下翻页*/
+	else if(page->lcdinput[0] == 0x1204)
+	{			
+		page->tempV1 = (page->pageIndex + 1) * MaxPageShowOperatorSize;
+		if(page->tempV1 < MaxOperatorSize)
+		{
+			page->pageIndex++;
 
-				ShowList();
-			}
+			ShowList();
 		}
-		/*确定*/
-		else if(page->lcdinput[0] == 0x1201)
-		{
-			if(page->targetOperator->crc == CalModbusCRC16Fun(page->targetOperator, OneOperatorStructCrcSize, NULL))
-				gotoChildActivity(NULL, NULL);
-			else
-				SendKeyCode(1);
-		}
-		/*选择操作人*/
-		else if((page->lcdinput[0] >= 0x1205)&&(page->lcdinput[0] <= 0x1209))
-		{		
-			page->tempV1 = page->pageIndex * MaxPageShowOperatorSize + page->lcdinput[0] - 0x1205;
-			page->tempOperator = &page->operatorList[page->tempV1];
+	}
+	/*确定*/
+	else if(page->lcdinput[0] == 0x1201)
+	{
+		if(page->targetOperator->crc == CalModbusCRC16Fun(page->targetOperator, OneOperatorStructCrcSize, NULL))
+			gotoChildActivity(NULL, NULL);
+		else
+			SendKeyCode(1);
+	}
+	/*选择操作人*/
+	else if((page->lcdinput[0] >= 0x1205)&&(page->lcdinput[0] <= 0x1209))
+	{		
+		page->tempV1 = page->pageIndex * MaxPageShowOperatorSize + page->lcdinput[0] - 0x1205;
+		page->tempOperator = &page->operatorList[page->tempV1];
 		
-			if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
-			{
-				page->selectIndex = page->lcdinput[0] - 0x1205;
-				BasicPic(0x1d40, 1, 137, 11, 10, 303, 79, 157, 135+page->selectIndex*72);
-				BasicPic(0x1240, 1, 137, 11, 10, 303, 79, 363, 141+page->selectIndex*72);
-				
-				memcpy(page->targetOperator, page->tempOperator, OneOperatorStructSize);
-			}
-		}
-		//编辑操作人
-		if(page->lcdinput[0] == 0x120a)
+		if(page->tempOperator->crc == CalModbusCRC16Fun(page->tempOperator, OneOperatorStructCrcSize, NULL))
 		{
-			startActivity(createUserManagerActivity, NULL, NULL);
+			page->selectIndex = page->lcdinput[0] - 0x1205;
+			BasicPic(0x1240, 1, 137, 11, 10, 303, 79, 363, 141+page->selectIndex*72);
+				
+			memcpy(page->targetOperator, page->tempOperator, OneOperatorStructSize);
 		}
+	}
+	//编辑操作人
+	if(page->lcdinput[0] == 0x120a)
+	{
+		startActivity(createUserManagerActivity, NULL, NULL);
 	}
 }
 

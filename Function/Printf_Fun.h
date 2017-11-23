@@ -5,6 +5,13 @@
 #include	"Define.h"
 #include	"TestData.h"
 
+typedef struct PrintfBuf_Tag
+{
+	TestData testData;
+	DateTime dateTime;
+	char buf[100];
+}PrintfBuf;
+
 void PrintfData(TestData * testd);
 
 #endif
