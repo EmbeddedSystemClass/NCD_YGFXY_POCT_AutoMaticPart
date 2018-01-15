@@ -59,7 +59,7 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 		
 		readQRCodeBuffer->motorAction.motorActionEnum = Motor4MoveDef;
 		readQRCodeBuffer->motorAction.motorParm = Motor4_CardLocation;
-		StartMotorAction(&readQRCodeBuffer->motorAction, false, true);
+		StartMotorAction(&readQRCodeBuffer->motorAction, true);
 		
 		OpenCodeScanner();
 	
@@ -84,12 +84,12 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 				if(readQRCodeBuffer->motorDir%2 == 0)
 				{
 					readQRCodeBuffer->motorAction.motorParm = Motor2_WaitCardLocation;
-					StartMotorAction(&readQRCodeBuffer->motorAction, false, true);
+					StartMotorAction(&readQRCodeBuffer->motorAction, true);
 				}
 				else
 				{
 					readQRCodeBuffer->motorAction.motorParm = Motor2_PutDownCardLocation;
-					StartMotorAction(&readQRCodeBuffer->motorAction, false, true);
+					StartMotorAction(&readQRCodeBuffer->motorAction, true);
 				}
 				
 				ReadBasicCodeData(readQRCodeBuffer);
@@ -105,7 +105,7 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 	CloseCodeScanner();
 	
 	readQRCodeBuffer->motorAction.motorParm = Motor2_PutDownCardLocation;
-	StartMotorAction(&readQRCodeBuffer->motorAction, true, true);
+	StartMotorAction(&readQRCodeBuffer->motorAction, true);
 					
 	scanResult = readQRCodeBuffer->scanResult;
 		
@@ -246,7 +246,11 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 		
 		#elif(DeviceUseType == Device_Demo)
 		
-			readQRCodeBuffer->cardQR->CardWaitTime *= 10;
+			readQRCodeBuffer->cardQR->CardWaitTime *= 20;
+		
+		#elif(DeviceUseType == Device_FastDemo)
+		
+			readQRCodeBuffer->cardQR->CardWaitTime *= 3;
 		
 		#endif
 	}

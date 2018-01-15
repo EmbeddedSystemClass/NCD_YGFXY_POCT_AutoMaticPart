@@ -6,7 +6,6 @@
 
 void motor2MoveTo(unsigned char highTime, unsigned char lowTime, unsigned short location, bool isWait);
 void motor2MoveStep(bool isFront, unsigned short stepNum, bool isWait);
-void motor2StopMove(void);
 
 #endif
 

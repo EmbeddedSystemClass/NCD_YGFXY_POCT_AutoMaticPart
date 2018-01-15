@@ -157,7 +157,7 @@ static void activityFresh(void)
 {
 	if(S_AdjustLedPageBuffer->paiduiUnitData.statues == statusNone)
 	{
-		FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, WaitCardPutInDef, S_AdjustLedPageBuffer->paiduiUnitData.cardLocation, false, false);
+		FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, WaitCardPutInDef, S_AdjustLedPageBuffer->paiduiUnitData.cardLocation, false);
 		S_AdjustLedPageBuffer->paiduiUnitData.statues = statusMotorMoveWaitCard;
 	}
 	else if(S_AdjustLedPageBuffer->paiduiUnitData.statues == statusMotorMoveWaitCard)
@@ -173,7 +173,7 @@ static void activityFresh(void)
 		if(ReadCardCheckPin)
 		{
 			dspTestStatus(QualityStatusTestString);
-			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutDownCardInPlaceDef, S_AdjustLedPageBuffer->paiduiUnitData.cardLocation, false, false);
+			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutDownCardInPlaceDef, S_AdjustLedPageBuffer->paiduiUnitData.cardLocation, false);
 			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusMotorPutCardDown;
 		}
 	}
@@ -182,7 +182,7 @@ static void activityFresh(void)
 		if(isMotorMoveEnd(FreeRTOSZeroDelay))
 		{
 			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusTestMotor;
-			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false, false);
+			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
 		}
 	}
 	else if(statusTestMotor == S_AdjustLedPageBuffer->paiduiUnitData.statues)
@@ -199,7 +199,7 @@ static void activityFresh(void)
 	
 		if(My_Pass == TakeTestResult(&S_AdjustLedPageBuffer->paiduiUnitData.testData.testResultDesc))
 		{
-			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutDownCardInTestPlaceDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false, false);
+			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutDownCardInTestPlaceDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
 			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitPutCardInTestPlace;
 		}
 	}
@@ -212,7 +212,7 @@ static void activityFresh(void)
 	}
 	else if(statusPutCardOut == S_AdjustLedPageBuffer->paiduiUnitData.statues)
 	{
-		FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutCardOutOfDeviceAfterTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false, false);
+		FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutCardOutOfDeviceAfterTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
 		S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitCardOut;
 	}
 	else if(statusWaitCardOut == S_AdjustLedPageBuffer->paiduiUnitData.statues)
@@ -323,7 +323,7 @@ static void analysisTestData(void)
 				DspNum(0x2604, S_AdjustLedPageBuffer->paiduiUnitData.ledValue, 2);
 						
 				S_AdjustLedPageBuffer->paiduiUnitData.statues = statusTestMotor;
-				FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false, false);
+				FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
 					
 				return;
 			}
@@ -343,7 +343,7 @@ static void analysisTestData(void)
 				DspNum(0x2604, S_AdjustLedPageBuffer->paiduiUnitData.ledValue, 2);
 						
 				S_AdjustLedPageBuffer->paiduiUnitData.statues = statusTestMotor;
-				FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false, false);
+				FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
 					
 				return;
 			}

@@ -38,9 +38,9 @@ typedef struct MotorAction_tag{
 
 void MotorActionInit(void);
 void MotorActionFunction(void);
-MyRes FormatParmAndStartMotorAction(MotorAction * motorAction, MotorActionEnum motorActionEnum, unsigned int motorParm, bool isStopWhenBusy, bool waitActionDone);
-MyRes StartMotorActionWithParm(MotorActionEnum motorActionEnum, unsigned int motorParm, bool isStopWhenBusy, bool waitActionDone);
-MyRes StartMotorAction(MotorAction * motorAction, bool isStopWhenBusy, bool waitActionDone);
+MyRes FormatParmAndStartMotorAction(MotorAction * motorAction, MotorActionEnum motorActionEnum, unsigned int motorParm, bool waitActionDone);
+MyRes StartMotorActionWithParm(MotorActionEnum motorActionEnum, unsigned int motorParm, bool waitActionDone);
+MyRes StartMotorAction(MotorAction * motorAction, bool waitActionDone);
 bool isMotorMoveEnd(portTickType waitBlockTime);
 
 #endif

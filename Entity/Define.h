@@ -19,7 +19,7 @@
 
 #define	Motor4IOMotor					0x90							//IO口控制的爪子
 #define	Motor4UsartMotor				0x91							//串口控制的爪子
-#define	Motor4Type						Motor4IOMotor
+#define	Motor4Type						Motor4UsartMotor
 
 #define	DEVICE_EN						100
 #define	DEVICE_CN						101
@@ -27,7 +27,8 @@
 
 #define	Device_Final					0x27
 #define	Device_Demo						0x28
-#define	DeviceUseType					Device_Final
+#define	Device_FastDemo					0x29
+#define	DeviceUseType					Device_FastDemo
 
 #define	NCDServerFinal					0x88
 #define	NCDServerDebug					0x89

@@ -32,8 +32,8 @@ typedef enum
 /*电机4相关定义*/
 #if(Motor4Type == Motor4UsartMotor)
 	#define	Motor4_OpenLocation				20								//电机4打开
-	#define	Motor4_CardLocation				60								//电机4夹卡
-	#define	Motor4_CloseLocation			60								//电机4合并
+	#define	Motor4_CardLocation				500								//电机4夹卡
+	#define	Motor4_CloseLocation			500								//电机4合并
 #elif(Motor4Type == Motor4IOMotor)
 	#define	Motor4_OpenLocation				0								//电机4打开
 	#define	Motor4_CardLocation				3650							//电机4夹卡

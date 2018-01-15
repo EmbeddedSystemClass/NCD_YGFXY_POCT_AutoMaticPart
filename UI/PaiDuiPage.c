@@ -209,7 +209,7 @@ static void activityFresh(void)
 				{
 					S_PaiDuiPageBuffer->motorAction.motorActionEnum = StartTestDef;
 					S_PaiDuiPageBuffer->motorAction.motorParm = S_PaiDuiPageBuffer->currentTestDataBuffer->testLocation;
-					if(My_Pass == StartMotorAction(&S_PaiDuiPageBuffer->motorAction, false, false))
+					if(My_Pass == StartMotorAction(&S_PaiDuiPageBuffer->motorAction, false))
 						S_PaiDuiPageBuffer->isMotorStartted = true;
 
 					//отй╬в╙ел

@@ -310,7 +310,7 @@ static void RefreshCurve(void)
 		S_TestPageBuffer->currenttestdata->statues = status_end;
 		S_TestPageBuffer->motorAction.motorActionEnum = PutCardOutOfDeviceAfterTestDef;
 		S_TestPageBuffer->motorAction.motorParm = S_TestPageBuffer->currenttestdata->testLocation;
-		StartMotorAction(&S_TestPageBuffer->motorAction, false, false);
+		StartMotorAction(&S_TestPageBuffer->motorAction, false);
 		
 		memcpy(&(S_TestPageBuffer->currenttestdata->testData.testDateTime), &(getSystemRunTimeData()->systemDateTime), sizeof(DateTime));
 

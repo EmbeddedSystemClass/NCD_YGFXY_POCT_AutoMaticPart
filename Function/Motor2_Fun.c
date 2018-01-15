@@ -30,7 +30,6 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 static Motor * motor2 = NULL;
-static bool motor2StopMovePermission = false;
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -41,7 +40,15 @@ static bool motor2StopMovePermission = false;
 /****************************************File Start*************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-
+/***************************************************************************************************
+*FunctionName: motor2MoveStep
+*Description: motor2 move some steps, only use for find origin location, so if origin location is found ,this mothod is disabled
+*Input: 
+*Output: 
+*Return: 
+*Author: xsx
+*Date: 2018Äê1ÔÂ15ÈÕ 14:43:34
+***************************************************************************************************/
 void motor2MoveStep(bool isFront, unsigned short stepNum, bool isWait)
 {
 	motor2 = getMotor(Motor_2);
@@ -92,7 +99,6 @@ void motor2MoveTo(unsigned char highTime, unsigned char lowTime, unsigned short 
 	}
 	else
 		setMotor2DirGPIO(OFF);
-	//vTaskDelay(10 / portTICK_RATE_MS);
 	
 	motor2->periodCnt = 0;
 	motor2->parm1 = 0;
@@ -100,24 +106,11 @@ void motor2MoveTo(unsigned char highTime, unsigned char lowTime, unsigned short 
 	motor2->lowTime = lowTime;
 	motor2->motorTargetLocation = location;
 	motor2->moveStepNum = 60000;
-	motor2StopMovePermission = false;
 	
 	while(isWait && motor2->motorLocation != motor2->motorTargetLocation)
 	{
-		vTaskDelay(1 / portTICK_RATE_MS);
-		if(motor2StopMovePermission)
-		{
-			motor2->moveStepNum = 0;
-			break;
-		}
+		vTaskDelay(100 / portTICK_RATE_MS);
 	}
 }
-
-void motor2StopMove(void)
-{
-	motor2StopMovePermission = true;
-}
-
-
 /****************************************end of file************************************************/
 

@@ -230,7 +230,7 @@ static void activityFresh(void)
 						{
 							pageBuffer->currentPaiduiUnitData = pageBuffer->tempPaiduiUnitData;
 							pageBuffer->tempPaiduiUnitData->statues = statusTestMotor;
-							FormatParmAndStartMotorAction(&pageBuffer->motorAction, StartTestDef, pageBuffer->currentPaiduiUnitData->testLocation, false, false);
+							FormatParmAndStartMotorAction(&pageBuffer->motorAction, StartTestDef, pageBuffer->currentPaiduiUnitData->testLocation, false);
 							showStatus(QualityTestingString, pageBuffer->currentPaiduiUnitData->index);
 						}
 					}
@@ -253,7 +253,7 @@ static void activityFresh(void)
 					{
 						pageBuffer->currentPaiduiUnitData = pageBuffer->tempPaiduiUnitData;
 						pageBuffer->tempPaiduiUnitData->statues = statusTestMotor;
-						FormatParmAndStartMotorAction(&pageBuffer->motorAction, StartTestDef, pageBuffer->currentPaiduiUnitData->testLocation, false, false);
+						FormatParmAndStartMotorAction(&pageBuffer->motorAction, StartTestDef, pageBuffer->currentPaiduiUnitData->testLocation, false);
 						showStatus(QualityTestingString, pageBuffer->currentPaiduiUnitData->index);
 					} 
 				}
@@ -289,7 +289,7 @@ static void activityFresh(void)
 			}
 			else
 			{
-				FormatParmAndStartMotorAction(&pageBuffer->motorAction, WaitCardPutInDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
+				FormatParmAndStartMotorAction(&pageBuffer->motorAction, WaitCardPutInDef, pageBuffer->currentPaiduiUnitData->cardLocation, false);
 				pageBuffer->currentPaiduiUnitData->statues = statusMotorMoveWaitCard;
 			}
 		}
@@ -315,7 +315,7 @@ static void activityFresh(void)
 			{
 				if(pageBuffer->isCancel)
 				{
-					FormatParmAndStartMotorAction(&pageBuffer->motorAction, PutDownCardInPlaceDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
+					FormatParmAndStartMotorAction(&pageBuffer->motorAction, PutDownCardInPlaceDef, pageBuffer->currentPaiduiUnitData->cardLocation, false);
 					pageBuffer->currentPaiduiUnitData->statues = statusMotorPutCardDown;
 				}
 				else
@@ -327,7 +327,7 @@ static void activityFresh(void)
 			}
 			else if(pageBuffer->isCancel)
 			{
-				FormatParmAndStartMotorAction(&pageBuffer->motorAction, OriginLocationDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
+				FormatParmAndStartMotorAction(&pageBuffer->motorAction, OriginLocationDef, pageBuffer->currentPaiduiUnitData->cardLocation, false);
 				pageBuffer->currentPaiduiUnitData->statues = statusMotorOrigin;
 				
 				showStatus(QualityCancellingString, pageBuffer->currentPaiduiUnitData->index);
@@ -339,7 +339,7 @@ static void activityFresh(void)
 			{
 				if(pageBuffer->isCancel)
 				{
-					FormatParmAndStartMotorAction(&pageBuffer->motorAction, OriginLocationDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
+					FormatParmAndStartMotorAction(&pageBuffer->motorAction, OriginLocationDef, pageBuffer->currentPaiduiUnitData->cardLocation, false);
 					pageBuffer->currentPaiduiUnitData->statues = statusMotorOrigin;
 				
 					showStatus(QualityCancellingString, pageBuffer->currentPaiduiUnitData->index);
@@ -352,7 +352,7 @@ static void activityFresh(void)
 			}
 			else if(pageBuffer->isCancel)
 			{
-				FormatParmAndStartMotorAction(&pageBuffer->motorAction, PutDownCardInPlaceDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
+				FormatParmAndStartMotorAction(&pageBuffer->motorAction, PutDownCardInPlaceDef, pageBuffer->currentPaiduiUnitData->cardLocation, false);
 				pageBuffer->currentPaiduiUnitData->statues = statusMotorPutCardDown;
 			}
 		}
@@ -370,7 +370,7 @@ static void activityFresh(void)
 					
 					if(CheckStrIsSame(pageBuffer->deviceQuality->itemName, pageBuffer->currentPaiduiUnitData->testData.qrCode.ItemName, ItemNameLen))
 					{
-						FormatParmAndStartMotorAction(&pageBuffer->motorAction, OriginLocationDef, pageBuffer->currentPaiduiUnitData->cardLocation+1, false, false);
+						FormatParmAndStartMotorAction(&pageBuffer->motorAction, OriginLocationDef, pageBuffer->currentPaiduiUnitData->cardLocation+1, false);
 						pageBuffer->currentPaiduiUnitData->statues = statusMotorOrigin;
 						timer_SetAndStart(&(pageBuffer->currentPaiduiUnitData->timeDown_timer), pageBuffer->currentPaiduiUnitData->testData.qrCode.CardWaitTime);
 						showStatus(QRReadSuccessString, pageBuffer->currentPaiduiUnitData->index);
@@ -380,7 +380,7 @@ static void activityFresh(void)
 				}
 				
 				pageBuffer->currentPaiduiUnitData->statues = statusMotorMoveWaitCard;
-				FormatParmAndStartMotorAction(&pageBuffer->motorAction, WaitCardPutInDef, pageBuffer->currentPaiduiUnitData->cardLocation, false, false);
+				FormatParmAndStartMotorAction(&pageBuffer->motorAction, WaitCardPutInDef, pageBuffer->currentPaiduiUnitData->cardLocation, false);
 				showStatus(QRReadErrorAndChangeCardString, pageBuffer->currentPaiduiUnitData->index);
 			}
 		}
@@ -447,7 +447,7 @@ static void activityFresh(void)
 		}
 		else if(statusPutCardOut == pageBuffer->currentPaiduiUnitData->statues)
 		{
-			FormatParmAndStartMotorAction(&pageBuffer->motorAction, PutCardOutOfDeviceDef, pageBuffer->currentPaiduiUnitData->testLocation, false, false);
+			FormatParmAndStartMotorAction(&pageBuffer->motorAction, PutCardOutOfDeviceDef, pageBuffer->currentPaiduiUnitData->testLocation, false);
 			pageBuffer->currentPaiduiUnitData->statues = statusWaitCardOut;
 		}
 		else if(statusWaitCardOut == pageBuffer->currentPaiduiUnitData->statues)

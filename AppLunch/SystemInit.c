@@ -33,12 +33,17 @@
 #include	"RX8025_Driver.h"
 #include	"Ceju_Driver.h"
 
+#include 	"usbd_hid_core.h"
+#include 	"usbd_usr.h"
+#include 	"usbd_desc.h"
+#include 	"usb_conf.h"  
+
 #include	"Delay.h"
 #include	"Define.h"
 /***************************************************************************************************/
 /**************************************局部变量声明*************************************************/
 /***************************************************************************************************/
-
+USB_OTG_CORE_HANDLE USB_OTG_dev;
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
@@ -61,7 +66,7 @@ extern void SystemInit(void);
 void MySystemBSPInit(void)
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-	delay_ms(1000);
+	delay_ms(2000);
 	
 	Led_GPIOInit();						//系统指示灯初始化
 	delay_ms(1);
@@ -120,6 +125,8 @@ void MySystemBSPInit(void)
 
 	Timer3_Init();						//定时器初始化
 	delay_ms(1);
+
+	USBD_Init(&USB_OTG_dev, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_HID_cb, &USR_cb);
 
 //	IWDG_Init(3, 3000);					//看门狗初始化,超时时间2S
 	delay_ms(500);

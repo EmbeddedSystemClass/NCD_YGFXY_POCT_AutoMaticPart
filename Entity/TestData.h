@@ -34,7 +34,7 @@ typedef struct TestData_tag {
 	unsigned short 	time;								//³¬Ê±Ê±¼ä
 	ResultState 	testResultDesc;						//²âÊÔ½á¹û×´Ì¬
 	unsigned char 	cParm;								//c²¹³¥±¶Êı*10
-	unsigned char 	noUse[512];							//Ô¤Áô
+	//unsigned char 	noUse[512];							//Ô¤Áô
 	unsigned short 	crc;
 }TestData;
 #pragma pack()

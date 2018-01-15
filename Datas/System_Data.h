@@ -12,6 +12,8 @@ typedef struct
 	DateTime systemDateTime;
 	WireNetInfo wireNetInfo;
 	char deviceId[DeviceIdLen];											//设备ID,仅作为设备id的副本
+	unsigned short testLedValue;										//发光LED DA值
+	unsigned short baseLineValue;										//基线DA值
 }SystemData;
 #pragma pack()
 
@@ -26,6 +28,8 @@ void setSystemTimeIsRead(bool isNew);
 bool getSystemTimeIsRead(void);
 void setSystemDeviceId(char * device);
 void getSystemDeviceId(char * device);
+void setTestLedValue(unsigned short value);
+void setBaseLineValue(unsigned short value);
 #endif
 
 /****************************************end of file************************************************/

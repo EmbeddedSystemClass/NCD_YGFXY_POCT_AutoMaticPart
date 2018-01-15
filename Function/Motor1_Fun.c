@@ -27,7 +27,6 @@
 /***************************************************************************************************/
 /***************************************************************************************************/
 static Motor * motor1 = NULL;
-static bool motor1StopMovePermission = false;
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
@@ -61,22 +60,11 @@ void motor1MoveToNum(unsigned char num, bool isWait)
 	motor1->motorTargetLocation = num;
 	motor1->moveStepNum = 650000;
 	motor1->parm1 = 0;
-	motor1StopMovePermission = false;
 	
 	while(isWait && motor1->motorLocation != motor1->motorTargetLocation)
 	{
 		vTaskDelay(100 / portTICK_RATE_MS);
-		if(motor1StopMovePermission)
-		{
-			motor1->moveStepNum = 0;
-			break;
-		}
 	}
-}
-
-void motor1StopMove(void)
-{
-	motor1StopMovePermission = true;
 }
 
 

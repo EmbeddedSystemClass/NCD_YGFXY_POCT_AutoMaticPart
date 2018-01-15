@@ -140,7 +140,7 @@ static void activityFresh(void)
 	}
 	else if(S_WaitPageData->isBack)
 	{
-		S_WaitPageData->isMotorStartted = StartMotorAction(&S_WaitPageData->motorAction, true, false);
+		S_WaitPageData->isMotorStartted = StartMotorAction(&S_WaitPageData->motorAction, false);
 		if(S_WaitPageData->isMotorStartted == My_Pass)
 			SendKeyCode(1);
 	}

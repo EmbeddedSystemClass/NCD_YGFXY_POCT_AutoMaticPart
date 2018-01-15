@@ -156,7 +156,7 @@ static void activityFresh(void)
 		}
 		else if(S_SampleIDPage->sampleIdLen > 0)
 		{
-			S_SampleIDPage->isMotorStartted = StartMotorAction(&S_SampleIDPage->motorAction, false, false);
+			S_SampleIDPage->isMotorStartted = StartMotorAction(&S_SampleIDPage->motorAction, false);
 			if(S_SampleIDPage->isMotorStartted == My_Pass)
 				SendKeyCode(2);
 		}

@@ -155,6 +155,9 @@ ResultState TestFunction(PaiduiUnitData * parm)
 			S_TempCalData->resultstatues = NoResult;
 
 			S_TempCalData->motorLocation = getMotorxLocation(Motor_2);
+		
+			motor2MoveTo(2, 3, Motor2_StartTestLocation, true);
+			
 			motor2MoveTo(14, 23, Motor2_EndTestLocation, false);
 		
 			S_TempCalData->tempvalue1 = 0;

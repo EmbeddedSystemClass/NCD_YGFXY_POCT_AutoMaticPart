@@ -23,7 +23,6 @@
 /**************************************************************************************************/
 static xSemaphoreHandle xMotorMutex;
 static MotorAction S_MotorAction;																//电机指令保存
-static bool motorStopActionPermission = false;
 /**************************************************************************************************/
 /******************************************Static Methods******************************************/
 /**************************************************************************************************/
@@ -84,24 +83,13 @@ void MotorActionFunction(void)
 	vTaskDelay(100 / portTICK_RATE_MS);
 }
 
-MyRes StartMotorAction(MotorAction * motorAction, bool isStopWhenBusy, bool waitActionDone)
+MyRes StartMotorAction(MotorAction * motorAction, bool waitActionDone)
 {
 	if(motorAction == NULL)
 		return My_Fail;
 	
 	if(S_MotorAction.motorActionEnum != MotorActionNone)
-	{
-		if(isStopWhenBusy)
-		{
-			motorStopActionPermission = true;
-			motor1StopMove();
-			motor2StopMove();
-			
-			xSemaphoreTake(xMotorMutex, portMAX_DELAY);
-		}
-		else
-			return My_Fail;
-	}
+		return My_Fail;
 	
 	S_MotorAction.motorActionEnum = motorAction->motorActionEnum;
 	S_MotorAction.motorParm = motorAction->motorParm;
@@ -114,23 +102,23 @@ MyRes StartMotorAction(MotorAction * motorAction, bool isStopWhenBusy, bool wait
 	return My_Pass;
 }
 
-MyRes StartMotorActionWithParm(MotorActionEnum motorActionEnum, unsigned int motorParm, bool isStopWhenBusy, bool waitActionDone)
+MyRes StartMotorActionWithParm(MotorActionEnum motorActionEnum, unsigned int motorParm, bool waitActionDone)
 {
 	MotorAction tempMotorAction;
 	tempMotorAction.motorActionEnum = motorActionEnum;
 	tempMotorAction.motorParm = motorParm;
 	
-	return StartMotorAction(&tempMotorAction, isStopWhenBusy, waitActionDone);
+	return StartMotorAction(&tempMotorAction, waitActionDone);
 }
 
-MyRes FormatParmAndStartMotorAction(MotorAction * motorAction, MotorActionEnum motorActionEnum, unsigned int motorParm, bool isStopWhenBusy, bool waitActionDone)
+MyRes FormatParmAndStartMotorAction(MotorAction * motorAction, MotorActionEnum motorActionEnum, unsigned int motorParm, bool waitActionDone)
 {
 	if(motorAction)
 	{
 		motorAction->motorActionEnum = motorActionEnum;
 		motorAction->motorParm = motorParm;
 		
-		return StartMotorAction(motorAction, isStopWhenBusy, waitActionDone);
+		return StartMotorAction(motorAction, waitActionDone);
 	}
 	else
 		return My_Fail;
@@ -147,31 +135,21 @@ bool isMotorMoveEnd(portTickType waitBlockTime)
 
 static void MotorMoveToWaitCardPutIn(unsigned char num)
 {
-	motorStopActionPermission = false;
-	
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	if(num != getMotorxLocation(Motor_1))
 	{
 		motor2MoveTo(1, 2, Motor2_MidLocation, true);
-		if(motorStopActionPermission == true)
-			return;
 	
 		motor1MoveToNum(num, true);
-		if(motorStopActionPermission == true)
-			return;
 	}
 	
 	motor2MoveTo(1, 2, Motor2_WaitCardLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 }
 
 
 static void MotorMoveToStartTestLocation(unsigned char num)
 {
-	motorStopActionPermission = false;
-	
 	#if(Motor4Type == Motor4UsartMotor)
 		motor4Reset();
 	#endif
@@ -179,125 +157,84 @@ static void MotorMoveToStartTestLocation(unsigned char num)
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_MidLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 	
 	motor1MoveToNum(num, true);
-	if(motorStopActionPermission == true)
-			return;
 	
 	motor2MoveTo(1, 2, Motor2_CatchCardLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 	
 	motor4MoveTo(Motor4_CardLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_StartTestLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 }
 
 
 static void PutCardOutOfDevice(unsigned char num)
 {
-	motorStopActionPermission = false;
-	
 	MotorMoveToOriginLocation(num);
 	
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_StartTestLocation, true);
-	if(motorStopActionPermission == true)
-			return;
+
 	motor4MoveTo(Motor4_CardLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_PutCardOutLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_MidLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 }
 
 static void PutCardOutOfDeviceAfterTest(void)
 {
 	motor2MoveTo(1, 2, Motor2_PutCardOutLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_MidLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 }
 
 static void MotorMoveToOriginLocation(unsigned char num)
 {
-	motorStopActionPermission = false;
-	
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_MidLocation, true);
-	if(motorStopActionPermission == true)
-			return;
-	
+
 	if(num != getMotorxLocation(Motor_1))
 	{
 		motor1MoveToNum(num, true);
-		if(motorStopActionPermission == true)
-			return;
 	}
 }
 
 
 static void motorMoveToPutDownCardInPlace(void)
 {
-	motorStopActionPermission = false;
-	
 	motor4MoveTo(Motor4_OpenLocation, true);
 
 	motor2MoveTo(1, 2, Motor2_WaitCardLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 	
 	motor4MoveTo(Motor4_CardLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_PutDownCardLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 	
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_MidLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 }
 
 static void motorMoveToPutDownCardInTestPlace(void)
 {
-	motorStopActionPermission = false;
-	
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_StartTestLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 
 	motor4MoveTo(Motor4_CardLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_PutDownCardLocation2, true);
-	if(motorStopActionPermission == true)
-			return;
 	
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_MidLocation, true);
-	if(motorStopActionPermission == true)
-			return;
 }
 
 /****************************************end of file***********************************************/

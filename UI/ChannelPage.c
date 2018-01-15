@@ -145,7 +145,7 @@ static void activityFresh(void)
 {
 	if(pageBuf->paiduiUnitData.statues == statusNone)
 	{
-		FormatParmAndStartMotorAction(&pageBuf->motorAction, WaitCardPutInDef, pageBuf->paiduiUnitData.cardLocation, false, false);
+		FormatParmAndStartMotorAction(&pageBuf->motorAction, WaitCardPutInDef, pageBuf->paiduiUnitData.cardLocation, false);
 		pageBuf->paiduiUnitData.statues = statusMotorMoveWaitCard;
 	}
 	else if(pageBuf->paiduiUnitData.statues == statusMotorMoveWaitCard)
@@ -189,12 +189,12 @@ static void activityFresh(void)
 			{
 				dspTestStatus(QualityStatusTestString);
 				pageBuf->paiduiUnitData.statues = statusTestMotor;
-				FormatParmAndStartMotorAction(&pageBuf->motorAction, StartTestDef, pageBuf->paiduiUnitData.testLocation, false, false);
+				FormatParmAndStartMotorAction(&pageBuf->motorAction, StartTestDef, pageBuf->paiduiUnitData.testLocation, false);
 			}
 			else
 			{
 				pageBuf->paiduiUnitData.statues = statusMotorMoveWaitCard;
-				FormatParmAndStartMotorAction(&pageBuf->motorAction, WaitCardPutInDef, pageBuf->paiduiUnitData.cardLocation, false, false);
+				FormatParmAndStartMotorAction(&pageBuf->motorAction, WaitCardPutInDef, pageBuf->paiduiUnitData.cardLocation, false);
 				dspTestStatus(QRReadErrorAndChangeCardString);
 			}
 		}
@@ -218,7 +218,7 @@ static void activityFresh(void)
 			pageBuf->testIndex++;
 			if(pageBuf->testIndex < pageBuf->targetCnt)
 			{
-				FormatParmAndStartMotorAction(&pageBuf->motorAction, PutDownCardInTestPlaceDef, pageBuf->paiduiUnitData.testLocation, false, false);
+				FormatParmAndStartMotorAction(&pageBuf->motorAction, PutDownCardInTestPlaceDef, pageBuf->paiduiUnitData.testLocation, false);
 				pageBuf->paiduiUnitData.statues = statusWaitPutCardInTestPlace;
 			}
 			else
@@ -232,12 +232,12 @@ static void activityFresh(void)
 		if(isMotorMoveEnd(FreeRTOSZeroDelay))
 		{
 			pageBuf->paiduiUnitData.statues = statusTestMotor;
-			FormatParmAndStartMotorAction(&pageBuf->motorAction, StartTestDef, pageBuf->paiduiUnitData.testLocation, false, false);
+			FormatParmAndStartMotorAction(&pageBuf->motorAction, StartTestDef, pageBuf->paiduiUnitData.testLocation, false);
 		}
 	}
 	else if(statusPutCardOut == pageBuf->paiduiUnitData.statues)
 	{
-		FormatParmAndStartMotorAction(&pageBuf->motorAction, PutCardOutOfDeviceAfterTestDef, pageBuf->paiduiUnitData.testLocation, false, false);
+		FormatParmAndStartMotorAction(&pageBuf->motorAction, PutCardOutOfDeviceAfterTestDef, pageBuf->paiduiUnitData.testLocation, false);
 		pageBuf->paiduiUnitData.statues = statusWaitCardOut;
 	}
 	else if(statusWaitCardOut == pageBuf->paiduiUnitData.statues)

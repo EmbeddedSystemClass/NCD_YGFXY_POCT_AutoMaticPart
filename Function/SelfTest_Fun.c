@@ -30,6 +30,7 @@
 #include	"MyMem.h"
 #include	"CRC16.h"
 #include	"StringDefine.h"
+#include 	"usbd_hid_core.h"
 
 #include 	"FreeRTOS.h"
 #include 	"task.h"
@@ -109,11 +110,11 @@ void SelfTest_Function(void)
 		}
 		
 		//检测led
-		if(My_Pass != testLed())
+		/*if(My_Pass != testLed())
 		{
 			setSelfTestStatus(Light_Error);
 			goto END;
-		}
+		}*/
 
 		//测试传动模块
 		if(My_Pass != testMotol(s_SelfTestBuf))
@@ -152,11 +153,9 @@ static MyRes loadSystemData(SelfTestBuf * selfTestBuf)
 		vTaskDelay(500 / portTICK_RATE_MS);
 		
 		//读取设备信息
-		if(My_Fail == ReadDeviceFromFile(&selfTestBuf->device))
-			continue;
+		ReadDeviceFromFile(&selfTestBuf->device);
 		
-		if(My_Fail == ReadSystemSetData(&selfTestBuf->systemSetData))
-			continue;
+		ReadSystemSetData(&selfTestBuf->systemSetData);
 
 		if(selfTestBuf->device.crc != CalModbusCRC16Fun(&selfTestBuf->device, DeviceStructCrcSize, NULL))
 		{
@@ -204,7 +203,7 @@ static MyRes testLed(void)
 	if(ON == readLedCheckStatus())
 		return My_Fail;
 	
-	SetLedVol(3300);
+	SetLedVol(1024);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	if(OFF == readLedCheckStatus())
 	{
@@ -227,6 +226,12 @@ static MyRes testLed(void)
 ***************************************************************************************************/
 static MyRes testMotol(SelfTestBuf * selfTestBuf)
 {	
+/*	while(1)
+	{
+		sprintf(selfTestBuf->deviceAdjust.result, "%d", readJuliValue());
+		USBDebug(selfTestBuf->deviceAdjust.result, strlen(selfTestBuf->deviceAdjust.result));
+		vTaskDelay(100 / portTICK_RATE_MS);
+	}*/
 	
 #if(Motor4Type == Motor4UsartMotor)
 	//初始化爪子
@@ -237,7 +242,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	if(selfTestBuf->i <= 0)
 		return My_Fail;
 
-	StartMotorActionWithParm(Motor4MoveDef, Motor4_OpenLocation, false, true);
+	StartMotorActionWithParm(Motor4MoveDef, Motor4_OpenLocation, true);
 
 #elif(Motor4Type == Motor4IOMotor)
 	
@@ -258,7 +263,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	if(!Motor4Sensor1Triggered)
 		return My_Fail;
 
-	StartMotorActionWithParm(Motor4MoveDef, Motor4_CloseLocation, false, true);
+	StartMotorActionWithParm(Motor4MoveDef, Motor4_CloseLocation, true);
 #endif
 	
 	//step 1 定位爪子位置
@@ -270,10 +275,10 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	{
 		selfTestBuf->juli = readJuliValue();
 		
-		if(selfTestBuf->juli > 1120)
+		if(selfTestBuf->juli > 1060)
 			selfTestBuf->motor->isFront = false;
 		
-		if(selfTestBuf->juli < 1060)
+		if(selfTestBuf->juli < 960)
 			selfTestBuf->motor->isFront = true;
 		
 		motor2MoveStep(selfTestBuf->motor->isFront, 1000, false);
@@ -285,7 +290,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 
 	//step 2 判断插卡口是否有卡
 	if(Motor1Sensor2Triggered && readCaedCheckStatus() == ON)
-		StartMotorActionWithParm(PutDownCardInPlaceDef, 0, false, true);
+		StartMotorActionWithParm(PutDownCardInPlaceDef, 0, true);
 
 	//step 3 去掉退卡口，无论有无卡
 	if(Motor1Sensor1Triggered)
@@ -302,7 +307,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	selfTestBuf->motorAction.motorActionEnum = Motor1MoveDef;
 	for(selfTestBuf->j=0; selfTestBuf->j<Motor1_HalfLocation; selfTestBuf->j++)
 	{
-		StartMotorActionWithParm(Motor1MoveDef, 2*selfTestBuf->j + 1, false, true);
+		StartMotorActionWithParm(Motor1MoveDef, 2*selfTestBuf->j + 1, true);
 		selfTestBuf->locationStatus[selfTestBuf->j] = readCaedCheckStatus();
 	}
 	
@@ -317,7 +322,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 			if(selfTestBuf->motorAction.motorParm > Motor1_MaxLocation)
 				selfTestBuf->motorAction.motorParm -= Motor1_MaxLocation;
 
-			selfTestBuf->i = StartMotorActionWithParm(PutCardOutOfDeviceDef, selfTestBuf->motorAction.motorParm, false, true);
+			selfTestBuf->i = StartMotorActionWithParm(PutCardOutOfDeviceDef, selfTestBuf->motorAction.motorParm, true);
 		}
 	}
 	

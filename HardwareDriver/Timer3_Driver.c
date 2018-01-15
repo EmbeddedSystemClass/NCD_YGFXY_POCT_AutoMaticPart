@@ -84,7 +84,7 @@ void TIM3_IRQHandler(void)
 					motor->moveStepNum--;
 
 				motor->parm1++;
-				if(motor->parm1 > 3000)
+				if(motor->parm1 > 5000)
 				{
 					if(Motor1Sensor1Triggered && motor->motorLocation != 0)
 					{

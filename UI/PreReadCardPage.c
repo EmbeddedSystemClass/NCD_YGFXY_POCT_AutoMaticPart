@@ -280,7 +280,7 @@ static void CheckQRCode(void)
 			S_PreReadPageBuffer->motorAction.motorParm = S_PreReadPageBuffer->currenttestdata->cardLocation;
 		}
 		
-		StartMotorAction(&S_PreReadPageBuffer->motorAction, false, false);
+		StartMotorAction(&S_PreReadPageBuffer->motorAction, false);
 	}
 }
 

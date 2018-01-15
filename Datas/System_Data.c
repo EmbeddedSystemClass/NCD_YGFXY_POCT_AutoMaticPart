@@ -93,5 +93,15 @@ void getSystemDeviceId(char * device)
 		memcpy(device, systemData.deviceId, DeviceIdLen);
 }
 
+void setTestLedValue(unsigned short value)
+{
+	systemData.testLedValue = value;
+}
+
+void setBaseLineValue(unsigned short value)
+{
+	systemData.baseLineValue = value;
+}
+
 
 /****************************************end of file************************************************/
