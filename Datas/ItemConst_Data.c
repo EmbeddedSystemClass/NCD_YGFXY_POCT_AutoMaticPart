@@ -21,8 +21,7 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 {
 	{
 		.itemName = "NT-proBNP\0",
-		.itemCode = "NT-proBNP\0",
-		.icoIndex = 0,
+		.itemCH = "N-¶ËÄÔÀûÄÆëÄÇ°Ìå\0",
 		.pointNum = 0,
 		.lowstResult = 20,
 		.highestResult = 30000,
@@ -31,8 +30,7 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 	},
 	{
 		.itemName = "CK-MB\0",
-		.itemCode = "CK-MB\0",
-		.icoIndex = 1,
+		.itemCH = "¼¡Ëá¼¤Ã¸Í¬¹¤Ã¸\0",
 		.pointNum = 2,
 		.lowstResult = 0.5,
 		.highestResult = 80,
@@ -41,8 +39,7 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 	},
 	{
 		.itemName = "cTnI\0",
-		.itemCode = "cTnI\0",
-		.icoIndex = 2,
+		.itemCH = "¼¡¸Æµ°°×I\0",
 		.pointNum = 3,
 		.lowstResult = 0.01,
 		.highestResult = 30,
@@ -51,12 +48,65 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 	},
 	{
 		.itemName = "Myo\0",
-		.itemCode = "Myo\0",
-		.icoIndex = 3,
+		.itemCH = "¼¡ºìµ°°×\0",
 		.pointNum = 2,
 		.lowstResult = 2.5,
 		.highestResult = 350,
 		.normalResult = {"<=99.3 ng/mL\0"},
+		.itemMeasure = {"ng/mL\0"}
+	},
+	{
+		.itemName = "D-Dimer\0",
+		.itemCH = "D-¶þ¾ÛÌå\0",
+		.pointNum = 1,
+		.lowstResult = 0.2,
+		.highestResult = 15,
+		.normalResult = {"<=0.5 mg/L\0"},
+		.itemMeasure = {"mg/L\0"}
+	},
+	{
+		.itemName = "CRP\0",
+		.itemCH = "È«³ÌC-·´Ó¦µ°°×\0",
+		.pointNum = 2,
+		.lowstResult = 0.44,
+		.highestResult = 200,
+		.normalResult = {"<=1.0 mg/L\0"},
+		.itemMeasure = {"mg/L\0"}
+	},
+	{
+		.itemName = "PCT\0",
+		.itemCH = "½µ¸ÆËØÔ­\0",
+		.pointNum = 2,
+		.lowstResult = 0.22,
+		.highestResult = 100,
+		.normalResult = {"<=0.5 ng/mL\0"},
+		.itemMeasure = {"ng/mL\0"}
+	},
+	{
+		.itemName = "CysC\0",
+		.itemCH = "ë×ÒÖËØC\0",
+		.pointNum = 2,
+		.lowstResult = 0.46,
+		.highestResult = 8,
+		.normalResult = {"0.5-1.3 mg/L\0"},
+		.itemMeasure = {"mg/L\0"}
+	},
+	{
+		.itemName = "¦Â-HCG\0",
+		.itemCH = "¦Â-ÈËÈÞÃ«Ä¤´ÙÐÔÏÙ¼¤ËØ\0",
+		.pointNum = 2,
+		.lowstResult = 2,
+		.highestResult = 25000,
+		.normalResult = {"<=5 mIU/mL\0"},
+		.itemMeasure = {"mIU/mL\0"}
+	},
+	{
+		.itemName = "NGAL\0",
+		.itemCH = "ÖÐÐÔÁ£Ï¸°ûÃ÷½ºÃ¸Ïà¹ØÖ¬ÖÊÔËÔØµ°°×\0",
+		.pointNum = 2,
+		.lowstResult = 10,
+		.highestResult = 1500,
+		.normalResult = {"<=170 ng/mL\0"},
 		.itemMeasure = {"ng/mL\0"}
 	},
 };
@@ -88,6 +138,16 @@ MyRes getItemConstData(ItemConstData * itemConstData, char * itemName)
 	}
 	
 	return My_Fail;
+}
+
+MyRes getItemConstDataByIndex(ItemConstData * itemConstData, unsigned char index)
+{	
+	if(index >= ItemConstDataNum || itemConstData == NULL)
+		return My_Fail;
+	
+	memcpy(itemConstData, &GB_ItemConstData[index], sizeof(ItemConstData));
+	
+	return My_Pass;
 }
 
 /****************************************end of file************************************************/

@@ -110,11 +110,11 @@ void SelfTest_Function(void)
 		}
 		
 		//检测led
-		/*if(My_Pass != testLed())
+		if(My_Pass != testLed())
 		{
 			setSelfTestStatus(Light_Error);
 			goto END;
-		}*/
+		}
 
 		//测试传动模块
 		if(My_Pass != testMotol(s_SelfTestBuf))
@@ -198,12 +198,15 @@ static MyRes loadSystemData(SelfTestBuf * selfTestBuf)
 ***************************************************************************************************/
 static MyRes testLed(void)
 {
-	SetLedVol(0);
-	vTaskDelay(100 / portTICK_RATE_MS);
+	//while(1)
+	{
+		SetLedVol(0);
+		vTaskDelay(100 / portTICK_RATE_MS);
+	}
 	if(ON == readLedCheckStatus())
 		return My_Fail;
 	
-	SetLedVol(1024);
+	SetLedVol(800);
 	vTaskDelay(100 / portTICK_RATE_MS);
 	if(OFF == readLedCheckStatus())
 	{
@@ -242,7 +245,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	if(selfTestBuf->i <= 0)
 		return My_Fail;
 
-	StartMotorActionWithParm(Motor4MoveDef, Motor4_OpenLocation, true);
+	FormatParmAndStartMotorAction(&selfTestBuf->motorAction, Motor4MoveDef, Motor4_OpenLocation, true);
 
 #elif(Motor4Type == Motor4IOMotor)
 	
@@ -263,7 +266,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	if(!Motor4Sensor1Triggered)
 		return My_Fail;
 
-	StartMotorActionWithParm(Motor4MoveDef, Motor4_CloseLocation, true);
+	FormatParmAndStartMotorAction(&selfTestBuf->motorAction, Motor4MoveDef, Motor4_CloseLocation, true);
 #endif
 	
 	//step 1 定位爪子位置
@@ -290,7 +293,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 
 	//step 2 判断插卡口是否有卡
 	if(Motor1Sensor2Triggered && readCaedCheckStatus() == ON)
-		StartMotorActionWithParm(PutDownCardInPlaceDef, 0, true);
+		FormatParmAndStartMotorAction(&selfTestBuf->motorAction, PutDownCardInPlaceDef, 0, true);
 
 	//step 3 去掉退卡口，无论有无卡
 	if(Motor1Sensor1Triggered)
@@ -307,7 +310,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	selfTestBuf->motorAction.motorActionEnum = Motor1MoveDef;
 	for(selfTestBuf->j=0; selfTestBuf->j<Motor1_HalfLocation; selfTestBuf->j++)
 	{
-		StartMotorActionWithParm(Motor1MoveDef, 2*selfTestBuf->j + 1, true);
+		FormatParmAndStartMotorAction(&selfTestBuf->motorAction, Motor1MoveDef, 2*selfTestBuf->j + 1, true);
 		selfTestBuf->locationStatus[selfTestBuf->j] = readCaedCheckStatus();
 	}
 	
@@ -322,7 +325,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 			if(selfTestBuf->motorAction.motorParm > Motor1_MaxLocation)
 				selfTestBuf->motorAction.motorParm -= Motor1_MaxLocation;
 
-			selfTestBuf->i = StartMotorActionWithParm(PutCardOutOfDeviceDef, selfTestBuf->motorAction.motorParm, true);
+			StartMotorAction(&selfTestBuf->motorAction, true);
 		}
 	}
 	

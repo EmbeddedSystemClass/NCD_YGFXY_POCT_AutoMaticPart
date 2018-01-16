@@ -102,15 +102,6 @@ MyRes StartMotorAction(MotorAction * motorAction, bool waitActionDone)
 	return My_Pass;
 }
 
-MyRes StartMotorActionWithParm(MotorActionEnum motorActionEnum, unsigned int motorParm, bool waitActionDone)
-{
-	MotorAction tempMotorAction;
-	tempMotorAction.motorActionEnum = motorActionEnum;
-	tempMotorAction.motorParm = motorParm;
-	
-	return StartMotorAction(&tempMotorAction, waitActionDone);
-}
-
 MyRes FormatParmAndStartMotorAction(MotorAction * motorAction, MotorActionEnum motorActionEnum, unsigned int motorParm, bool waitActionDone)
 {
 	if(motorAction)
@@ -137,7 +128,7 @@ static void MotorMoveToWaitCardPutIn(unsigned char num)
 {
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
-	if(num != getMotorxLocation(Motor_1))
+	if(num != getMotor1Location())
 	{
 		motor2MoveTo(1, 2, Motor2_MidLocation, true);
 	
@@ -200,10 +191,7 @@ static void MotorMoveToOriginLocation(unsigned char num)
 	
 	motor2MoveTo(1, 2, Motor2_MidLocation, true);
 
-	if(num != getMotorxLocation(Motor_1))
-	{
-		motor1MoveToNum(num, true);
-	}
+	motor1MoveToNum(num, true);
 }
 
 

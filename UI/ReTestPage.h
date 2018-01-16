@@ -10,7 +10,10 @@
 
 typedef struct ReTestPageBuffer_tag {
 	unsigned short lcdinput[20];
-	char buf[100];
+	char buf[50];
+	unsigned char testStep;								//0 -- 插卡, 1 -- 老化中
+	unsigned char testIndex;							//当前测试卡索引
+	
 	bool isTestting;
 	unsigned char i;
 	unsigned short testTotalCnt;
@@ -26,7 +29,6 @@ typedef struct ReTestPageBuffer_tag {
 	unsigned char testCardIndex;
 	unsigned char testCardIndex2;
 	unsigned char motorStep;
-	unsigned char testStep;
 	unsigned short count;
 }ReTestPageBuffer;
 

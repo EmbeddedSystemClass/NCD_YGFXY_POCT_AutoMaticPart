@@ -67,6 +67,12 @@ void motor1MoveToNum(unsigned char num, bool isWait)
 	}
 }
 
+unsigned char getMotor1Location(void)
+{
+	motor1 = getMotor(Motor_1);
+	return motor1->motorLocation;
+}
+
 
 /****************************************end of file************************************************/
 

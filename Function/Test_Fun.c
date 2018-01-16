@@ -154,8 +154,6 @@ ResultState TestFunction(PaiduiUnitData * parm)
 
 			S_TempCalData->resultstatues = NoResult;
 
-			S_TempCalData->motorLocation = getMotorxLocation(Motor_2);
-		
 			motor2MoveTo(2, 3, Motor2_StartTestLocation, true);
 			
 			motor2MoveTo(14, 23, Motor2_EndTestLocation, false);
@@ -191,9 +189,7 @@ ResultState TestFunction(PaiduiUnitData * parm)
 					S_TempCalData->tempvalue1 = 0;
 				}
 			}
-			
-			S_TempCalData->motorLocation = getMotorxLocation(Motor_2);
-			
+	
 			//分析曲线
 			AnalysisTestData(S_TempCalData);
 			
@@ -381,6 +377,9 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		     goto END2;
 		}
 		
+		S_TempCalData->paiduiUnitData->testData.testSeries.t_cv = S_TempCalData->CV_T;
+		S_TempCalData->paiduiUnitData->testData.testSeries.c_cv = S_TempCalData->CV_C;
+		
 		//step 9 判断微球是否过少，，补偿
 		S_TempCalData->maxdata = S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y;
 		S_TempCalData->tempvalue1 = 0;
@@ -408,7 +407,7 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 			}
 		}
 		
-		S_TempCalData->paiduiUnitData->testData.cParm = (unsigned char)(S_TempCalData->tempvalue1*10);
+		S_TempCalData->paiduiUnitData->testData.testSeries.CMdifyNum = (unsigned char)(S_TempCalData->tempvalue1*10);
 		
 		/*计算结果*/
 		S_TempCalData->tempvalue1 = (S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.y - S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y);
@@ -418,34 +417,49 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		
 		/*原始峰高比*/
 		S_TempCalData->paiduiUnitData->testData.testSeries.t_c = S_TempCalData->tempvalue1 / S_TempCalData->tempvalue2;
-				
+		S_TempCalData->paiduiUnitData->testData.testSeries.t_tc = S_TempCalData->tempvalue1 / (S_TempCalData->tempvalue1 + S_TempCalData->tempvalue2);
+		
+		if(S_TempCalData->paiduiUnitData->testData.qrCode.calMode == 1)
+			S_TempCalData->finalBili = S_TempCalData->paiduiUnitData->testData.testSeries.t_c;
+		else
+			S_TempCalData->finalBili = S_TempCalData->paiduiUnitData->testData.testSeries.t_tc;
+		
 		/*根据分段，计算原始结果*/
-		if((S_TempCalData->paiduiUnitData->testData.testSeries.t_c < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0] == 0))
+		S_TempCalData->isE = false;
+		if((S_TempCalData->finalBili < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0] == 0))
 		{
-			S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->paiduiUnitData->testData.testSeries.t_c * S_TempCalData->paiduiUnitData->testData.testSeries.t_c;
-			S_TempCalData->paiduiUnitData->testData.testSeries.result *= S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[0][0];
-					
-			S_TempCalData->paiduiUnitData->testData.testSeries.result += (S_TempCalData->paiduiUnitData->testData.testSeries.t_c * S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[0][1]);
-					
-			S_TempCalData->paiduiUnitData->testData.testSeries.result += S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[0][2];
+			if(S_TempCalData->paiduiUnitData->testData.qrCode.qu1Ise)
+				S_TempCalData->isE = true;
+			S_TempCalData->tempvalue3 = 0;
 		}
-		else if((S_TempCalData->paiduiUnitData->testData.testSeries.t_c < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[1]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[1] == 0))
+		else if((S_TempCalData->finalBili < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[1]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[1] == 0))
 		{
-			S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->paiduiUnitData->testData.testSeries.t_c * S_TempCalData->paiduiUnitData->testData.testSeries.t_c;
-			S_TempCalData->paiduiUnitData->testData.testSeries.result *= S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[1][0];
-					
-			S_TempCalData->paiduiUnitData->testData.testSeries.result += (S_TempCalData->paiduiUnitData->testData.testSeries.t_c * S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[1][1]);
-					
-			S_TempCalData->paiduiUnitData->testData.testSeries.result += S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[1][2];
+			if(S_TempCalData->paiduiUnitData->testData.qrCode.qu2Ise)
+				S_TempCalData->isE = true;
+			S_TempCalData->tempvalue3 = 1;
 		}
 		else
 		{
-			S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->paiduiUnitData->testData.testSeries.t_c * S_TempCalData->paiduiUnitData->testData.testSeries.t_c;
-			S_TempCalData->paiduiUnitData->testData.testSeries.result *= S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[2][0];
-					
-			S_TempCalData->paiduiUnitData->testData.testSeries.result += (S_TempCalData->paiduiUnitData->testData.testSeries.t_c * S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[2][1]);
-					
-			S_TempCalData->paiduiUnitData->testData.testSeries.result += S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[2][2];
+			if(S_TempCalData->paiduiUnitData->testData.qrCode.qu3Ise)
+				S_TempCalData->isE = true;
+			S_TempCalData->tempvalue3 = 2;
+		}
+			
+		if(S_TempCalData->isE)
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][0] 
+				* exp(S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][1] * S_TempCalData->finalBili + 
+				S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][2] ) + 
+				S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][3];
+		}
+		else
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili;
+			S_TempCalData->paiduiUnitData->testData.testSeries.result *= S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][0];
+						
+			S_TempCalData->paiduiUnitData->testData.testSeries.result += (S_TempCalData->finalBili * S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][1]);
+						
+			S_TempCalData->paiduiUnitData->testData.testSeries.result += S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][2];
 		}
 
 		if(S_TempCalData->paiduiUnitData->testData.testSeries.result < 0)

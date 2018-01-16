@@ -209,7 +209,10 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//维护
 	else if(S_SysSetPageBuffer->lcdinput[0] == 0x1946)
 	{
-		if(My_Pass == CreateADeviceMaintenance())
+		//测试中，质控功能禁止
+		if(IsPaiDuiTestting())
+			SendKeyCode(5);
+		else if(My_Pass == CreateADeviceMaintenance())
 		{
 			S_SysSetPageBuffer->operator = &(getGB_DeviceMaintenance()->operator);
 			startActivity(createSelectUserActivity, createIntent(&(S_SysSetPageBuffer->operator), 4), createMaintenanceActivity);

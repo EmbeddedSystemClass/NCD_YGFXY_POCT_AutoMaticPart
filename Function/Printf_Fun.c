@@ -57,7 +57,7 @@ void PrintfData(TestData * testd2)
 		sprintf(printfBuf->buf, "%s: %s\n", SampleIdStr, printfBuf->testData.sampleid);
 		SendDataToQueue(GetUsart1TXQueue(), NULL, printfBuf->buf, strlen(printfBuf->buf), 1, 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart1TXInterrupt);
 		
-		sprintf(printfBuf->buf, "%s: %s\n", ItemNameStr, printfBuf->testData.qrCode.ItemName);
+		sprintf(printfBuf->buf, "%s: %s\n", ItemNameStr, printfBuf->testData.qrCode.itemConstData.itemName);
 		SendDataToQueue(GetUsart1TXQueue(), NULL, printfBuf->buf, strlen(printfBuf->buf), 1, 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart1TXInterrupt);
 		
 		if(printfBuf->testData.testResultDesc != ResultIsOK)

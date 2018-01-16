@@ -6,6 +6,7 @@
 #include	"ItemConstData.h"
 
 MyRes getItemConstData(ItemConstData * itemConstData, char * itemName);
+MyRes getItemConstDataByIndex(ItemConstData * itemConstData, unsigned char index);
 
 #endif
 

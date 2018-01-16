@@ -112,48 +112,44 @@ static void activityStart(void)
 ***************************************************************************************************/
 static void activityInput(unsigned char *pbuf , unsigned short len)
 {
-	if(S_ReTestPageBuffer)
-	{
-		/*命令*/
-		S_ReTestPageBuffer->lcdinput[0] = pbuf[4];
-		S_ReTestPageBuffer->lcdinput[0] = (S_ReTestPageBuffer->lcdinput[0]<<8) + pbuf[5];
+	S_ReTestPageBuffer->lcdinput[0] = pbuf[4];
+	S_ReTestPageBuffer->lcdinput[0] = (S_ReTestPageBuffer->lcdinput[0]<<8) + pbuf[5];
 		
-		/*退出*/
-		if(S_ReTestPageBuffer->lcdinput[0] == 0x2802)
+	/*退出*/
+	if(S_ReTestPageBuffer->lcdinput[0] == 0x2802)
+	{
+		if(!S_ReTestPageBuffer->isTestting)
+			backToFatherActivity();
+		else
+			SendKeyCode(1);
+	}
+	/*开始老化*/
+	else if(S_ReTestPageBuffer->lcdinput[0] == 0x2800)
+	{
+		if(!S_ReTestPageBuffer->isTestting)
 		{
-			if(!S_ReTestPageBuffer->isTestting)
-				backToFatherActivity();
-			else
-				SendKeyCode(1);
+			S_ReTestPageBuffer->isTestting = true;
+			S_ReTestPageBuffer->waitCardIndex = 0;
+			S_ReTestPageBuffer->testCardIndex = 0;
+			S_ReTestPageBuffer->testCnt = 0;
+			timer_restart(&S_ReTestPageBuffer->testTimer);
 		}
-		/*开始老化*/
-		else if(S_ReTestPageBuffer->lcdinput[0] == 0x2800)
+	}
+	/*停止老化*/
+	else if(S_ReTestPageBuffer->lcdinput[0] == 0x2801)
+	{
+		S_ReTestPageBuffer->testCnt = S_ReTestPageBuffer->testTotalCnt;
+	}
+	/*获取老化次数*/
+	else if(S_ReTestPageBuffer->lcdinput[0] == 0x2820)
+	{
+		if(!S_ReTestPageBuffer->isTestting)
 		{
-			if(!S_ReTestPageBuffer->isTestting)
-			{
-				S_ReTestPageBuffer->isTestting = true;
-				S_ReTestPageBuffer->waitCardIndex = 0;
-				S_ReTestPageBuffer->testCardIndex = 0;
-				S_ReTestPageBuffer->testCnt = 0;
-				timer_restart(&S_ReTestPageBuffer->testTimer);
-			}
-		}
-		/*停止老化*/
-		else if(S_ReTestPageBuffer->lcdinput[0] == 0x2801)
-		{
-			S_ReTestPageBuffer->testCnt = S_ReTestPageBuffer->testTotalCnt;
-		}
-		/*获取老化次数*/
-		else if(S_ReTestPageBuffer->lcdinput[0] == 0x2820)
-		{
-			if(!S_ReTestPageBuffer->isTestting)
-			{
-				memset(S_ReTestPageBuffer->buf, 0, 100);
-				memcpy(S_ReTestPageBuffer->buf, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
-				S_ReTestPageBuffer->testTotalCnt = strtol(S_ReTestPageBuffer->buf, NULL, 10);
-				if(S_ReTestPageBuffer->testTotalCnt > 60000)
-					S_ReTestPageBuffer->testTotalCnt = 60000;
-			}
+			memset(S_ReTestPageBuffer->buf, 0, 100);
+			memcpy(S_ReTestPageBuffer->buf, &pbuf[7], GetBufLen(&pbuf[7] , 2*pbuf[6]));
+			S_ReTestPageBuffer->testTotalCnt = strtol(S_ReTestPageBuffer->buf, NULL, 10);
+			if(S_ReTestPageBuffer->testTotalCnt > 60000)
+				S_ReTestPageBuffer->testTotalCnt = 60000;
 		}
 	}
 }

@@ -364,11 +364,11 @@ static void activityFresh(void)
 				{
 					if(strlen(pageBuffer->deviceQuality->itemName) == 0)
 					{
-						memcpy(pageBuffer->deviceQuality->itemName, pageBuffer->currentPaiduiUnitData->testData.qrCode.ItemName, ItemNameLen);
+						memcpy(pageBuffer->deviceQuality->itemName, pageBuffer->currentPaiduiUnitData->testData.qrCode.itemConstData.itemName, ItemNameLen);
 						DisText(0x3510, pageBuffer->deviceQuality->itemName, ItemNameLen);
 					}
 					
-					if(CheckStrIsSame(pageBuffer->deviceQuality->itemName, pageBuffer->currentPaiduiUnitData->testData.qrCode.ItemName, ItemNameLen))
+					if(CheckStrIsSame(pageBuffer->deviceQuality->itemName, pageBuffer->currentPaiduiUnitData->testData.qrCode.itemConstData.itemName, ItemNameLen))
 					{
 						FormatParmAndStartMotorAction(&pageBuffer->motorAction, OriginLocationDef, pageBuffer->currentPaiduiUnitData->cardLocation+1, false);
 						pageBuffer->currentPaiduiUnitData->statues = statusMotorOrigin;

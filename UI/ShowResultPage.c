@@ -230,7 +230,7 @@ static void activityBufferFree(void)
 
 static void RefreshText(void)
 {
-	sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.qrCode.ItemName);
+	sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.itemName);
 	DisText(0x2310, S_ShowPageBuffer->tempbuf, strlen(S_ShowPageBuffer->tempbuf)+1);
 
 	sprintf(S_ShowPageBuffer->tempbuf, "%s\0", S_ShowPageBuffer->testdata.sampleid);

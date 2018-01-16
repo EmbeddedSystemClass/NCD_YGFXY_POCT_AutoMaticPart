@@ -33,7 +33,7 @@
 /***************************************************************************************************/
 /**************************************局部变量声明*************************************************/
 /***************************************************************************************************/
-
+static bool firstConnectIsDone = false;
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
@@ -52,6 +52,7 @@ static void DownLoadFirmware(HttpBuf * httpBuf);
 void NcdClientFunction(void)
 {
 	static HttpBuf * httpBuf = NULL;
+	unsigned int cnt = 0;
 	
 	while(1)
 	{
@@ -67,13 +68,19 @@ void NcdClientFunction(void)
 				{
 					//readServerTime(httpBuf);
 				
-					UpLoadDeviceInfo(httpBuf);
+					if(firstConnectIsDone == false || cnt % 120 == 0)
+					{
+						UpLoadDeviceInfo(httpBuf);
+						firstConnectIsDone = true;
+					}
 					
 					UpLoadTestData(httpBuf);
-					
+
 					//readRemoteFirmwareVersion(httpBuf);
 				
 					DownLoadFirmware(httpBuf);
+					
+					cnt++;
 				}
 				MyFree(httpBuf);
 			}
@@ -114,12 +121,10 @@ static void UpLoadDeviceInfo(HttpBuf * httpBuf)
 	
 	if(My_Pass == ReadDeviceFromFile(httpBuf->device))
 	{
-		sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ndid=%s&dversion=%d&addr=%s&name=%s&age=%s&sex=%s&phone=%s&job=%s&dsc=%s&type=%s&lang=%s", 
+		sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ndid=%s&dversion=%d&addr=%s&name=%s&phone=%s&type=%s&lang=%s", 
 			NcdServerUpDeviceUrlStr, NCD_ServerIp_1, NCD_ServerIp_2, NCD_ServerIp_3, NCD_ServerIp_4, NCD_ServerPort, httpBuf->device->deviceId,  
 			GB_SoftVersion, httpBuf->device->addr, httpBuf->device->operator.name, 
-			httpBuf->device->operator.age, httpBuf->device->operator.sex,	
-			httpBuf->device->operator.phone, httpBuf->device->operator.job, 
-			httpBuf->device->operator.department, DeviceTypeString, DeviceLanguageString);
+			httpBuf->device->operator.phone, DeviceTypeString, DeviceLanguageString);
 			
 		httpBuf->tempP = strstr(httpBuf->sendBuf, "zh;q=0.8\n\n");
 		httpBuf->sendDataLen = strlen(httpBuf->tempP)-10;	
@@ -232,15 +237,16 @@ static void UpLoadTestData(HttpBuf * httpBuf)
 			//read device id
 			getSystemDeviceId(httpBuf->tempBuf+10);
 
-			sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ncardnum=%s&qrdata.cid=%s&device.did=%s&tester=%s&sampleid=%s&testtime=20%02d-%d-%d %d:%d:%d&overtime=%d&cline=%d&tline=%d&bline=%d&t_c_v=%.3f&testv=%.*f&serialnum=%s-%s&t_isok=%s&cparm=%d",
+			sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ncardnum=%s&qrdata.cid=%s&device.did=%s&tester=%s&sampleid=%s&testtime=20%02d-%d-%d %d:%d:%d&overtime=%d&cline=%d&tline=%d&bline=%d&t_c_v=%.4f&t_tc_v=%.4f&testv=%.*f&serialnum=%s-%s&t_isok=%s&cparm=%d&t_cv=%.4f&c_cv=%.4f",
 				NcdServerUpTestDataUrlStr, NCD_ServerIp_1, NCD_ServerIp_2, NCD_ServerIp_3, NCD_ServerIp_4, NCD_ServerPort, 
 				httpBuf->testDataPoint->qrCode.piNum, httpBuf->testDataPoint->qrCode.PiHao, httpBuf->tempBuf+10, httpBuf->testDataPoint->operator.name, 
 				httpBuf->testDataPoint->sampleid, httpBuf->testDataPoint->testDateTime.year, httpBuf->testDataPoint->testDateTime.month, 
 				httpBuf->testDataPoint->testDateTime.day, httpBuf->testDataPoint->testDateTime.hour, httpBuf->testDataPoint->testDateTime.min, 
 				httpBuf->testDataPoint->testDateTime.sec, httpBuf->testDataPoint->time, httpBuf->testDataPoint->testSeries.C_Point.x, 
-				httpBuf->testDataPoint->testSeries.T_Point.x, httpBuf->testDataPoint->testSeries.B_Point.x, httpBuf->testDataPoint->testSeries.t_c, 
-				httpBuf->testDataPoint->qrCode.itemConstData.pointNum, httpBuf->testDataPoint->testSeries.result, httpBuf->testDataPoint->qrCode.PiHao, 
-				httpBuf->testDataPoint->qrCode.piNum, httpBuf->tempBuf, httpBuf->testDataPoint->cParm);
+				httpBuf->testDataPoint->testSeries.T_Point.x, httpBuf->testDataPoint->testSeries.B_Point.x, httpBuf->testDataPoint->testSeries.t_c,
+				httpBuf->testDataPoint->testSeries.t_tc, httpBuf->testDataPoint->qrCode.itemConstData.pointNum, httpBuf->testDataPoint->testSeries.result, 
+				httpBuf->testDataPoint->qrCode.PiHao, httpBuf->testDataPoint->qrCode.piNum, httpBuf->tempBuf, httpBuf->testDataPoint->testSeries.CMdifyNum, 
+				httpBuf->testDataPoint->testSeries.t_cv, httpBuf->testDataPoint->testSeries.c_cv);
 
 			for(httpBuf->j=0; httpBuf->j<100; httpBuf->j++)
 			{

@@ -272,24 +272,23 @@ static void InitCurve(void)
 
 static void InitPageText(void)
 {
-	sprintf(S_TestPageBuffer->buf, "%s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.ItemName);
+	sprintf(S_TestPageBuffer->buf, "%s", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemName);
 	DisText(0x1810, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);
 			
 	memcpy(S_TestPageBuffer->buf, S_TestPageBuffer->currenttestdata->testData.sampleid, MaxSampleIDLen);
 	DisText(0x1820, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);
 			
-	sprintf(S_TestPageBuffer->buf, "%s\0", S_TestPageBuffer->currenttestdata->testData.operator.name);
+	sprintf(S_TestPageBuffer->buf, "%s", S_TestPageBuffer->currenttestdata->testData.operator.name);
 	DisText(0x1830, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);
 			
-	sprintf(S_TestPageBuffer->buf, "%s-%s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.PiHao, 
+	sprintf(S_TestPageBuffer->buf, "%s-%s", S_TestPageBuffer->currenttestdata->testData.qrCode.PiHao, 
 		S_TestPageBuffer->currenttestdata->testData.qrCode.piNum);
 	DisText(0x1840, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);
 			
-	sprintf(S_TestPageBuffer->buf, "%s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.normalResult);
+	sprintf(S_TestPageBuffer->buf, "%s", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.normalResult);
 	DisText(0x1850, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);
-	
-	sprintf(S_TestPageBuffer->buf, "\0");
-	DisText(0x1838, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);
+
+	ClearText(0x1838);
 }
 
 /*更新数据*/

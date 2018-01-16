@@ -9,6 +9,13 @@
 #define	GB_SoftVersion	(unsigned short)1004
 #define	GB_SoftVersion_Build	"Build17112301\0"
 
+//二维码定义
+#define QRVersion0Define		0								//二维码原始版本定义
+#define QRVersion2Define		'2'								//二维码版本2定义
+#define QRVersion3Define		'3'								//二维码版本3定义
+#define QRVersionUnDefine		0xff							//不支持二维码版本
+#define	GB_QRVersion			QRVersion3Define				//当前支持的二维码版本，往下兼容
+
 /*服务器信息*/
 #define	NCD_ServerIp_1		116
 #define	NCD_ServerIp_2		62
@@ -66,7 +73,8 @@ typedef enum
 	OFF = 0
 }MyBitAction;
 
-#define	FreeRTOSZeroDelay	0
+#define	FreeRTOSZeroDelay	0				//0ms
+#define	FreeRTOSTenDelay	10				//10ms
 /**********************************************************************************************************/
 /******************************************fatfs结构体定义*************************************************/
 /**********************************************************************************************************/

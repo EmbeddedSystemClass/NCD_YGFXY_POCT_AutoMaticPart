@@ -19,7 +19,11 @@ typedef struct TestSeries_tag {
 	Point C_Point;
 	Point T_Point;
 	Point B_Point;
+	unsigned char CMdifyNum;					//c线补偿倍数，*10
+	float t_cv;
+	float c_cv;
 	float t_c;
+	float t_tc;
 	float result;
 } TestSeries;
 #pragma pack()
@@ -33,8 +37,7 @@ typedef struct TestData_tag {
 	DateTime 		testDateTime;						//测试时间
 	unsigned short 	time;								//超时时间
 	ResultState 	testResultDesc;						//测试结果状态
-	unsigned char 	cParm;								//c补偿倍数*10
-	//unsigned char 	noUse[512];							//预留
+	unsigned char 	noUse[512];							//预留
 	unsigned short 	crc;
 }TestData;
 #pragma pack()

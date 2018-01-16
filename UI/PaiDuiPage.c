@@ -16,6 +16,7 @@
 #include	"MyTools.h"
 #include	"MyTest_Data.h"
 #include	"System_Data.h"
+#include	"Motor1_Fun.h"
 #include	"Motor_Data.h"
 
 #include 	"FreeRTOS.h"
@@ -347,7 +348,7 @@ static void activityBufferFree(void)
 
 static void displayPageText(void)
 {
-	S_PaiDuiPageBuffer->motor1Location = getMotorxLocation(Motor_1);
+	S_PaiDuiPageBuffer->motor1Location = getMotor1Location();
 	//ÏÔÊ¾×ªÅÌ
 	if(S_PaiDuiPageBuffer->motor1Location % 2 == 1)
 		BasicPic(0x1510, 1, 94, 10, 10, 457, 461, 37, 69);
@@ -380,7 +381,7 @@ static void displayPageText(void)
 			snprintf(S_PaiDuiPageBuffer->buf, MaxSampleIDLen, "%s", S_PaiDuiPageBuffer->tempPaiduiUnitData->testData.sampleid);
 			DisText(0x15c0 + S_PaiDuiPageBuffer->index*0x10, S_PaiDuiPageBuffer->buf, strlen(S_PaiDuiPageBuffer->buf)+1);
 			//item name
-			snprintf(S_PaiDuiPageBuffer->buf, ItemNameLen, "%s", S_PaiDuiPageBuffer->tempPaiduiUnitData->testData.qrCode.ItemName);
+			snprintf(S_PaiDuiPageBuffer->buf, ItemNameLen, "%s", S_PaiDuiPageBuffer->tempPaiduiUnitData->testData.qrCode.itemConstData.itemName);
 			DisText(0x1650 + S_PaiDuiPageBuffer->index*0x10, S_PaiDuiPageBuffer->buf, strlen(S_PaiDuiPageBuffer->buf)+1);
 		}
 		else

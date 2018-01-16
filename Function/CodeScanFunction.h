@@ -21,7 +21,7 @@ typedef struct ReadQRCodeBuffer_tag {
 	QRCode * cardQR;											//保存二维码
 	Timer timer;												//计时器
 	unsigned char motorDir;										//电机方向
-	unsigned char tempV1;
+	unsigned short tempV1;
 	MotorAction motorAction;
 	DateTime dateTime;
 }ReadQRCodeBuffer;

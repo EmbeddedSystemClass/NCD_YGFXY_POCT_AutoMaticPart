@@ -302,7 +302,7 @@ static void ShowRecord(void)
 			DisText(0x2030+S_RecordPageBuffer->tempvalue1, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
 				
 			//显示项目
-			snprintf(S_RecordPageBuffer->buf, ItemNameLen, "%.11s", S_RecordPageBuffer->tempdata->qrCode.ItemName);
+			snprintf(S_RecordPageBuffer->buf, ItemNameLen, "%.11s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemName);
 			DisText(0x2036+S_RecordPageBuffer->tempvalue1, S_RecordPageBuffer->buf, strlen(S_RecordPageBuffer->buf)+1);
 				
 			//显示样品编号

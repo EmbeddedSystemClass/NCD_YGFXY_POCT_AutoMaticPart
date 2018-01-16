@@ -92,7 +92,7 @@ void motor4MoveTo(unsigned short location, bool isWait)
 	motor4TxBuf[1] = 6;
 	motor4TxBuf[2] = 0;
 	motor4TxBuf[3] = 2;
-	motor4TxBuf[4] = 0;
+	motor4TxBuf[4] = (location >> 8) & 0xff;
 	motor4TxBuf[5] = location & 0xff;
 	motorCrc = CalModbusCRC16Fun(motor4TxBuf, 6, NULL);
 	motor4TxBuf[6] = motorCrc>>8;
