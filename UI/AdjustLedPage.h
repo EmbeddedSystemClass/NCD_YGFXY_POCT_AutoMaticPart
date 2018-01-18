@@ -6,11 +6,11 @@
 #include	"SystemSet_Data.h"
 #include	"Motor_Fun.h"
 
-#define	MinLedValue		600								//0.5V
-#define	MiddleLedValue	1200							//1V
-#define	MaxLedValue		1800							//1.5V
-#define	AdjustLedStep	100
-#define	MaxAdjustCnt	7
+#define	MinLedValue		200								//0.5V
+#define	MiddleLedValue	400							//1V
+#define	MaxLedValue		600							//1.5V
+#define	AdjustLedStep	20
+#define	MaxAdjustCnt	10
 
 typedef struct AdjustLedPageBuffer_tag {
 	unsigned short lcdinput[20];

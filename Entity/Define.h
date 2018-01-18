@@ -35,7 +35,7 @@
 #define	Device_Final					0x27
 #define	Device_Demo						0x28
 #define	Device_FastDemo					0x29
-#define	DeviceUseType					Device_FastDemo
+#define	DeviceUseType					Device_Demo
 
 #define	NCDServerFinal					0x88
 #define	NCDServerDebug					0x89
@@ -264,6 +264,7 @@ typedef enum
 	PeakError = 2,										//检测卡没有C峰
 	MemError = 3,										//内存错误
 	TestInterrupt = 8,									//测试中断
+	qrError = 9,										//二维码错误
 	ResultIsOK = 99,									//测试成功
 }ResultState;
 

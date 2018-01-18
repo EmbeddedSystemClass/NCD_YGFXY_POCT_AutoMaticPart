@@ -237,14 +237,15 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	}*/
 	
 #if(Motor4Type == Motor4UsartMotor)
-	//初始化爪子
+
+	//初始化电动夹爪
 	selfTestBuf->i = 10;
 	while(selfTestBuf->i-- && My_Fail == motor4Reset())
 		vTaskDelay(100 / portTICK_RATE_MS);
 	
 	if(selfTestBuf->i <= 0)
 		return My_Fail;
-
+	
 	FormatParmAndStartMotorAction(&selfTestBuf->motorAction, Motor4MoveDef, Motor4_OpenLocation, true);
 
 #elif(Motor4Type == Motor4IOMotor)
@@ -284,14 +285,14 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 		if(selfTestBuf->juli < 960)
 			selfTestBuf->motor->isFront = true;
 		
-		motor2MoveStep(selfTestBuf->motor->isFront, 1000, false);
-		vTaskDelay(300 / portTICK_RATE_MS);
+		motor2MoveStep(selfTestBuf->motor->isFront, 500, false);
+		vTaskDelay(30 / portTICK_RATE_MS);
 	}
 	
 	if(30000 > selfTestBuf->motor->motorLocation)
 		return My_Fail;
 
-	//step 2 判断插卡口是否有卡
+/*	//step 2 判断插卡口是否有卡
 	if(Motor1Sensor2Triggered && readCaedCheckStatus() == ON)
 		FormatParmAndStartMotorAction(&selfTestBuf->motorAction, PutDownCardInPlaceDef, 0, true);
 
@@ -328,7 +329,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 			StartMotorAction(&selfTestBuf->motorAction, true);
 		}
 	}
-	
+	*/
 	return My_Pass;
 }
 

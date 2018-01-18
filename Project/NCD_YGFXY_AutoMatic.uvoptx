@@ -118,7 +118,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>荔?涮?趏荶</Name>
+          <Name>`?</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -150,62 +150,46 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>138</LineNumber>
+          <LineNumber>63</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134313464</Address>
+          <Address>134368314</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Function\NcdClient_Fun.c</Filename>
+          <Filename>..\Daos\ReTestDataDao.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\NCD_YGFXY_AutoMatic\../Function/NcdClient_Fun.c\138</Expression>
+          <Expression>\\NCD_YGFXY_AutoMatic\../Daos/ReTestDataDao.c\63</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>248</LineNumber>
+          <LineNumber>320</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134303042</Address>
+          <Address>134342808</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Function\SelfTest_Fun.c</Filename>
+          <Filename>..\UI\ReTestPage.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\NCD_YGFXY_AutoMatic\../Function/SelfTest_Fun.c\248</Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>249</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>..\Function\SelfTest_Fun.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\NCD_YGFXY_AutoMatic\../UI/ReTestPage.c\320</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>S_PaiDuiPageBuffer</ItemText>
+          <ItemText>pageBuffer</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>CurrentTestDataBuffer</ItemText>
+          <ItemText>S_MotorAction</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
@@ -816,7 +800,7 @@
 
   <Group>
     <GroupName>Tasks</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1360,7 +1344,7 @@
 
   <Group>
     <GroupName>Entitys</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

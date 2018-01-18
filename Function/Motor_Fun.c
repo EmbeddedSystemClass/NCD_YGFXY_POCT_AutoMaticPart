@@ -33,6 +33,7 @@ static void PutCardOutOfDeviceAfterTest(void);
 static void MotorMoveToOriginLocation(unsigned char num);
 static void motorMoveToPutDownCardInPlace(void);
 static void motorMoveToPutDownCardInTestPlace(void);
+static void PutCardOutOfDeviceIgnoreMotor1(void);
 /**************************************************************************************************/
 /**************************************************************************************************/
 /**************************************************************************************************/
@@ -66,6 +67,8 @@ void MotorActionFunction(void)
 			
 			case PutCardOutOfDeviceAfterTestDef :	PutCardOutOfDeviceAfterTest();	break;
 			
+			case PutCardOutOfDeviceIgnoreMotor1Def :	PutCardOutOfDeviceIgnoreMotor1();	break;
+			
 			case OriginLocationDef :		MotorMoveToOriginLocation(S_MotorAction.motorParm);	break;
 											
 			case PutDownCardInPlaceDef :	motorMoveToPutDownCardInPlace();	break;
@@ -90,6 +93,9 @@ MyRes StartMotorAction(MotorAction * motorAction, bool waitActionDone)
 	
 	if(S_MotorAction.motorActionEnum != MotorActionNone)
 		return My_Fail;
+	
+	while(pdPASS == xSemaphoreTake(xMotorMutex, 0))
+		;
 	
 	S_MotorAction.motorActionEnum = motorAction->motorActionEnum;
 	S_MotorAction.motorParm = motorAction->motorParm;
@@ -178,6 +184,21 @@ static void PutCardOutOfDevice(unsigned char num)
 
 static void PutCardOutOfDeviceAfterTest(void)
 {
+	motor2MoveTo(1, 2, Motor2_PutCardOutLocation, true);
+
+	motor4MoveTo(Motor4_OpenLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+}
+
+static void PutCardOutOfDeviceIgnoreMotor1(void)
+{
+	motor4MoveTo(Motor4_OpenLocation, true);
+	
+	motor2MoveTo(1, 2, Motor2_StartTestLocation, true);
+
+	motor4MoveTo(Motor4_CardLocation, true);
+	
 	motor2MoveTo(1, 2, Motor2_PutCardOutLocation, true);
 
 	motor4MoveTo(Motor4_OpenLocation, true);

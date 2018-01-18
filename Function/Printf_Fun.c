@@ -80,7 +80,7 @@ void PrintfData(TestData * testd2)
 			, printfBuf->dateTime.hour, printfBuf->dateTime.min, printfBuf->dateTime.sec);
 		SendDataToQueue(GetUsart1TXQueue(), NULL, printfBuf->buf, strlen(printfBuf->buf), 1, 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart1TXInterrupt);
 		
-		sprintf(printfBuf->buf, "%s\n\n\n\n\n", StatementStr);
+		sprintf(printfBuf->buf, "%s\n\n\n", StatementStr);
 		SendDataToQueue(GetUsart1TXQueue(), NULL, printfBuf->buf, strlen(printfBuf->buf), 1, 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart1TXInterrupt);
 	}
 

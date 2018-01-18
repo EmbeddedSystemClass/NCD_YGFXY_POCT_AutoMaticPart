@@ -36,17 +36,15 @@
 MyRes writeReTestDataToFile(ReTestPageBuffer * pageBuffer)
 {
 	FatfsFileInfo_Def * myfile = NULL;
-	char *buf;
 	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(MyFileStructSize);
-	buf = MyMalloc(1024);
 	
-	if(myfile && pageBuffer && buf)
+	if(myfile && pageBuffer)
 	{
 		memset(myfile, 0, MyFileStructSize);
 		
-		myfile->res = f_open(&(myfile->file), "0:/laohua.csv", FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
+		myfile->res = f_open(&(myfile->file), "0:/laohua.csv", FA_OPEN_ALWAYS | FA_WRITE);
 			
 		if(FR_OK == myfile->res)
 		{
@@ -55,18 +53,35 @@ MyRes writeReTestDataToFile(ReTestPageBuffer * pageBuffer)
 			
 			if(myfile->size == 0)
 			{
-				sprintf(buf, "测试次数,测试时间,测试时长(秒),结果描述,result-1,result-2,result-3,result-4,result-5,result-6,result-7,result-8\r\0");
-				myfile->res = f_write(&(myfile->file), buf, strlen(buf), &(myfile->bw));
+				sprintf(pageBuffer->longBuffer, "测试次数,测试时间,测试时长(秒),result-1,result-2,result-3,result-4,result-5,result-6,result-7,result-8,result-9\r");
+				myfile->res = f_write(&(myfile->file), pageBuffer->longBuffer, strlen(pageBuffer->longBuffer), &(myfile->bw));
 				if(FR_OK != myfile->res)
 					goto END;
 			}
 			
 			//保存测试数据
-			sprintf(buf, "%d/%d,%d-%d-%d %d:%d:%d,%d,%s,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\r\0", pageBuffer->testCnt, pageBuffer->testTotalCnt, pageBuffer->dateTime.year
-					, pageBuffer->dateTime.month, pageBuffer->dateTime.day, pageBuffer->dateTime.hour, pageBuffer->dateTime.min, pageBuffer->dateTime.sec
-					, timer_Count(&pageBuffer->testTimer), pageBuffer->resultDesc, pageBuffer->result[0], pageBuffer->result[1], pageBuffer->result[2]
-					, pageBuffer->result[3], pageBuffer->result[4], pageBuffer->result[5], pageBuffer->result[6], pageBuffer->result[7]);
-			myfile->res = f_write(&(myfile->file), buf, strlen(buf), &(myfile->bw));
+			sprintf(pageBuffer->longBuffer, "%d,20%02d-%02d-%02d %02d:%02d:%02d,%d", pageBuffer->testNum, pageBuffer->paiduiUnitData[0].testData.testDateTime.year, 
+				pageBuffer->paiduiUnitData[0].testData.testDateTime.month, pageBuffer->paiduiUnitData[0].testData.testDateTime.day,
+				pageBuffer->paiduiUnitData[0].testData.testDateTime.hour, pageBuffer->paiduiUnitData[0].testData.testDateTime.min, 
+				pageBuffer->paiduiUnitData[0].testData.testDateTime.sec, timer_Count(&pageBuffer->paiduiUnitData[0].timeDown_timer));
+			
+			for(pageBuffer->i=0; pageBuffer->i<PaiDuiWeiNum; pageBuffer->i++)
+			{
+				if(pageBuffer->paiduiUnitData[pageBuffer->i].testData.testResultDesc == ResultIsOK)
+					sprintf(pageBuffer->buf, ",%.3f", pageBuffer->paiduiUnitData[pageBuffer->i].testData.testSeries.result);
+				else if(pageBuffer->paiduiUnitData[pageBuffer->i].testData.testResultDesc == qrError)
+					sprintf(pageBuffer->buf, ",二维码读取失败");
+				else if(pageBuffer->paiduiUnitData[pageBuffer->i].testData.testResultDesc == NoSample)
+					sprintf(pageBuffer->buf, ",未加样");
+				else if(pageBuffer->paiduiUnitData[pageBuffer->i].testData.testResultDesc == PeakError)
+					sprintf(pageBuffer->buf, ",峰错误");
+				else
+					sprintf(pageBuffer->buf, ",test error");
+				strcat(pageBuffer->longBuffer, pageBuffer->buf);
+			}
+			strcat(pageBuffer->longBuffer, "\r\0");
+			
+			myfile->res = f_write(&(myfile->file), pageBuffer->longBuffer, strlen(pageBuffer->longBuffer), &(myfile->bw));
 				
 			if(FR_OK != myfile->res)
 				goto END;
@@ -79,7 +94,6 @@ MyRes writeReTestDataToFile(ReTestPageBuffer * pageBuffer)
 	}
 	
 	MyFree(myfile);
-	MyFree(buf);
 	
 	return statues;
 }

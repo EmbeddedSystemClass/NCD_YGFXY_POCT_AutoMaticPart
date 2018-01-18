@@ -24,10 +24,10 @@ typedef enum
 #define	Motor2_EndTestLocation				28200							//停止测试位置27150  29610
 #define	Motor2_StartTestLocation			19050							//开始测试位置18000  20460
 #define	Motor2_CatchCardLocation			Motor2_EndTestLocation			//抓卡准备测试
-#define	Motor2_PutDownCardLocation2			33000							//从测试的一边将卡在排队位放好
+#define	Motor2_PutDownCardLocation2			30800							//从测试的一边将卡在排队位放好
 #define	Motor2_MidLocation					37000							//中心位置38000
-#define	Motor2_PutDownCardLocation			44500							//将卡在排队位放好
-#define	Motor2_WaitCardLocation				53000							//等待插卡
+#define	Motor2_PutDownCardLocation			43000							//将卡在排队位放好
+#define	Motor2_WaitCardLocation				52500							//等待插卡
 
 /*电机4相关定义*/
 #if(Motor4Type == Motor4UsartMotor)
