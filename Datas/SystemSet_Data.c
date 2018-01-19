@@ -56,6 +56,7 @@ void setDefaultSystemSetData(SystemSetData * systemSetData)
 		systemSetData->wireNetSet.isStaticIp = false;
 
 		systemSetData->testLedLightIntensity = 200;
+		memset(systemSetData->parm, 0, 512);
 		
 		systemSetData->crc = CalModbusCRC16Fun(systemSetData, SystemSetDataStructCrcSize, NULL);
 	}

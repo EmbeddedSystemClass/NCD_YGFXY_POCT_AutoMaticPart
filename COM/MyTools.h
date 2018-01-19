@@ -12,5 +12,6 @@ void findFeng(unsigned short * datas, unsigned short startIndex, unsigned short 
 unsigned short getMaxMinValue(unsigned short * datas, unsigned short len, Point * max, Point * min);
 MyRes parseIpString(IP * ip, char * ipStr);
 MyRes parsePortString(unsigned short * port, char * portStr);
+void bubbleSort(unsigned short a[], unsigned char n);
 #endif
 

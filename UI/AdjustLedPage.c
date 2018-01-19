@@ -181,11 +181,11 @@ static void activityFresh(void)
 	{
 		if(isMotorMoveEnd(FreeRTOSZeroDelay))
 		{
-			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusTestMotor;
+			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusPrepareTest;
 			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
 		}
 	}
-	else if(statusTestMotor == S_AdjustLedPageBuffer->paiduiUnitData.statues)
+	else if(statusPrepareTest == S_AdjustLedPageBuffer->paiduiUnitData.statues)
 	{
 		if(isMotorMoveEnd(FreeRTOSZeroDelay))
 		{
@@ -322,7 +322,7 @@ static void analysisTestData(void)
 				DspNum(0x2605, S_AdjustLedPageBuffer->testIndex, 2);
 				DspNum(0x2604, S_AdjustLedPageBuffer->paiduiUnitData.ledValue, 2);
 						
-				S_AdjustLedPageBuffer->paiduiUnitData.statues = statusTestMotor;
+				S_AdjustLedPageBuffer->paiduiUnitData.statues = statusPrepareTest;
 				FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
 					
 				return;
@@ -342,7 +342,7 @@ static void analysisTestData(void)
 				DspNum(0x2605, S_AdjustLedPageBuffer->testIndex, 2);
 				DspNum(0x2604, S_AdjustLedPageBuffer->paiduiUnitData.ledValue, 2);
 						
-				S_AdjustLedPageBuffer->paiduiUnitData.statues = statusTestMotor;
+				S_AdjustLedPageBuffer->paiduiUnitData.statues = statusPrepareTest;
 				FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, StartTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
 					
 				return;

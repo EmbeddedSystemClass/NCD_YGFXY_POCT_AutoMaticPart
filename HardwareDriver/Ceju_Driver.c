@@ -9,6 +9,17 @@
 /******************************************Header List********************************************/
 /***************************************************************************************************/
 #include	"Ceju_Driver.h"
+
+#include	"MyMem.h"
+#include	"MyTools.h"
+
+#include	"math.h"
+#include	<string.h>
+#include	"stdio.h"
+#include 	"stdlib.h"
+
+#include 	"FreeRTOS.h"
+#include 	"task.h"
 /***************************************************************************************************/
 /******************************************Static Variables***************************************/
 /***************************************************************************************************/
@@ -66,11 +77,45 @@ unsigned short readJuliValue(void)
 {
 	unsigned char i=0;
 	unsigned int value = 0;
-	
-	for(i=0; i<50; i++)
+
+	for(i=0; i<10; i++)
+	{
 		value += readCejuADC();
+		//vTaskDelay(30 / portTICK_RATE_MS);
+	}
 	
-	value /= 50;
+	value /= 10;
+	
+	return value;
+}
+
+unsigned short readJuliValueWithFilter(void)
+{
+	unsigned short value = 0;
+	CejuStruct * cejuStruct = NULL;
+	
+	cejuStruct = MyMalloc(CejuStructSize);
+	if(cejuStruct)
+	{
+		for(cejuStruct->i=0; cejuStruct->i<30; cejuStruct->i++)
+		{
+			cejuStruct->data[cejuStruct->i] = readCejuADC();
+			vTaskDelay(10 / portTICK_RATE_MS);
+		}
+		
+		bubbleSort(cejuStruct->data, 30);
+
+		cejuStruct->value = 0.0f;
+		for(cejuStruct->i=0; cejuStruct->i<15; cejuStruct->i++)
+		{
+			cejuStruct->value += cejuStruct->data[cejuStruct->i];
+		}
+		
+		cejuStruct->value /= 15.0;
+		value = cejuStruct->value;
+	}
+	
+	MyFree(cejuStruct);
 	
 	return value;
 }

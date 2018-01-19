@@ -50,6 +50,7 @@ typedef struct SelfTestBuf_Tag
 	double b;
 	unsigned char i;
 	unsigned char j;
+	unsigned int tempInt;
 	MyBitAction locationStatus[Motor1_HalfLocation];
 	MyRes status;
 }SelfTestBuf;

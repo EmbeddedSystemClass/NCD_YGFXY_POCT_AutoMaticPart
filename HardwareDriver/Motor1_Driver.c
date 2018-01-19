@@ -52,7 +52,7 @@ void Motor1_GPIO_Init(void)
 	
 	GPIO_InitStructure.GPIO_Pin = Motor1_Sleep_Pin;
 	GPIO_Init(Motor1_Sleep_Group, &GPIO_InitStructure);
-	setMotor1SleepGPIO(ON);
+	setMotor1SleepGPIO(OFF);
 	
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;

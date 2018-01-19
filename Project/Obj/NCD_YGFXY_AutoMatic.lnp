@@ -25,6 +25,7 @@
 ".\obj\usart6_driver.o"
 ".\obj\ceju_driver.o"
 ".\obj\sd_spi_driver.o"
+".\obj\powercheck_driver.o"
 ".\obj\codescanfunction.o"
 ".\obj\lcdinputfun.o"
 ".\obj\motor1_fun.o"

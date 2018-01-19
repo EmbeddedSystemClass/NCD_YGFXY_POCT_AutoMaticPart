@@ -15,7 +15,7 @@ typedef struct SystemSetData_Tag
 	unsigned short ledSleepTime;										//休眠时间 s
 	unsigned char ledLightIntensity;									//屏幕亮度 0-100
 	unsigned short testLedLightIntensity;								//测试时采用的led亮度值，mv
-	unsigned char parm1[512];											//预留512字节的参数位置
+	unsigned char parm[512];											//预留512字节的参数位置
 	unsigned short crc;
 }SystemSetData;
 #pragma pack()

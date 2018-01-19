@@ -42,6 +42,7 @@ static void UpLoadDeviceInfo(HttpBuf * httpBuf);
 static void UpLoadTestData(HttpBuf * httpBuf);
 static void readRemoteFirmwareVersion(HttpBuf * httpBuf);
 static void DownLoadFirmware(HttpBuf * httpBuf);
+static void upLoadUserServer(void);
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************正文********************************************************/
@@ -75,6 +76,8 @@ void NcdClientFunction(void)
 					}
 					
 					UpLoadTestData(httpBuf);
+					
+					upLoadUserServer();
 
 					//readRemoteFirmwareVersion(httpBuf);
 				
@@ -357,3 +360,91 @@ static void DownLoadFirmware(HttpBuf * httpBuf)
 		setIsSuccessDownloadFirmware(true);
 }
 
+static void upLoadUserServer(void)
+{
+/*	httpBuffer->tempInt1 = getTestDataTotalNum();
+	httpBuffer->tempInt2 = getUserUpLoadIndex();
+	
+	//is have data not to update ?
+	if(httpBuffer->tempInt1 > httpBuffer->tempInt2)
+	{
+		httpBuffer->page = MyMalloc(PageStructSize);
+		if(httpBuffer->page)
+		{
+			//read datas from sd
+			httpBuffer->pageRequest.startElementIndex = httpBuffer->tempInt2;
+			httpBuffer->pageRequest.orderType = DESC;
+			httpBuffer->pageRequest.pageSize = 3;
+
+			memset(httpBuffer->page, 0, PageStructSize);
+			
+			if(My_Pass == ReadTestData(&httpBuffer->pageRequest, httpBuffer->page, httpBuffer->tempInt1))
+			{
+				httpBuffer->testData = httpBuffer->page->testData;
+				for(httpBuffer->upLoadIndex=0; httpBuffer->upLoadIndex< httpBuffer->page->ElementsSize; httpBuffer->upLoadIndex++)
+				{
+					//如果crc校验正确，则开始上传
+					if(httpBuffer->testData->crc == CalModbusCRC16Fun1(httpBuffer->testData, TestDataStructCrcSize))
+					{
+						//上传测试数据
+						if(httpBuffer->testData->TestTime.month == 0 || httpBuffer->testData->TestTime.day == 0)
+						{
+							httpBuffer->testData->TestTime.year = 0;
+							httpBuffer->testData->TestTime.month = 1;
+							httpBuffer->testData->TestTime.day = 1;
+							httpBuffer->testData->TestTime.hour = 0;
+							httpBuffer->testData->TestTime.min = 0;
+							httpBuffer->testData->TestTime.sec = 0;
+						}
+						
+						//read device id
+						readDeviceId(httpBuffer->tempBuf);
+						
+						//AA | testtime | sampleid | testtype | pihao | pinum | deviceid | tester | item | danwei | normal 
+						sprintf(httpBuffer->sendBuf, "AA|20%02d-%d-%d %d:%d:%d|%s|%s|%s|%s|%s|%s|%s|%s|%s",  
+							httpBuffer->testData->TestTime.year,  httpBuffer->testData->TestTime.month, httpBuffer->testData->TestTime.day, 
+							httpBuffer->testData->TestTime.hour, httpBuffer->testData->TestTime.min, httpBuffer->testData->TestTime.sec,
+							httpBuffer->testData->sampleid, ChangguiStr, httpBuffer->testData->temperweima.PiHao,  httpBuffer->testData->temperweima.piNum,
+							httpBuffer->tempBuf, httpBuffer->testData->user.user_name, httpBuffer->testData->temperweima.itemConstData.itemName,
+							httpBuffer->testData->temperweima.itemConstData.itemMeasure, httpBuffer->testData->temperweima.itemConstData.normalResult);
+
+						// | value | error | BB
+						if(httpBuffer->testData->testResultDesc != ResultIsOK)
+							sprintf(httpBuffer->tempBuf, "||Y|BB");
+						else if(httpBuffer->testData->testline.BasicResult <= httpBuffer->testData->temperweima.itemConstData.lowstResult)
+							sprintf(httpBuffer->tempBuf, "|<%.*f|N|BB", httpBuffer->testData->temperweima.itemConstData.pointNum, 
+								httpBuffer->testData->temperweima.itemConstData.lowstResult);
+						else
+							sprintf(httpBuffer->tempBuf, "|%.*f|N|BB", httpBuffer->testData->temperweima.itemConstData.pointNum, 
+								httpBuffer->testData->testline.BasicResult);
+						strcat(httpBuffer->sendBuf, httpBuffer->tempBuf);
+						strcat(httpBuffer->sendBuf, "\r\n");
+						
+						httpBuffer->sendDataLen = strlen(httpBuffer->sendBuf);	
+						
+						getGBServerData(&httpBuffer->serverSet);
+						if(My_Pass == CommunicateWithServerByLineNet(httpBuffer) || My_Pass == CommunicateWithServerByUSB(httpBuffer))
+						{
+							if(strstr(httpBuffer->recvBuf, httpBuffer->testData->temperweima.PiHao) && strstr(httpBuffer->recvBuf, httpBuffer->testData->temperweima.piNum))
+								;
+							else
+								break;
+						}
+						else
+							break;
+					}
+
+					httpBuffer->tempInt2++;
+					httpBuffer->testData++;
+				}
+				
+				httpBuffer->systemSetData = (SystemSetData *)httpBuffer->sendBuf;
+				copyGBSystemSetData(httpBuffer->systemSetData);
+				httpBuffer->systemSetData->userUpLoadIndex = httpBuffer->tempInt2;
+				SaveSystemSetData(httpBuffer->systemSetData);
+			}
+		}
+		
+		MyFree(httpBuffer->page);
+	}*/
+}

@@ -74,7 +74,7 @@ void motor2MoveStep(bool isFront, unsigned short stepNum, bool isWait)
 	motor2->lowTime = 2;
 	motor2->moveStepNum = stepNum;
 	
-	while(isWait && motor2->motorLocation != motor2->motorTargetLocation)
+	while(isWait && motor2->moveStepNum == 0)
 	{
 		vTaskDelay(100 / portTICK_RATE_MS);
 	}

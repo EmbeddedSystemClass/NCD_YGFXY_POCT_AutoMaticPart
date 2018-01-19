@@ -275,3 +275,31 @@ MyRes parsePortString(unsigned short * port, char * portStr)
 	
 	return My_Pass;
 }
+
+/***************************************************************************************************
+*FunctionName: 
+*Description: Ð¡µ½´ó
+*Input: 
+*Output: 
+*Return: 
+*Author: xsx
+*Date: 
+***************************************************************************************************/
+void bubbleSort(unsigned short a[], unsigned char n)
+{
+	 unsigned short tmp = 0;
+    for(unsigned char i =0 ; i< n-1; ++i) 
+	{  
+        for(unsigned char j = 0; j < n-i-1; ++j) 
+		{  
+            if(a[j] > a[j+1])  
+            {  
+                tmp = a[j] ; 
+				a[j] = a[j+1] ;  
+				a[j+1] = tmp;  
+            }  
+        }  
+    }  
+}
+
+
