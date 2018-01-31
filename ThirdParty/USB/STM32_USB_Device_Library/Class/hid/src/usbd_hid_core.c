@@ -479,7 +479,7 @@ void USBDebug(void * buf, unsigned char len)
   * @retval status
   */
 uint8_t USBD_HID_SendReport     (USB_OTG_CORE_HANDLE  *pdev, 
-                                 uint8_t *report,
+                                 void *report,
                                  uint16_t len)
 {
   if (pdev->dev.device_status == USB_OTG_CONFIGURED )

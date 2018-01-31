@@ -79,6 +79,8 @@ static void activityStart(void)
 {
 	showDeviceInfoText();
 	
+	updateSystemWorkStatus(SystemDeviceInfoModifying, ON);
+	
 	SelectPage(102);
 }
 
@@ -106,9 +108,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	else if(page->lcdinput[0] == 0x1B01)
 	{			
 		if(My_Pass == SaveDeviceToFile(page->device))
-		{
 			SendKeyCode(1);
-		}
 		else
 			SendKeyCode(2);
 	}
@@ -202,6 +202,7 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
+	updateSystemWorkStatus(SystemDeviceInfoModifying, OFF);
 	UnLockObject(page->myDeviceLock, &page);
 	
 	activityBufferFree();

@@ -11,6 +11,7 @@
 #include	"LunchPage.h"
 #include	"Test_Task.h"
 #include	"CodeScan_Task.h"
+#include	"NcdClient_Task.h"
 #include 	"netconf.h"
 
 #include	<string.h>
@@ -138,6 +139,8 @@ static void activityFresh(void)
 			StartCodeScanTask();
 			
 			StartEthernet();
+			
+			StartvNcdClientTask();
 					
 			destroyTopActivity();
 			startActivity(createLunchActivity, NULL, NULL);

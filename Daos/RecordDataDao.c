@@ -135,7 +135,7 @@ MyRes readRecordDataFromFileByPageRequest(const char * fileName, PageRequest * p
 	
 	myfile = MyMalloc(MyFileStructSize);
 
-	if(myfile && fileName && deviceRecordHeader && page)
+	if(myfile && fileName && deviceRecordHeader && page && pageRequest)
 	{
 		memset(myfile, 0, MyFileStructSize);
 		page->totalPageSize = 0;
@@ -155,37 +155,6 @@ MyRes readRecordDataFromFileByPageRequest(const char * fileName, PageRequest * p
 			myfile->res = f_read(&(myfile->file), deviceRecordHeader, DeviceRecordHeaderStructSize, &(myfile->br));
 			if(deviceRecordHeader->crc != CalModbusCRC16Fun(deviceRecordHeader, DeviceRecordHeaderStructCrcSize, NULL))
 				goto Finally;
-			else if(pageRequest == NULL)
-			{
-				myfile->tempValue1 = DeviceRecordHeaderStructSize;
-				
-				if(page->isForNCD)
-				{
-					//根据纽康度上传索引读取数据
-					if(deviceRecordHeader->ncdUpLoadIndex < deviceRecordHeader->itemSize)
-					{
-						//计算偏移地址
-						myfile->tempValue1 += deviceRecordHeader->ncdUpLoadIndex * ItemByteSize;
-						f_lseek(&(myfile->file), myfile->tempValue1);
-						
-						for(myfile->i=0; myfile->i<MaxUpLoadTestDataNum; myfile->i++)
-							f_read(&(myfile->file), page->content[myfile->i], ItemByteSize, &(myfile->br));
-					}
-				}
-				else
-				{
-					//根据用户上传索引读取数据
-					if(deviceRecordHeader->userUpLoadIndex < deviceRecordHeader->itemSize)
-					{
-						//计算偏移地址
-						myfile->tempValue1 += deviceRecordHeader->userUpLoadIndex * ItemByteSize;
-						f_lseek(&(myfile->file), myfile->tempValue1);
-
-						for(myfile->i=0; myfile->i<MaxUpLoadTestDataNum; myfile->i++)
-							f_read(&(myfile->file), page->content[myfile->i], ItemByteSize, &(myfile->br));
-					}
-				}
-			}
 			else
 			{
 				page->totalItemSize = deviceRecordHeader->itemSize;
@@ -240,64 +209,56 @@ MyRes readRecordDataFromFileByPageRequest(const char * fileName, PageRequest * p
 	
 	return statues;
 }
-/*
-MyRes readRecordDataFromFileByIndex(const char * fileName, PageRequest * pageRequest, DeviceRecordHeader * deviceRecordHeader, 
-	Page * page)
+
+MyRes readRecordDataFromFileByUpLoadIndex(const char * fileName, bool isNcd, DeviceRecordHeader * deviceRecordHeader, Page * page, 
+	unsigned short ItemByteSize)
 {
 	FatfsFileInfo_Def * myfile = NULL;
 	MyRes statues = My_Fail;
 	
 	myfile = MyMalloc(MyFileStructSize);
 
-	if(myfile && fileName && pageRequest && deviceRecordHeader && page)
+	if(myfile && fileName && deviceRecordHeader && page)
 	{
 		memset(myfile, 0, MyFileStructSize);
 		memset(deviceRecordHeader, 0, DeviceRecordHeaderStructSize);
 		
-		myfile->res = f_open(&(myfile->file), fileName, FA_READ);
+		myfile->res = f_open(&myfile->file, fileName, FA_READ);
 		
 		if(FR_OK == myfile->res)
 		{
 			myfile->size = f_size(&(myfile->file));
 			
-			f_lseek(&(myfile->file), 0);
+			f_lseek(&myfile->file, 0);
 			
 			//读取数据头
-			myfile->res = f_read(&(myfile->file), deviceRecordHeader, DeviceRecordHeaderStructSize, &(myfile->br));
+			myfile->res = f_read(&myfile->file, deviceRecordHeader, DeviceRecordHeaderStructSize, &(myfile->br));
 			if(deviceRecordHeader->crc != CalModbusCRC16Fun(deviceRecordHeader, DeviceRecordHeaderStructCrcSize, NULL))
 				goto Finally;
 			
-			//如果pageRequest为空，则根据上传索引读取数据
-			if(pageRequest == NULL)
+			//数据头正确，则根据索引读取数据
+			else
 			{
-				//根据用户上传索引读取数据
-				if(deviceRecordHeader->userUpLoadIndex < deviceRecordHeader->itemSize)
-				{
-					f_lseek(&(myfile->file), deviceRecordHeader->userUpLoadIndex * recordItemSize + DeviceRecordHeaderStructSize);
-				
-					f_read(&(myfile->file), recordData1, recordItemSize, &(myfile->br));
-				}
-				
-				//根据纽康度上传索引读取数据
-				if(deviceRecordHeader->ncdUpLoadIndex < deviceRecordHeader->itemSize)
-				{
-					f_lseek(&(myfile->file), deviceRecordHeader->ncdUpLoadIndex * recordItemSize + DeviceRecordHeaderStructSize);
-				
-					f_read(&(myfile->file), recordData2, recordItemSize, &(myfile->br));
-				}
-			}
-			//如果pageRequest != NULL，表示是按照pageRequest的请求内容进行读取数据
-			else if(pageRequest->startElementIndex < deviceRecordHeader->itemSize)
-			{
-				if(pageRequest->pageSize > (deviceRecordHeader->itemSize - pageRequest->startElementIndex))
-					pageRequest->pageSize = (deviceRecordHeader->itemSize - pageRequest->startElementIndex);
-					
-				if(pageRequest->orderType == DESC)
-					myfile->res = f_lseek(&(myfile->file), (pageRequest->startElementIndex) * recordItemSize + DeviceRecordHeaderStructSize);
+				if(isNcd)
+					myfile->tempValue1 = deviceRecordHeader->ncdUpLoadIndex;
 				else
-					myfile->res = f_lseek(&(myfile->file), (deviceRecordHeader->itemSize - (pageRequest->pageSize + pageRequest->startElementIndex)) * recordItemSize + DeviceRecordHeaderStructSize);
-					
-				f_read(&(myfile->file), recordData1, pageRequest->pageSize * recordItemSize, &(myfile->br));	
+					myfile->tempValue1 = deviceRecordHeader->userUpLoadIndex;
+				
+				if(myfile->tempValue1 < deviceRecordHeader->itemSize)
+				{
+					myfile->tempValue1 *= ItemByteSize;
+					myfile->tempValue1 += DeviceRecordHeaderStructSize;
+					f_lseek(&myfile->file, myfile->tempValue1);
+
+					for(myfile->i=0; myfile->i<MaxUpLoadTestDataNum; myfile->i++)
+					{
+						myfile->res = f_read(&myfile->file, page->content[myfile->i], ItemByteSize, &myfile->br);
+						
+						if(myfile->res != FR_OK)
+							break;
+					}
+					page->readItemSize = myfile->i;
+				}
 			}
 			
 			statues = My_Pass;
@@ -310,7 +271,51 @@ MyRes readRecordDataFromFileByIndex(const char * fileName, PageRequest * pageReq
 	
 	return statues;
 }
-*/
+
+bool isRecordDataToBeUpLoad(const char * fileName, bool isNcd, DeviceRecordHeader * deviceRecordHeader)
+{
+	FatfsFileInfo_Def * myfile = NULL;
+	bool isData = false;
+	
+	myfile = MyMalloc(MyFileStructSize);
+
+	if(myfile && fileName && deviceRecordHeader)
+	{
+		memset(myfile, 0, MyFileStructSize);
+		memset(deviceRecordHeader, 0, DeviceRecordHeaderStructSize);
+		
+		myfile->res = f_open(&myfile->file, fileName, FA_READ);
+		
+		if(FR_OK == myfile->res)
+		{
+			myfile->size = f_size(&(myfile->file));
+			
+			f_lseek(&myfile->file, 0);
+			
+			//读取数据头
+			myfile->res = f_read(&myfile->file, deviceRecordHeader, DeviceRecordHeaderStructSize, &(myfile->br));
+			if(deviceRecordHeader->crc != CalModbusCRC16Fun(deviceRecordHeader, DeviceRecordHeaderStructCrcSize, NULL))
+				isData = false;
+			else
+			{
+				if(isNcd)
+					myfile->tempValue1 = deviceRecordHeader->ncdUpLoadIndex;
+				else
+					myfile->tempValue1 = deviceRecordHeader->userUpLoadIndex;
+				
+				if(myfile->tempValue1 < deviceRecordHeader->itemSize)
+					isData = true;
+				else
+					isData = false;
+			}
+			
+			f_close(&(myfile->file));
+		}
+	}
+	MyFree(myfile);
+	
+	return isData;
+}
 /***************************************************************************************************
 *FunctionName:  plusRecordDataHeaderUpLoadIndexToFile
 *Description:  增加上传索引：在原数据上加上一个数字

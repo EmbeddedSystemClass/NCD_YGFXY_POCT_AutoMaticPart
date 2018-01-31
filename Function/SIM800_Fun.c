@@ -219,6 +219,25 @@ MyRes ConnectServer(char * recvBuf)
 		return status;
 }
 
+void closeSimModule(char * recvBuf)
+{
+	if(recvBuf)
+	{
+		if(My_Fail == ComWithSim800c(ATStr, AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
+			return;
+
+		//"关闭移动场景\r");
+        if(My_Fail == ComWithSim800c("AT+CIPSHUT\r", "SHUT OK", recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
+			return;
+		if(My_Fail == ComWithSim800c("AT+CIPCLOSE\r", NULL, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
+			return;
+
+		//"附着GPRS业务\r");
+        if(My_Fail == ComWithSim800c("AT+CGATT=0\r", AT_OK, recvBuf, 100, 1000 / portTICK_RATE_MS, 3, 100/portTICK_RATE_MS))
+			return;
+	}
+}
+
 MyRes CommunicateWithNcdServerInGPRS(HttpBuf * httpBuf)
 {
 	//清空队列数据

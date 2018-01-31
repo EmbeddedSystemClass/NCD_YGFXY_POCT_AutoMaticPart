@@ -120,10 +120,11 @@ const ItemConstData GB_ItemConstData[ItemConstDataNum]=
 /****************************************File Start*************************************************/
 /***************************************************************************************************/
 /***************************************************************************************************/
-
+ 
 MyRes getItemConstData(ItemConstData * itemConstData, char * itemName)
 {
 	unsigned char i=0;
+	
 	
 	if(itemConstData == NULL)
 		return My_Fail;

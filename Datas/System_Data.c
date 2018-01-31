@@ -103,5 +103,17 @@ void setBaseLineValue(unsigned short value)
 	systemData.baseLineValue = value;
 }
 
+void updateSystemWorkStatus(unsigned short workStatus, MyBitAction action)
+{
+	if(action == ON)
+		systemData.systemWorkStatus |= workStatus;
+	else
+		systemData.systemWorkStatus &= ~workStatus;
+}
+
+unsigned short readSystemWorkStatus(void)
+{
+	return systemData.systemWorkStatus;
+}
 
 /****************************************end of file************************************************/

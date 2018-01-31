@@ -69,7 +69,7 @@ MyRes createAboutUsActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
-	timer_SetAndStart(&(page->timer), 2);
+	timer_SetAndStart(&(page->timer), 5);
 	
 	dspPageText();
 		

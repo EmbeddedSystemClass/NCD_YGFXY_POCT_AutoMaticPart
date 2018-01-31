@@ -8,6 +8,7 @@
 #include	"MyMem.h"
 #include	"StringDefine.h"
 #include	"SystemSetPage.h"
+#include	"System_Data.h"
 #include	"SelectUserPage.h"
 #include	"SampleIDPage.h"
 #include	"PaiDuiPage.h"
@@ -76,6 +77,9 @@ MyRes createLunchActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
+	updateSystemWorkStatus(SystemDeviceInfoModifying | SystemOperatorModifying | SystemNetInfoModifying | SystemLookRecord | SystemQualityong
+		| SystemMaintenancing | SystemSetting, OFF);
+	
 	timer_SetAndStart(&page->timer, getGBSystemSetData()->ledSleepTime);
 	
 	SelectPage(82);
@@ -109,6 +113,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//查看数据
 	else if(page->lcdinput[0] == 0x1102)
 	{
+		updateSystemWorkStatus(SystemLookRecord, ON);
 		startActivity(createRecordActivity, NULL, NULL);
 	}
 	//关于按键第一次按下
@@ -184,6 +189,9 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
+	updateSystemWorkStatus(SystemDeviceInfoModifying | SystemOperatorModifying | SystemNetInfoModifying | SystemLookRecord | SystemQualityong
+		| SystemMaintenancing | SystemSetting, OFF);
+	
 	page->currentTestDataBuffer = NULL;
 	
 	timer_restart(&(page->timer));

@@ -86,6 +86,12 @@ unsigned short getSystemTestLedLightIntensity(void)
 {
 	return GBSystemSetData.testLedLightIntensity;
 }
+
+void readSystemServerSerData(ServerSet * server)
+{
+	if(server)
+		memcpy(server, &GBSystemSetData.serverSet, ServerSetStructSize);
+}
 /***************************************************************************************************
 *FunctionName: setIsShowRealValue, IsShowRealValue
 *Description: 是否显示真实值

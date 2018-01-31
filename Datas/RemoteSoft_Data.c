@@ -87,4 +87,21 @@ bool checkMd5IsSame(char * sMd5, char * dMd5)
 		return false;
 }
 
+/***************************************************************************************************
+*FunctionName: isNewVersionToBeDownload
+*Description: 是否有新版本需要下载
+*Input: 
+*Output: 
+*Return: 
+*Author: xsx
+*Date: 2018年1月24日 14:02:13
+***************************************************************************************************/
+bool isNewVersionToBeDownload(void)
+{
+	if(GB_RemoteSoftInfo.isSuccessDownloadFirmware == false && GB_RemoteSoftInfo.RemoteFirmwareVersion > GB_SoftVersion)
+		return true;
+	else
+		return false;
+}
+
 /****************************************end of file************************************************/

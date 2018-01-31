@@ -82,6 +82,8 @@ static void activityStart(void)
 	clearBarCodeQueue();
 	dspDeviceId();
 	
+	updateSystemWorkStatus(SystemDeviceInfoModifying, ON);
+	
 	SelectPage(104);
 }
 
@@ -191,6 +193,7 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
+	updateSystemWorkStatus(SystemDeviceInfoModifying, OFF);
 	activityBufferFree();
 }
 

@@ -5,6 +5,7 @@
 #include	"LCD_Driver.h"
 #include	"SystemSet_Dao.h"
 #include	"NetPreSetPage.h"
+#include	"System_Data.h"
 #include	"MyMem.h"
 #include	"CRC16.h"
 #include	"MyTools.h"
@@ -72,6 +73,7 @@ MyRes createServerSetActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
+	updateSystemWorkStatus(SystemNetInfoModifying, ON);
 	memcpy(&(S_ServerSetPageBuffer->serverSet), &(getGBSystemSetData()->serverSet), ServerSetStructSize);
 		
 	/*¸üÐÂip*/
@@ -211,6 +213,7 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
+	updateSystemWorkStatus(SystemNetInfoModifying, OFF);
 	activityBufferFree();
 }
 

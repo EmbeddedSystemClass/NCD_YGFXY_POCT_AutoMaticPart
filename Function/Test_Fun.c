@@ -424,42 +424,68 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		else
 			S_TempCalData->finalBili = S_TempCalData->paiduiUnitData->testData.testSeries.t_tc;
 		
-		/*根据分段，计算原始结果*/
-		S_TempCalData->isE = false;
-		if((S_TempCalData->finalBili < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0] == 0))
+		//根据批次修改曲线
+		if(CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IM1711-01", 9))
 		{
-			if(S_TempCalData->paiduiUnitData->testData.qrCode.qu1Ise)
-				S_TempCalData->isE = true;
-			S_TempCalData->tempvalue3 = 0;
-		}
-		else if((S_TempCalData->finalBili < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[1]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[1] == 0))
-		{
-			if(S_TempCalData->paiduiUnitData->testData.qrCode.qu2Ise)
-				S_TempCalData->isE = true;
-			S_TempCalData->tempvalue3 = 1;
-		}
-		else
-		{
-			if(S_TempCalData->paiduiUnitData->testData.qrCode.qu3Ise)
-				S_TempCalData->isE = true;
-			S_TempCalData->tempvalue3 = 2;
-		}
+			S_TempCalData->finalBili = S_TempCalData->paiduiUnitData->testData.testSeries.t_tc;
 			
-		if(S_TempCalData->isE)
+			if(S_TempCalData->finalBili <= 0.2865f)
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili * 136.98f 
+					+ S_TempCalData->finalBili * 37.055f - 0.1029f;
+			else
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = 616.26f*S_TempCalData->finalBili*S_TempCalData->finalBili - 
+					272.15f * S_TempCalData->finalBili + 50.805;
+		}
+		else if(CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IK1711-02", 9))
 		{
-			S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][0] 
-				* exp(S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][1] * S_TempCalData->finalBili + 
-				S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][2] ) + 
-				S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][3];
+			S_TempCalData->finalBili = S_TempCalData->paiduiUnitData->testData.testSeries.t_tc;
+			
+			if(S_TempCalData->finalBili <= 0.1577f)
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili * 1082.0f 
+					- S_TempCalData->finalBili * 92.803f + 2.0259f;
+			else
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = 1015.9f*S_TempCalData->finalBili*S_TempCalData->finalBili - 
+					282.47f * S_TempCalData->finalBili + 36.177f;
 		}
 		else
 		{
-			S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili;
-			S_TempCalData->paiduiUnitData->testData.testSeries.result *= S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][0];
-						
-			S_TempCalData->paiduiUnitData->testData.testSeries.result += (S_TempCalData->finalBili * S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][1]);
-						
-			S_TempCalData->paiduiUnitData->testData.testSeries.result += S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][2];
+			/*根据分段，计算原始结果*/
+			S_TempCalData->isE = false;
+			if((S_TempCalData->finalBili < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[0] == 0))
+			{
+				if(S_TempCalData->paiduiUnitData->testData.qrCode.qu1Ise)
+					S_TempCalData->isE = true;
+				S_TempCalData->tempvalue3 = 0;
+			}
+			else if((S_TempCalData->finalBili < S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[1]) || (S_TempCalData->paiduiUnitData->testData.qrCode.ItemFenDuan[1] == 0))
+			{
+				if(S_TempCalData->paiduiUnitData->testData.qrCode.qu2Ise)
+					S_TempCalData->isE = true;
+				S_TempCalData->tempvalue3 = 1;
+			}
+			else
+			{
+				if(S_TempCalData->paiduiUnitData->testData.qrCode.qu3Ise)
+					S_TempCalData->isE = true;
+				S_TempCalData->tempvalue3 = 2;
+			}
+				
+			if(S_TempCalData->isE)
+			{
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][0] 
+					* exp(S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][1] * S_TempCalData->finalBili + 
+					S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][2] ) + 
+					S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][3];
+			}
+			else
+			{
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili;
+				S_TempCalData->paiduiUnitData->testData.testSeries.result *= S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][0];
+							
+				S_TempCalData->paiduiUnitData->testData.testSeries.result += (S_TempCalData->finalBili * S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][1]);
+							
+				S_TempCalData->paiduiUnitData->testData.testSeries.result += S_TempCalData->paiduiUnitData->testData.qrCode.ItemBiaoQu[S_TempCalData->tempvalue3][2];
+			}
 		}
 
 		if(S_TempCalData->paiduiUnitData->testData.testSeries.result < 0)

@@ -19,7 +19,7 @@ typedef enum
 }CreateTestErrorType;
 
 CreateTestErrorType CreateANewTest(PaiduiUnitData ** TestDataBuffer);
-MyRes DeleteCurrentTest(void);
+void DeleteCurrentTest(void);
 PaiduiUnitData * GetTestItemByIndex(unsigned char index);
 unsigned short GetMinWaitTime(void);
 bool isSomePaiduiInOutTimeStatus(void);

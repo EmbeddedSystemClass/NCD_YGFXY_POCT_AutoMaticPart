@@ -14,6 +14,7 @@ typedef struct
 	char deviceId[DeviceIdLen];											//设备ID,仅作为设备id的副本
 	unsigned short testLedValue;										//发光LED DA值
 	unsigned short baseLineValue;										//基线DA值
+	unsigned short systemWorkStatus;									//系统工作状态
 }SystemData;
 #pragma pack()
 
@@ -30,6 +31,8 @@ void setSystemDeviceId(char * device);
 void getSystemDeviceId(char * device);
 void setTestLedValue(unsigned short value);
 void setBaseLineValue(unsigned short value);
+void updateSystemWorkStatus(unsigned short workStatus, MyBitAction action);
+unsigned short readSystemWorkStatus(void);
 #endif
 
 /****************************************end of file************************************************/

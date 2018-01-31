@@ -30,7 +30,7 @@ void upDateSystemSetData(SystemSetData * systemSetData);
 unsigned short getSystemTestLedLightIntensity(void);
 void setIsShowRealValue(bool isShow);
 bool IsShowRealValue(void);
-
+void readSystemServerSerData(ServerSet * server);
 #endif
 
 /****************************************end of file************************************************/

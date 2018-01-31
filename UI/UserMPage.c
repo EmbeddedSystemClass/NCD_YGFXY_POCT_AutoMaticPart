@@ -6,6 +6,7 @@
 #include	"MyMem.h"
 #include	"CRC16.h"
 #include	"SystemSetPage.h"
+#include	"System_Data.h"
 #include	"OperatorDao.h"
 #include	"MyTools.h"
 #include	"SleepPage.h"
@@ -74,6 +75,8 @@ MyRes createUserManagerActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
+	updateSystemWorkStatus(SystemOperatorModifying, ON);
+	
 	ReadAllOperatorFromFile(page->operatorList, &page->allValidNum);
 			
 	page->pageIndex = 0;
@@ -244,6 +247,7 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
+	updateSystemWorkStatus(SystemOperatorModifying, OFF);
 	activityBufferFree();
 }
 

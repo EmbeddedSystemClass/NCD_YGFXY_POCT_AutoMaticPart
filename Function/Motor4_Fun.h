@@ -6,6 +6,7 @@
 
 #if(Motor4Type == Motor4UsartMotor)
 	MyRes motor4Reset(void);
+	MyRes motor4SetSpeed(void);
 	unsigned short readMotorLocation(void);
 #elif(Motor4Type == Motor4IOMotor)
 	void motor4MoveStep(bool isFront, unsigned short stepNum, bool isWait);

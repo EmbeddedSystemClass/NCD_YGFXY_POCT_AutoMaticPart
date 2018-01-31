@@ -85,6 +85,8 @@ MyRes createSystemSetActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
+	updateSystemWorkStatus(SystemDeviceInfoModifying | SystemOperatorModifying | SystemNetInfoModifying | SystemLookRecord | SystemQualityong
+		| SystemMaintenancing | SystemSetting, OFF);
 	SelectPage(98);
 }
 
@@ -105,16 +107,19 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//基本信息
 	if(S_SysSetPageBuffer->lcdinput[0] == 0x1900)
 	{
+		updateSystemWorkStatus(SystemDeviceInfoModifying, ON);
 		startActivity(createDeviceInfoActivity, NULL, NULL);
 	}
 	//操作人管理
 	else if(S_SysSetPageBuffer->lcdinput[0] == 0x1901)
 	{
+		updateSystemWorkStatus(SystemOperatorModifying, ON);
 		startActivity(createUserManagerActivity, NULL, NULL);
 	}
 	//网络设置
 	else if(S_SysSetPageBuffer->lcdinput[0] == 0x1902)
 	{
+		updateSystemWorkStatus(SystemNetInfoModifying, ON);
 		startActivity(createNetPreActivity, NULL, NULL);
 	}
 	//数据管理
@@ -124,6 +129,8 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		S_SysSetPageBuffer->lcdinput[1] = pbuf[7];
 		S_SysSetPageBuffer->lcdinput[1] = (S_SysSetPageBuffer->lcdinput[1]<<8) + pbuf[8];
 
+		updateSystemWorkStatus(SystemLookRecord, ON);
+		
 		if(S_SysSetPageBuffer->lcdinput[1] == 0x0001)
 			startActivity(createRecordActivity, NULL, NULL);
 		else if(S_SysSetPageBuffer->lcdinput[1] == 0x0002)
@@ -134,6 +141,8 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			startActivity(createQualityRecordActivity, NULL, NULL);
 		else if(S_SysSetPageBuffer->lcdinput[1] == 0x0005)
 			startActivity(createMaintenanceRecordActivity, NULL, NULL);
+		else
+			updateSystemWorkStatus(SystemLookRecord, OFF);
 	}
 	//关于按键第一次按下
 	else if(S_SysSetPageBuffer->lcdinput[0] == 0x1909)
@@ -201,6 +210,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		else if(My_Pass == CreateADeviceQuality())
 		{
 			S_SysSetPageBuffer->operator = getDeviceQualityOperator();
+			updateSystemWorkStatus(SystemQualityong, ON);
 			startActivity(createSelectUserActivity, createIntent(&(S_SysSetPageBuffer->operator), 4), createQualityActivity);
 		}
 		else
@@ -215,6 +225,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 		else if(My_Pass == CreateADeviceMaintenance())
 		{
 			S_SysSetPageBuffer->operator = &(getGB_DeviceMaintenance()->operator);
+			updateSystemWorkStatus(SystemMaintenancing, ON);
 			startActivity(createSelectUserActivity, createIntent(&(S_SysSetPageBuffer->operator), 4), createMaintenanceActivity);
 		}
 		else
@@ -222,7 +233,10 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	}
 	//其他设置
 	else if(S_SysSetPageBuffer->lcdinput[0] == 0x1904)
+	{
+		updateSystemWorkStatus(SystemSetting, ON);
 		startActivity(createOtherSetActivity, NULL, NULL);
+	}
 
 	//返回
 	else if(S_SysSetPageBuffer->lcdinput[0] == 0x1906)
@@ -268,6 +282,8 @@ static void activityHide(void)
 ***************************************************************************************************/
 static void activityResume(void)
 {
+	updateSystemWorkStatus(SystemDeviceInfoModifying | SystemOperatorModifying | SystemNetInfoModifying | SystemLookRecord | SystemQualityong
+		| SystemMaintenancing | SystemSetting, OFF);
 	SelectPage(98);
 }
 

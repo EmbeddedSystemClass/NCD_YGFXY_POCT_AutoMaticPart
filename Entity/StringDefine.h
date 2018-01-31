@@ -37,6 +37,12 @@
 #define	DeviceMainenanceFileName					"0:/Dmai.ncd\0"
 #define	DeviceQualityFileName						"0:/Dqua.ncd\0"
 
+#define ChangguiStr			"R\0"
+#define JizhenStr			"Q\0"
+#define ZhikongStr			"S\0"
+#define	SuccessStr								"success\0"
+#define	FailStr									"fail\0"
+
 #if (NCDServerType == NCDServerFinal)
 #define		NcdServerReadTimeUrlStr				"/NCD_Server/up_dtime\0"
 #define		NcdServerUpDeviceUrlStr				"/NCD_Server/up_device\0"

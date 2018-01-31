@@ -78,7 +78,10 @@ CreateTestErrorType CreateANewTest(PaiduiUnitData ** TestDataBuffer)
 
 				if(TestDataBuffer)
 					*TestDataBuffer = CurrentTestDataBuffer;
-					
+				
+				//change system work status to testting
+				updateSystemWorkStatus(SystemTestting, ON);
+				
 				return Error_OK;
 			}
 		}
@@ -189,7 +192,7 @@ PaiduiUnitData * GetCurrentTestItem(void)
 *Author: xsx
 *Date: 2016Äê12ÔÂ2ÈÕ15:55:07
 ***************************************************************************************************/
-MyRes DeleteCurrentTest(void)
+void DeleteCurrentTest(void)
 {
 	if(CurrentTestDataBuffer)
 	{
@@ -199,8 +202,11 @@ MyRes DeleteCurrentTest(void)
 		MyFree(CurrentTestDataBuffer);
 		
 		SetCurrentTestItem(NULL);
+		
+		if(!IsPaiDuiTestting())
+			//change system work status to testting
+			updateSystemWorkStatus(SystemTestting, OFF);
 	}
-	return My_Pass;
 }
 
 bool IsPaiDuiTestting(void)

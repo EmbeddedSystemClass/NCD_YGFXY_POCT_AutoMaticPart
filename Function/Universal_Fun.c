@@ -13,14 +13,16 @@
 
 #include	"RX8025_Driver.h"
 #include	"Ceju_Driver.h"
-
+#include	"Led_Driver.h"
 #include	"SystemSet_Dao.h"
+#include	"System_Data.h"
 #include	"TestDataDao.h"
 #include	"DeviceDao.h"
 #include	"DeviceMaintenanceDao.h"
 #include	"DeviceAdjustDao.h"
 #include	"DeviceErrorDao.h"
 #include	"DeviceQualityDao.h"
+#include	"RemoteSoft_Data.h"
 #include	"DateTime.h"
 #include	"MyMem.h"
 #include	"MyTools.h"
@@ -110,3 +112,12 @@ MyRes SystemFactoryReset(void)
 	return My_Pass;
 }
 
+void checkCanRestartForUpgrade(void)
+{
+	unsigned short systemWorkStatus = 0;
+	
+	systemWorkStatus = readSystemWorkStatus();
+	
+	if((systemWorkStatus & (SystemTestting | SystemQualityong)) == 0 && getIsSuccessDownloadFirmware() == true )
+		while(1);
+}

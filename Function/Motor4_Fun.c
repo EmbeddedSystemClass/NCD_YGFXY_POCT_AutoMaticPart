@@ -85,6 +85,37 @@ MyRes motor4Reset(void)
 	return My_Fail;
 }
 
+MyRes motor4SetSpeed(void)
+{
+	motor4TxBuf[0] = 1;
+	motor4TxBuf[1] = 6;
+	motor4TxBuf[2] = 0;
+	motor4TxBuf[3] = 0x0a;
+	motor4TxBuf[4] = 0;
+	motor4TxBuf[5] = 30;
+	motorCrc = CalModbusCRC16Fun(motor4TxBuf, 6, NULL);
+	motor4TxBuf[6] = motorCrc>>8;
+	motor4TxBuf[7] = motorCrc;
+	
+	memset(motor4RxBuf, 0, 8);
+	xQueueReset(GetUsart2RXQueue());
+	SendDataToQueue(GetUsart2TXQueue(), NULL, motor4TxBuf, 8, 1, 100 / portTICK_RATE_MS, 0, EnableUsart2TXInterrupt);
+
+	if(My_Pass == ReceiveDataFromQueue(GetUsart2RXQueue(), NULL, motor4RxBuf, 8, NULL, 1, 2000 / portTICK_RATE_MS, 0, 100 / portTICK_RATE_MS))
+	{
+		motorCrc = motor4RxBuf[6];
+		motorCrc <<= 8;
+		motorCrc += motor4RxBuf[7];
+		tempCrc = CalModbusCRC16Fun(motor4RxBuf, 6, NULL);
+		if(motorCrc == tempCrc)
+		{
+			return My_Pass;
+		}
+	}
+	
+	return My_Fail;
+}
+
 void motor4MoveTo(unsigned short location, bool isWait)
 {
 	unsigned char i=3;

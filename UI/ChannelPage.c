@@ -188,8 +188,8 @@ static void activityFresh(void)
 			if(pageBuf->scancode == CardCodeScanOK)
 			{
 				dspTestStatus(QualityStatusTestString);
-				pageBuf->paiduiUnitData.statues = statusMotorPutCardDown;
-				FormatParmAndStartMotorAction(&pageBuf->motorAction, PutDownCardInPlaceDef, pageBuf->paiduiUnitData.cardLocation, false);
+				pageBuf->paiduiUnitData.statues = statusPrepareTest;
+				FormatParmAndStartMotorAction(&pageBuf->motorAction, StartTestDef, pageBuf->paiduiUnitData.testLocation, false);
 			}
 			else
 			{
@@ -197,14 +197,6 @@ static void activityFresh(void)
 				FormatParmAndStartMotorAction(&pageBuf->motorAction, WaitCardPutInDef, pageBuf->paiduiUnitData.cardLocation, false);
 				dspTestStatus(QRReadErrorAndChangeCardString);
 			}
-		}
-	}
-	else if(statusMotorPutCardDown == pageBuf->paiduiUnitData.statues)
-	{
-		if(isMotorMoveEnd(FreeRTOSZeroDelay))
-		{
-			pageBuf->paiduiUnitData.statues = statusPrepareTest;
-			FormatParmAndStartMotorAction(&pageBuf->motorAction, StartTestDef, pageBuf->paiduiUnitData.testLocation, false);
 		}
 	}
 	else if(statusPrepareTest == pageBuf->paiduiUnitData.statues)

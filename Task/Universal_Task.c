@@ -70,13 +70,14 @@ static void vUniversalTask( void *pvParameters )
 	{
 		LedToggle();
 
-		xPortGetFreeHeapSize();
-		MyGetFreeHeapSize();
 		if(count % 10 == 0)
 			readAndUpdateSystemDateTimeFun();
 		
 		if(count % 5 == 0)
 			PaiDuiHandler();
+		
+		if(count % 10 == 0)
+			checkCanRestartForUpgrade();
 		
 		count++;
 

@@ -20,5 +20,7 @@ typedef struct SystemResetBuf_Tag
 
 void readAndUpdateSystemDateTimeFun(void);
 MyRes SystemFactoryReset(void);
+void checkCanRestartForUpgrade(void);
+
 #endif
 

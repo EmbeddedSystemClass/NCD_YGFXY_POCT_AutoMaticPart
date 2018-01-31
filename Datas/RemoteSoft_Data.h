@@ -10,6 +10,6 @@ void setIsSuccessDownloadFirmware(bool status);
 bool getIsSuccessDownloadFirmware(void);
 void setGbRemoteFirmwareMd5(char * md5);
 bool checkMd5IsSame(char * sMd5, char * dMd5);
-
+bool isNewVersionToBeDownload(void);
 #endif
 

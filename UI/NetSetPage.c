@@ -4,6 +4,7 @@
 #include	"NetSetPage.h"
 #include	"LCD_Driver.h"
 #include	"SystemSet_Dao.h"
+#include	"System_Data.h"
 #include	"NetPreSetPage.h"
 #include	"MyMem.h"
 #include	"CRC16.h"
@@ -74,6 +75,7 @@ MyRes createNetSetActivity(Activity * thizActivity, Intent * pram)
 ***************************************************************************************************/
 static void activityStart(void)
 {
+	updateSystemWorkStatus(SystemNetInfoModifying, ON);
 	memcpy(&(S_NetSetPageBuffer->wireNetSet), &(getGBSystemSetData()->wireNetSet), sizeof(WireNetSet));
 		
 	UpPageValue();
@@ -220,6 +222,7 @@ static void activityResume(void)
 ***************************************************************************************************/
 static void activityDestroy(void)
 {
+	updateSystemWorkStatus(SystemNetInfoModifying, OFF);
 	activityBufferFree();
 }
 

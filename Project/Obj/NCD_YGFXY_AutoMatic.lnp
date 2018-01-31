@@ -41,6 +41,8 @@
 ".\obj\sim800_fun.o"
 ".\obj\ncdclient_fun.o"
 ".\obj\iap_fun.o"
+".\obj\usb_fun.o"
+".\obj\tcp_fun.o"
 ".\obj\codescan_task.o"
 ".\obj\iwdg_task.o"
 ".\obj\lcdinput_task.o"

@@ -6,8 +6,8 @@
 #include	"ff.h"
 
 /*V1.0.03*/
-#define	GB_SoftVersion	(unsigned short)1004
-#define	GB_SoftVersion_Build	"Build17112301\0"
+#define	GB_SoftVersion	(unsigned short)1006
+#define	GB_SoftVersion_Build	"Build18012401\0"
 
 //二维码定义
 #define QRVersion0Define		0								//二维码原始版本定义
@@ -35,11 +35,7 @@
 #define	Device_Final					0x27
 #define	Device_Demo						0x28
 #define	Device_FastDemo					0x29
-#define	DeviceUseType					Device_Demo
-
-#define	NCDServerFinal					0x88
-#define	NCDServerDebug					0x89
-#define	NCDServerType					NCDServerFinal
+#define	DeviceUseType					Device_Final
 
 #define	PaiDuiWeiNum					9							//排队位置数目
 #define	MaxQualityCount					PaiDuiWeiNum
@@ -72,6 +68,16 @@ typedef enum
 	ON = 1,
 	OFF = 0
 }MyBitAction;
+
+#define SystemTestting                 				((uint16_t)0x0001)
+#define SystemDeviceInfoModifying                 	((uint16_t)0x0002)
+#define SystemOperatorModifying                 	((uint16_t)0x0004)
+#define SystemNetInfoModifying                 		((uint16_t)0x0008)
+#define SystemLookRecord                 			((uint16_t)0x0010)
+#define SystemQualityong                			((uint16_t)0x0020)
+#define SystemMaintenancing                 		((uint16_t)0x0040)
+#define SystemSetting                 				((uint16_t)0x0080)
+
 
 #define	FreeRTOSZeroDelay	0				//0ms
 #define	FreeRTOSTenDelay	10				//10ms
@@ -117,7 +123,7 @@ typedef enum
 	status_end = 17,
 }MyPaiDuiStatues;
 
-#define	StartTestTime								20					//禁止创建测试的最小时间
+#define	StartTestTime								10					//禁止创建测试的最小时间
 #define	DisableCreateNewTestTime					30					//禁止创建测试的最小时间
 #define	DisableReturnTime							40					//禁止返回，即将测试时间
 /**********************************************************************************************************/

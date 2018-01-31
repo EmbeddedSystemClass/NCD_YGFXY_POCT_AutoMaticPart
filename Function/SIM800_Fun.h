@@ -48,6 +48,7 @@ void giveGSMxMutex(void);
 MyRes ComWithSim800c(char * txBuf, const char *strcmp, char *rxBuf, unsigned short maxRxLen, portTickType delayTime, unsigned char maxErrorCnt, portTickType waitTime);
 bool checkIsATMode(char * recvBuf);
 MyRes ConnectServer(char * recvBuf);
+void closeSimModule(char * recvBuf);
 void readGSMInd(Sim800InitBuf * sim800InitBuf, unsigned char * ind);
 void readGSMIccid(Sim800InitBuf * sim800InitBuf, char * iccid);
 void readGSMPhoneNum(Sim800InitBuf * sim800InitBuf, char * num);

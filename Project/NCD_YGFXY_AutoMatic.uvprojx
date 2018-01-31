@@ -600,6 +600,16 @@
               <FileType>1</FileType>
               <FilePath>..\Function\IAP_Fun.c</FilePath>
             </File>
+            <File>
+              <FileName>USB_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\USB_Fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>TCP_Fun.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Function\TCP_Fun.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

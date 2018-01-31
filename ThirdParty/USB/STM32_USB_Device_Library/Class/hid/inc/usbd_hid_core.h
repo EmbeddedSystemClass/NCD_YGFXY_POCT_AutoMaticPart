@@ -100,8 +100,8 @@ extern USBD_Class_cb_TypeDef  USBD_HID_cb;
 /** @defgroup USB_CORE_Exported_Functions
   * @{
   */ 
-uint8_t USBD_HID_SendReport (USB_OTG_CORE_HANDLE  *pdev, 
-                                 uint8_t *report,
+uint8_t USBD_HID_SendReport     (USB_OTG_CORE_HANDLE  *pdev, 
+                                 void *report,
                                  uint16_t len);
 void USBDebug(void * buf, unsigned char len);
 /**

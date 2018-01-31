@@ -17,6 +17,8 @@
 #include	"RemoteSoftDao.h"
 #include	"System_Data.h"
 #include	"IAP_Fun.h"
+#include	"USB_Fun.h"
+#include	"TCP_Fun.h"
 
 #include	"HttpBuf.h"
 #include	"MyMem.h"
@@ -37,12 +39,10 @@ static bool firstConnectIsDone = false;
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
-static void readServerTime(HttpBuf * httpBuf);
 static void UpLoadDeviceInfo(HttpBuf * httpBuf);
 static void UpLoadTestData(HttpBuf * httpBuf);
-static void readRemoteFirmwareVersion(HttpBuf * httpBuf);
 static void DownLoadFirmware(HttpBuf * httpBuf);
-static void upLoadUserServer(void);
+static void upLoadUserServer(HttpBuf * httpBuf);
 /***************************************************************************************************/
 /***************************************************************************************************/
 /***************************************正文********************************************************/
@@ -57,64 +57,45 @@ void NcdClientFunction(void)
 	
 	while(1)
 	{
-		//upload data every hour
-		if(My_Pass == takeGSMMutex(1000 / portTICK_RATE_MS))
+		httpBuf = MyMalloc(HttpBufStructSize);
+		if(httpBuf)
 		{
-				//vTaskDelay(60000 / portTICK_RATE_MS);
-			
-			httpBuf = MyMalloc(HttpBufStructSize);
-			if(httpBuf)
+			//upload data every hour
+			if(My_Pass == takeGSMMutex(1000 / portTICK_RATE_MS))			
 			{
-				if(My_Pass == ConnectServer(httpBuf->tempBuf))
+				httpBuf->isNcdDataToUpload = isTestDataToBeUpLoad(true, &httpBuf->deviceRecordHeader);
+				httpBuf->isNewVersionToBeDown = isNewVersionToBeDownload();
+				
+				if(httpBuf->isNcdDataToUpload || firstConnectIsDone == false || cnt % 120 == 0 || httpBuf->isNewVersionToBeDown)
 				{
-					//readServerTime(httpBuf);
-				
-					if(firstConnectIsDone == false || cnt % 120 == 0)
+					if(My_Pass == ConnectServer(httpBuf->tempBuf))
 					{
-						UpLoadDeviceInfo(httpBuf);
-						firstConnectIsDone = true;
-					}
-					
-					UpLoadTestData(httpBuf);
-					
-					upLoadUserServer();
+						if(firstConnectIsDone == false || cnt % 120 == 0)
+						{
+							firstConnectIsDone = false;								//每1小时，必须跟服务器通车成功一次，否则一直通信
+							UpLoadDeviceInfo(httpBuf);
+						}
+						
+						if(httpBuf->isNcdDataToUpload)
+							UpLoadTestData(httpBuf);
 
-					//readRemoteFirmwareVersion(httpBuf);
-				
-					DownLoadFirmware(httpBuf);
-					
-					cnt++;
+						DownLoadFirmware(httpBuf);
+					}
 				}
-				MyFree(httpBuf);
+				
+				closeSimModule(httpBuf->tempBuf);
+
+				giveGSMxMutex();
 			}
 				
-			giveGSMxMutex();
+			upLoadUserServer(httpBuf);
+			
+			MyFree(httpBuf);
 		}
 
+		cnt++;
+		
 		vTaskDelay(30000 / portTICK_RATE_MS);
-	}
-}
-
-static void readServerTime(HttpBuf * httpBuf)
-{
-	//prepare data
-	getSystemDeviceId(httpBuf->tempBuf);
-		
-	sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ndid=%s", 
-		NcdServerReadTimeUrlStr, NCD_ServerIp_1, NCD_ServerIp_2, NCD_ServerIp_3, NCD_ServerIp_4, NCD_ServerPort, httpBuf->tempBuf);
-		
-	httpBuf->tempP = strstr(httpBuf->sendBuf, "zh;q=0.8\n\n");
-	httpBuf->sendDataLen = strlen(httpBuf->tempP)-10;	
-	httpBuf->tempP = strstr(httpBuf->sendBuf, "[##]");
-	sprintf(httpBuf->tempBuf, "%04d", httpBuf->sendDataLen);
-	memcpy(httpBuf->tempP, httpBuf->tempBuf, 4);
-	httpBuf->sendDataLen = strlen(httpBuf->sendBuf);
-	httpBuf->isPost = true;
-	
-	//send data
-	if(My_Pass == CommunicateWithNcdServerInGPRS(httpBuf))
-	{
-		RTC_SetTimeData2(httpBuf->tempP+7);
 	}
 }
 
@@ -124,10 +105,9 @@ static void UpLoadDeviceInfo(HttpBuf * httpBuf)
 	
 	if(My_Pass == ReadDeviceFromFile(httpBuf->device))
 	{
-		sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ndid=%s&dversion=%d&addr=%s&name=%s&phone=%s&type=%s&lang=%s", 
+		sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ndid=%s&dversion=%d&addr=%s&name=%s&type=%s&lang=%s", 
 			NcdServerUpDeviceUrlStr, NCD_ServerIp_1, NCD_ServerIp_2, NCD_ServerIp_3, NCD_ServerIp_4, NCD_ServerPort, httpBuf->device->deviceId,  
-			GB_SoftVersion, httpBuf->device->addr, httpBuf->device->operator.name, 
-			httpBuf->device->operator.phone, DeviceTypeString, DeviceLanguageString);
+			GB_SoftVersion, httpBuf->device->addr, httpBuf->device->operator.name, DeviceTypeString, DeviceLanguageString);
 			
 		httpBuf->tempP = strstr(httpBuf->sendBuf, "zh;q=0.8\n\n");
 		httpBuf->sendDataLen = strlen(httpBuf->tempP)-10;	
@@ -140,6 +120,8 @@ static void UpLoadDeviceInfo(HttpBuf * httpBuf)
 		//send data
 		if(My_Pass == CommunicateWithNcdServerInGPRS(httpBuf))
 		{
+			firstConnectIsDone = true;
+			
 			httpBuf->tempP2 = strtok(httpBuf->tempP, "#");
 			if(httpBuf->tempP2 == NULL)
 				return;
@@ -147,9 +129,7 @@ static void UpLoadDeviceInfo(HttpBuf * httpBuf)
 			//timedate
 			httpBuf->tempP2 = strtok(NULL, "#");
 			if(httpBuf->tempP2)
-			{
 				RTC_SetTimeData2(httpBuf->tempP2+5);
-			}
 			else
 				return;
 			
@@ -210,8 +190,7 @@ static void UpLoadTestData(HttpBuf * httpBuf)
 	}
 
 	//读取纽康度数据
-	httpBuf->page.isForNCD = true;
-	if(My_Pass != readTestDataFromFileByPageRequest(NULL, &httpBuf->deviceRecordHeader, &httpBuf->page))
+	if(My_Pass != readTestDataFromFileByUpLoadIndex(true, &httpBuf->deviceRecordHeader, &httpBuf->page))
 		goto END;
 		
 	httpBuf->deviceRecordHeader.ncdUpLoadIndex = 0;
@@ -287,59 +266,6 @@ static void UpLoadTestData(HttpBuf * httpBuf)
 			MyFree(httpBuf->page.content[httpBuf->i]);
 }
 
-/***************************************************************************************************
-*FunctionName: 
-*Description: 
-*Input: 
-*Output: 
-*Return: 
-*Author: xsx
-*Date: 
-***************************************************************************************************/
-static void readRemoteFirmwareVersion(HttpBuf * httpBuf)
-{
-	sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\nsoftName=%s&lang=%s", 
-		NcdServerQuerySoftUrlStr, NCD_ServerIp_1, NCD_ServerIp_2, NCD_ServerIp_3, NCD_ServerIp_4, NCD_ServerPort, DeviceTypeString, DeviceLanguageString);
-	
-	httpBuf->tempP = strstr(httpBuf->sendBuf, "zh;q=0.8\n\n");
-	httpBuf->sendDataLen = strlen(httpBuf->tempP)-10;	
-	httpBuf->tempP = strstr(httpBuf->sendBuf, "[##]");
-	sprintf(httpBuf->tempBuf, "%04d", httpBuf->sendDataLen);
-	memcpy(httpBuf->tempP, httpBuf->tempBuf, 4);
-	httpBuf->sendDataLen = strlen(httpBuf->sendBuf);
-	httpBuf->isPost = true;
-	
-	if(My_Pass == CommunicateWithNcdServerInGPRS(httpBuf))
-	{
-		//解析最新固件版本
-		httpBuf->remoteSoftInfo = (RemoteSoftInfo *)httpBuf->sendBuf;
-		memset(httpBuf->remoteSoftInfo, 0, RemoteSoftInfoStructSize);
-		httpBuf->remoteSoftInfo->RemoteFirmwareVersion = strtol(httpBuf->tempP+16, NULL, 10);
-			
-		//如果读取到的版本，大于当前版本，且大于当前保存的最新远程版本，则此次读取的是最新的
-		if((httpBuf->remoteSoftInfo->RemoteFirmwareVersion > GB_SoftVersion) &&
-			(httpBuf->remoteSoftInfo->RemoteFirmwareVersion > getGbRemoteFirmwareVersion()))
-		{
-			//解析最新固件MD5
-			httpBuf->tempP = strtok(httpBuf->recvBuf, "#");
-			if(httpBuf->tempP)
-			{
-				httpBuf->tempP = strtok(NULL, "#");
-					
-				memcpy(httpBuf->remoteSoftInfo->md5, httpBuf->tempP+4, 32);
-					
-				if(My_Pass == WriteRemoteSoftInfo(httpBuf->remoteSoftInfo))
-				{
-					//md5保存成功后，才更新最新版本号，保存最新固件版本
-					setGbRemoteFirmwareVersion(httpBuf->remoteSoftInfo->RemoteFirmwareVersion);
-					setGbRemoteFirmwareMd5(httpBuf->remoteSoftInfo->md5);
-						
-					setIsSuccessDownloadFirmware(false);
-				}
-			}
-		}	
-	}
-}
 
 static void DownLoadFirmware(HttpBuf * httpBuf)
 {
@@ -360,91 +286,79 @@ static void DownLoadFirmware(HttpBuf * httpBuf)
 		setIsSuccessDownloadFirmware(true);
 }
 
-static void upLoadUserServer(void)
+static void upLoadUserServer(HttpBuf * httpBuf)
 {
-/*	httpBuffer->tempInt1 = getTestDataTotalNum();
-	httpBuffer->tempInt2 = getUserUpLoadIndex();
-	
-	//is have data not to update ?
-	if(httpBuffer->tempInt1 > httpBuffer->tempInt2)
+	for(httpBuf->i=0; httpBuf->i<MaxUpLoadTestDataNum; httpBuf->i++)
 	{
-		httpBuffer->page = MyMalloc(PageStructSize);
-		if(httpBuffer->page)
-		{
-			//read datas from sd
-			httpBuffer->pageRequest.startElementIndex = httpBuffer->tempInt2;
-			httpBuffer->pageRequest.orderType = DESC;
-			httpBuffer->pageRequest.pageSize = 3;
+		httpBuf->page.content[httpBuf->i] = MyMalloc(TestDataStructSize);
+		if(httpBuf->page.content[httpBuf->i] == NULL)
+			goto END;
+		httpBuf->testDataPoint = httpBuf->page.content[httpBuf->i];
+		httpBuf->testDataPoint->crc = 0;
+	}
 
-			memset(httpBuffer->page, 0, PageStructSize);
-			
-			if(My_Pass == ReadTestData(&httpBuffer->pageRequest, httpBuffer->page, httpBuffer->tempInt1))
-			{
-				httpBuffer->testData = httpBuffer->page->testData;
-				for(httpBuffer->upLoadIndex=0; httpBuffer->upLoadIndex< httpBuffer->page->ElementsSize; httpBuffer->upLoadIndex++)
-				{
-					//如果crc校验正确，则开始上传
-					if(httpBuffer->testData->crc == CalModbusCRC16Fun1(httpBuffer->testData, TestDataStructCrcSize))
-					{
-						//上传测试数据
-						if(httpBuffer->testData->TestTime.month == 0 || httpBuffer->testData->TestTime.day == 0)
-						{
-							httpBuffer->testData->TestTime.year = 0;
-							httpBuffer->testData->TestTime.month = 1;
-							httpBuffer->testData->TestTime.day = 1;
-							httpBuffer->testData->TestTime.hour = 0;
-							httpBuffer->testData->TestTime.min = 0;
-							httpBuffer->testData->TestTime.sec = 0;
-						}
-						
-						//read device id
-						readDeviceId(httpBuffer->tempBuf);
-						
-						//AA | testtime | sampleid | testtype | pihao | pinum | deviceid | tester | item | danwei | normal 
-						sprintf(httpBuffer->sendBuf, "AA|20%02d-%d-%d %d:%d:%d|%s|%s|%s|%s|%s|%s|%s|%s|%s",  
-							httpBuffer->testData->TestTime.year,  httpBuffer->testData->TestTime.month, httpBuffer->testData->TestTime.day, 
-							httpBuffer->testData->TestTime.hour, httpBuffer->testData->TestTime.min, httpBuffer->testData->TestTime.sec,
-							httpBuffer->testData->sampleid, ChangguiStr, httpBuffer->testData->temperweima.PiHao,  httpBuffer->testData->temperweima.piNum,
-							httpBuffer->tempBuf, httpBuffer->testData->user.user_name, httpBuffer->testData->temperweima.itemConstData.itemName,
-							httpBuffer->testData->temperweima.itemConstData.itemMeasure, httpBuffer->testData->temperweima.itemConstData.normalResult);
-
-						// | value | error | BB
-						if(httpBuffer->testData->testResultDesc != ResultIsOK)
-							sprintf(httpBuffer->tempBuf, "||Y|BB");
-						else if(httpBuffer->testData->testline.BasicResult <= httpBuffer->testData->temperweima.itemConstData.lowstResult)
-							sprintf(httpBuffer->tempBuf, "|<%.*f|N|BB", httpBuffer->testData->temperweima.itemConstData.pointNum, 
-								httpBuffer->testData->temperweima.itemConstData.lowstResult);
-						else
-							sprintf(httpBuffer->tempBuf, "|%.*f|N|BB", httpBuffer->testData->temperweima.itemConstData.pointNum, 
-								httpBuffer->testData->testline.BasicResult);
-						strcat(httpBuffer->sendBuf, httpBuffer->tempBuf);
-						strcat(httpBuffer->sendBuf, "\r\n");
-						
-						httpBuffer->sendDataLen = strlen(httpBuffer->sendBuf);	
-						
-						getGBServerData(&httpBuffer->serverSet);
-						if(My_Pass == CommunicateWithServerByLineNet(httpBuffer) || My_Pass == CommunicateWithServerByUSB(httpBuffer))
-						{
-							if(strstr(httpBuffer->recvBuf, httpBuffer->testData->temperweima.PiHao) && strstr(httpBuffer->recvBuf, httpBuffer->testData->temperweima.piNum))
-								;
-							else
-								break;
-						}
-						else
-							break;
-					}
-
-					httpBuffer->tempInt2++;
-					httpBuffer->testData++;
-				}
-				
-				httpBuffer->systemSetData = (SystemSetData *)httpBuffer->sendBuf;
-				copyGBSystemSetData(httpBuffer->systemSetData);
-				httpBuffer->systemSetData->userUpLoadIndex = httpBuffer->tempInt2;
-				SaveSystemSetData(httpBuffer->systemSetData);
-			}
-		}
+	//读取用户数据
+	if(My_Pass != readTestDataFromFileByUpLoadIndex(false, &httpBuf->deviceRecordHeader, &httpBuf->page))
+		goto END;
 		
-		MyFree(httpBuffer->page);
-	}*/
+	httpBuf->deviceRecordHeader.userUpLoadIndex = 0;
+	for(httpBuf->i=0; httpBuf->i<MaxUpLoadTestDataNum; httpBuf->i++)
+	{
+		httpBuf->testDataPoint = httpBuf->page.content[httpBuf->i];
+		//如果crc校验正确，则开始上传
+		if(httpBuf->testDataPoint->crc == CalModbusCRC16Fun(httpBuf->testDataPoint, TestDataStructCrcSize, NULL))
+		{
+			if(httpBuf->testDataPoint->testDateTime.month == 0 || httpBuf->testDataPoint->testDateTime.day == 0)
+			{
+				httpBuf->testDataPoint->testDateTime.year = 0;
+				httpBuf->testDataPoint->testDateTime.month = 1;
+				httpBuf->testDataPoint->testDateTime.day = 1;
+				httpBuf->testDataPoint->testDateTime.hour = 0;
+				httpBuf->testDataPoint->testDateTime.min = 0;
+				httpBuf->testDataPoint->testDateTime.sec = 0;
+			}
+						
+			//read device id
+			getSystemDeviceId(httpBuf->tempBuf);
+
+			//AA | testtime | sampleid | testtype | pihao | pinum | deviceid | tester | item | danwei | normal 
+			sprintf(httpBuf->sendBuf, "AA|20%02d-%d-%d %d:%d:%d|%s|%s|%s|%s|%s|%s|%s|%s|%s",  
+				httpBuf->testDataPoint->testDateTime.year,  httpBuf->testDataPoint->testDateTime.month, httpBuf->testDataPoint->testDateTime.day, 
+				httpBuf->testDataPoint->testDateTime.hour, httpBuf->testDataPoint->testDateTime.min, httpBuf->testDataPoint->testDateTime.sec,
+				httpBuf->testDataPoint->sampleid, ChangguiStr, httpBuf->testDataPoint->qrCode.PiHao,  httpBuf->testDataPoint->qrCode.piNum,
+				httpBuf->tempBuf, httpBuf->testDataPoint->operator.name, httpBuf->testDataPoint->qrCode.itemConstData.itemName,
+				httpBuf->testDataPoint->qrCode.itemConstData.itemMeasure, httpBuf->testDataPoint->qrCode.itemConstData.normalResult);
+
+			// | value | error | BB
+			if(httpBuf->testDataPoint->testResultDesc != ResultIsOK)
+				sprintf(httpBuf->tempBuf, "||Y|BB");
+			else if(httpBuf->testDataPoint->testSeries.result <= httpBuf->testDataPoint->qrCode.itemConstData.lowstResult)
+				sprintf(httpBuf->tempBuf, "|<%.*f|N|BB", httpBuf->testDataPoint->qrCode.itemConstData.pointNum, 
+					httpBuf->testDataPoint->qrCode.itemConstData.lowstResult);
+			else
+				sprintf(httpBuf->tempBuf, "|%.*f|N|BB", httpBuf->testDataPoint->qrCode.itemConstData.pointNum, 
+					httpBuf->testDataPoint->testSeries.result);
+			strcat(httpBuf->sendBuf, httpBuf->tempBuf);
+			strcat(httpBuf->sendBuf, "\r\n");
+						
+			httpBuf->sendDataLen = strlen(httpBuf->sendBuf);	
+						
+			readSystemServerSerData(&httpBuf->serverSet);
+			if(My_Pass == CommunicateWithServerByUSB(httpBuf) || My_Pass == CommunicateWithServerByLineNet(httpBuf))
+			{
+				if(strstr(httpBuf->recvBuf, httpBuf->testDataPoint->qrCode.PiHao) && strstr(httpBuf->recvBuf, httpBuf->testDataPoint->qrCode.piNum))
+					httpBuf->deviceRecordHeader.userUpLoadIndex++;
+				else
+					break;
+			}
+			else
+				break;
+		}
+	}
+	
+	plusTestDataHeaderUpLoadIndexToFile(httpBuf->deviceRecordHeader.userUpLoadIndex, 0);
+
+	END:	
+		for(httpBuf->i=0; httpBuf->i<MaxUpLoadTestDataNum; httpBuf->i++)
+			MyFree(httpBuf->page.content[httpBuf->i]);
 }

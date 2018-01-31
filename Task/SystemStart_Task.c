@@ -16,7 +16,6 @@
 #include	"SystemUI_Task.h"
 #include	"WelcomePage.h"
 #include	"Motor_Task.h"
-#include	"NcdClient_Task.h"
 #include	"UI_Data.h"
 
 #include	"Define.h"
@@ -76,8 +75,6 @@ static void vSystemStartTask( void *pvParameters )
 	
 	SelfTest_Function();
 	
-	StartvNcdClientTask();
-
 	vTaskDelete(NULL);
 	while(1)
 	{

@@ -229,18 +229,10 @@ static MyRes testLed(void)
 ***************************************************************************************************/
 static MyRes testMotol(SelfTestBuf * selfTestBuf)
 {	
-/*	vTaskDelay(7000 / portTICK_RATE_MS);
-	while(1)
-	{
-		sprintf(selfTestBuf->deviceAdjust.result, "%d", readJuliValue());
-		USBDebug(selfTestBuf->deviceAdjust.result, strlen(selfTestBuf->deviceAdjust.result));
-		vTaskDelay(100 / portTICK_RATE_MS);
-	}
-	*/
 	selfTestBuf->motor = getMotor(Motor_2);
 	
 #if(Motor4Type == Motor4UsartMotor)
-//vTaskDelay(7000 / portTICK_RATE_MS);
+
 	//初始化电动夹爪
 	selfTestBuf->juli = readJuliValueWithFilter();
 	while(selfTestBuf->juli > 1400 || selfTestBuf->juli < 780)
@@ -252,9 +244,7 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 		
 		if(selfTestBuf->juli < 780)
 			selfTestBuf->motor->isFront = true;
-//		sprintf(selfTestBuf->deviceAdjust.result, "%d", selfTestBuf->juli);
-//		USBDebug(selfTestBuf->deviceAdjust.result, strlen(selfTestBuf->deviceAdjust.result));
-		
+	
 		motor2MoveStep(selfTestBuf->motor->isFront, 1000, true);
 		vTaskDelay(20 / portTICK_RATE_MS);
 	}
@@ -309,22 +299,8 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	if(30000 > selfTestBuf->motor->motorLocation)
 		return My_Fail;
 
-	//test code
-/*	vTaskDelay(10000 / portTICK_RATE_MS);
-	FormatParmAndStartMotorAction(&selfTestBuf->motorAction, Motor2MoveDef, 1000, true);
-	for(selfTestBuf->j=0; selfTestBuf->j<49; selfTestBuf->j++)
-	{
-		
-		
-		vTaskDelay(10000 / portTICK_RATE_MS);
-		//selfTestBuf->juli = readJuliValue();
-		//sprintf(selfTestBuf->deviceAdjust.result, "%d", selfTestBuf->juli);
-		//USBDebug(selfTestBuf->deviceAdjust.result, strlen(selfTestBuf->deviceAdjust.result));
-		
-		motor2MoveStep(true, 1000, false);
-	}*/
 	//step 2 判断插卡口是否有卡
-	if(Motor1Sensor2Triggered && readCaedCheckStatus() == ON)
+	if(Motor1Sensor2Triggered)
 		FormatParmAndStartMotorAction(&selfTestBuf->motorAction, PutDownCardInPlaceDef, 0, true);
 
 	//step 3 去掉退卡口，无论有无卡
@@ -332,6 +308,26 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	{
 		FormatParmAndStartMotorAction(&selfTestBuf->motorAction, PutCardOutOfDeviceIgnoreMotor1Def, 0, true);
 	}
+	
+	//test code
+/*	setMotor1SleepGPIO(ON);
+	selfTestBuf->motorAction.motorActionEnum = Motor1MoveDef;
+	
+	while(1)
+	{
+		for(selfTestBuf->j=0; selfTestBuf->j<Motor1_HalfLocation; selfTestBuf->j++)
+		{
+			FormatParmAndStartMotorAction(&selfTestBuf->motorAction, Motor1MoveDef, 2*selfTestBuf->j + 1, true);
+			vTaskDelay(10000);
+		}
+		
+		for(selfTestBuf->j=0; selfTestBuf->j<Motor1_HalfLocation; selfTestBuf->j++)
+		{
+			FormatParmAndStartMotorAction(&selfTestBuf->motorAction, Motor1MoveDef, 2*(selfTestBuf->j + 1), true);
+			vTaskDelay(10000);
+		}
+	}
+	*/
 	
 	//step 3 检查每个位置。，查看是否有卡
 	setMotor1SleepGPIO(ON);
