@@ -5,9 +5,42 @@
 #include 	"FreeRTOS.h"
 #include	"ff.h"
 
-/*V1.0.03*/
-#define	GB_SoftVersion	(unsigned short)1006
-#define	GB_SoftVersion_Build	"Build18012401\0"
+/**********************************************************************************************************/
+/**********************************************************************************************************/
+/**********************************************************************************************************/
+//build by device id
+#define	DeviceAll						0x30
+#define	Device_NCD13021801102			0x31
+#define	Device_NCD13021801104			0x32
+#define	Device_NCD13021801105			0x33				//not use
+#define	Device_NCD13021801106			0x34
+#define	DeviceBuildId					Device_NCD13021801104	
+
+#if (DeviceBuildId == DeviceAll)
+
+	#define	GB_SoftVersion	(unsigned short)1008
+	#define	GB_SoftVersionStr	"V1.0.08\0"
+	#define	GB_SoftVersion_Build	"Build18040801\0"
+	
+#elif (DeviceBuildId == Device_NCD13021801102)
+
+	#define	GB_SoftVersion	(unsigned short)1009
+	#define	GB_SoftVersionStr	"V1.0.09\0"
+	#define	GB_SoftVersion_Build	"Build18040801\0"
+
+#elif (DeviceBuildId == Device_NCD13021801104)
+	
+	#define	GB_SoftVersion	(unsigned short)1008
+	#define	GB_SoftVersionStr	"V1.0.08\0"
+	#define	GB_SoftVersion_Build	"Build18040801\0"
+	
+#elif (DeviceBuildId == Device_NCD13021801106)
+	
+	#define	GB_SoftVersion	(unsigned short)1009
+	#define	GB_SoftVersionStr	"V1.0.09\0"
+	#define	GB_SoftVersion_Build	"Build18040801\0"
+	
+#endif
 
 //二维码定义
 #define QRVersion0Define		0								//二维码原始版本定义
@@ -32,10 +65,19 @@
 #define	DEVICE_CN						101
 #define	DeviceLanguage					DEVICE_CN
 
+#define	UserNormalProgram				0x60							//通用程序,上传至ncd自己的软件
+#define	UserXGProgram					0x61							//孝感中心医院程序，孝感LIS
+#define	UserProgramType					UserNormalProgram				//程序用户选择定义
+
 #define	Device_Final					0x27
 #define	Device_Demo						0x28
 #define	Device_FastDemo					0x29
-#define	DeviceUseType					Device_Final
+#define	DeviceUseType					Device_Final	
+
+/**********************************************************************************************************/
+/**********************************************************************************************************/
+/**********************************************************************************************************/
+
 
 #define	PaiDuiWeiNum					9							//排队位置数目
 #define	MaxQualityCount					PaiDuiWeiNum

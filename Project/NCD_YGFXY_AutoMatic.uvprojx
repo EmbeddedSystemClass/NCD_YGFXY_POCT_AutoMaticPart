@@ -930,6 +930,11 @@
               <FileType>5</FileType>
               <FilePath>..\Entity\StringDefine.h</FilePath>
             </File>
+            <File>
+              <FileName>readme.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Entity\readme.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1139,6 +1144,11 @@
               <FileName>Timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\COM\Timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>CheckSum.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\COM\CheckSum.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1449,6 +1459,13 @@
         </Group>
         <Group>
           <GroupName>Doc</GroupName>
+          <Files>
+            <File>
+              <FileName>README.txt</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\DOC\README.txt</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>USB_User</GroupName>

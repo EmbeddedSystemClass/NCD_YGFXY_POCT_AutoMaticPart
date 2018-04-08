@@ -95,7 +95,7 @@ void SelfTest_Function(void)
 		setSelfTestStatus(SelfTest_Error);
 	else
 	{
-		//SD卡初始化
+	//SD卡初始化
 		if(FR_OK != f_mount(&S_Fatfs, "0:", 1))
 		{
 			setSelfTestStatus(SD_ERROR);
@@ -170,6 +170,8 @@ static MyRes loadSystemData(SelfTestBuf * selfTestBuf)
 		
 		//更新内存中设备id的副本
 		setSystemDeviceId(selfTestBuf->device.deviceId);
+		setSystemDeviceAddr(selfTestBuf->device.addr);
+		setSystemDeviceIsNew(true);
 		
 		//如果crc错误表示读取失败，或者设备第一次开机，不存在配置文件，则恢复出厂设置
 		if(selfTestBuf->systemSetData.crc != CalModbusCRC16Fun(&selfTestBuf->systemSetData, SystemSetDataStructCrcSize, NULL))

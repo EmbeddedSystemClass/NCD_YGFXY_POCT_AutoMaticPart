@@ -82,6 +82,16 @@ void setSystemWireLinkStatus(LinkStatus linkStatus)
 	systemData.wireNetInfo.lineStatus = linkStatus;
 }
 
+void setSystemDeviceIsNew(bool status)
+{
+	systemData.deviceIsNew = status;
+}
+
+bool systemDeviceIsNew(void)
+{
+	return systemData.deviceIsNew;
+}
+
 void setSystemDeviceId(char * device)
 {
 	if(device)
@@ -92,7 +102,16 @@ void getSystemDeviceId(char * device)
 	if(device)
 		memcpy(device, systemData.deviceId, DeviceIdLen);
 }
-
+void setSystemDeviceAddr(char * device)
+{
+	if(device)
+		memcpy(systemData.deviceAdd, device, DeviceAddrLen);
+}
+void getSystemDeviceAddr(char * device)
+{
+	if(device)
+		memcpy(device, systemData.deviceAdd, DeviceAddrLen);
+}
 void setTestLedValue(unsigned short value)
 {
 	systemData.testLedValue = value;

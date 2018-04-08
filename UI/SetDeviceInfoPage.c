@@ -108,7 +108,12 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	else if(page->lcdinput[0] == 0x1B01)
 	{			
 		if(My_Pass == SaveDeviceToFile(page->device))
+		{
+			setSystemDeviceAddr(page->device->addr);
+			setSystemDeviceIsNew(true);
+			
 			SendKeyCode(1);
+		}
 		else
 			SendKeyCode(2);
 	}

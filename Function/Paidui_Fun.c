@@ -101,6 +101,12 @@ void PaiDuiHandler(void)
 				{
 					SetCurrentTestItem(temp);
 					temp->statues = statusPrepareTest;
+					
+					if(false == CheckStrIsSame(paiduiActivityName, getCurrentActivityName(), strlen(paiduiActivityName)))
+					{
+						backToActivity(lunchActivityName);
+						startActivity(createPaiDuiActivity, NULL, NULL);
+					}
 				}
 			}
 		}

@@ -447,6 +447,30 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 				S_TempCalData->paiduiUnitData->testData.testSeries.result = 1015.9f*S_TempCalData->finalBili*S_TempCalData->finalBili - 
 					282.47f * S_TempCalData->finalBili + 36.177f;
 		}
+		else if(CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IB1803-01", 9))
+		{
+			S_TempCalData->finalBili = S_TempCalData->paiduiUnitData->testData.testSeries.t_tc;
+			
+			if(S_TempCalData->finalBili <= 0.6133)
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili * 16764.0f 
+					- S_TempCalData->finalBili * 1428.4f + 11.797f;
+			else if(S_TempCalData->finalBili <= 0.8483)
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = -63205.0f*S_TempCalData->finalBili*S_TempCalData->finalBili + 
+					139155.0f * S_TempCalData->finalBili - 56327.0f;
+			else
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = 261236.0f*S_TempCalData->finalBili - 207211.0f;
+		}
+		else if(CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IB1801-02", 9))
+		{
+			S_TempCalData->finalBili = S_TempCalData->paiduiUnitData->testData.testSeries.t_tc;
+			
+			if(S_TempCalData->finalBili <= 0.673)
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili * 23703.0f 
+					- S_TempCalData->finalBili * 1455.5f + 33.66f;
+			else 
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = 512669.0f*S_TempCalData->finalBili*S_TempCalData->finalBili - 
+					671741.0f * S_TempCalData->finalBili + 229288.0f;
+		}
 		else
 		{
 			/*根据分段，计算原始结果*/
@@ -507,6 +531,13 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		{
 			S_TempCalData->paiduiUnitData->testData.testSeries.result /= 5.0f;
 		}
+		//2018年3月29日 16:39:47 只针对孝感中心医院检验科的两台设备发布程序，其他设备不做修改
+		#if ((DeviceBuildId == Device_NCD13021801102) || (DeviceBuildId == Device_NCD13021801106))
+		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IM1801-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 1.6f;
+		}
+		#endif
 		
 		S_TempCalData->resultstatues = ResultIsOK;
 		return;

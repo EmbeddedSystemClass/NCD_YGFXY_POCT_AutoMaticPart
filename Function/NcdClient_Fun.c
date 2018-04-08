@@ -19,6 +19,7 @@
 #include	"IAP_Fun.h"
 #include	"USB_Fun.h"
 #include	"TCP_Fun.h"
+#include	"CheckSum.h"
 
 #include	"HttpBuf.h"
 #include	"MyMem.h"
@@ -35,7 +36,7 @@
 /***************************************************************************************************/
 /**************************************局部变量声明*************************************************/
 /***************************************************************************************************/
-static bool firstConnectIsDone = false;
+
 /***************************************************************************************************/
 /**************************************局部函数声明*************************************************/
 /***************************************************************************************************/
@@ -65,14 +66,15 @@ void NcdClientFunction(void)
 			{
 				httpBuf->isNcdDataToUpload = isTestDataToBeUpLoad(true, &httpBuf->deviceRecordHeader);
 				httpBuf->isNewVersionToBeDown = isNewVersionToBeDownload();
+				httpBuf->systemDeviceIsNew = systemDeviceIsNew();
 				
-				if(httpBuf->isNcdDataToUpload || firstConnectIsDone == false || cnt % 120 == 0 || httpBuf->isNewVersionToBeDown)
+				if(httpBuf->isNcdDataToUpload || httpBuf->systemDeviceIsNew || cnt % 120 == 0 || httpBuf->isNewVersionToBeDown)
 				{
 					if(My_Pass == ConnectServer(httpBuf->tempBuf))
 					{
-						if(firstConnectIsDone == false || cnt % 120 == 0)
+						if(httpBuf->systemDeviceIsNew || cnt % 120 == 0)
 						{
-							firstConnectIsDone = false;								//每1小时，必须跟服务器通车成功一次，否则一直通信
+							setSystemDeviceIsNew(true);								//每1小时，必须跟服务器通车成功一次，否则一直通信
 							UpLoadDeviceInfo(httpBuf);
 						}
 						
@@ -120,7 +122,7 @@ static void UpLoadDeviceInfo(HttpBuf * httpBuf)
 		//send data
 		if(My_Pass == CommunicateWithNcdServerInGPRS(httpBuf))
 		{
-			firstConnectIsDone = true;
+			setSystemDeviceIsNew(false);
 			
 			httpBuf->tempP2 = strtok(httpBuf->tempP, "#");
 			if(httpBuf->tempP2 == NULL)
@@ -218,8 +220,9 @@ static void UpLoadTestData(HttpBuf * httpBuf)
 						
 			//read device id
 			getSystemDeviceId(httpBuf->tempBuf+10);
+			getSystemDeviceAddr(httpBuf->tempBuf+100);
 
-			sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ncardnum=%s&qrdata.cid=%s&device.did=%s&tester=%s&sampleid=%s&testtime=20%02d-%d-%d %d:%d:%d&overtime=%d&cline=%d&tline=%d&bline=%d&t_c_v=%.4f&t_tc_v=%.4f&testv=%.*f&serialnum=%s-%s&t_isok=%s&cparm=%d&t_cv=%.4f&c_cv=%.4f",
+			sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ncardnum=%s&qrdata.cid=%s&device.did=%s&tester=%s&sampleid=%s&testtime=20%02d-%d-%d %d:%d:%d&overtime=%d&cline=%d&tline=%d&bline=%d&t_c_v=%.4f&t_tc_v=%.4f&testv=%.*f&serialnum=%s-%s&t_isok=%s&cparm=%d&t_cv=%.4f&c_cv=%.4f&testaddr=%s",
 				NcdServerUpTestDataUrlStr, NCD_ServerIp_1, NCD_ServerIp_2, NCD_ServerIp_3, NCD_ServerIp_4, NCD_ServerPort, 
 				httpBuf->testDataPoint->qrCode.piNum, httpBuf->testDataPoint->qrCode.PiHao, httpBuf->tempBuf+10, httpBuf->testDataPoint->operator.name, 
 				httpBuf->testDataPoint->sampleid, httpBuf->testDataPoint->testDateTime.year, httpBuf->testDataPoint->testDateTime.month, 
@@ -228,7 +231,7 @@ static void UpLoadTestData(HttpBuf * httpBuf)
 				httpBuf->testDataPoint->testSeries.T_Point.x, httpBuf->testDataPoint->testSeries.B_Point.x, httpBuf->testDataPoint->testSeries.t_c,
 				httpBuf->testDataPoint->testSeries.t_tc, httpBuf->testDataPoint->qrCode.itemConstData.pointNum, httpBuf->testDataPoint->testSeries.result, 
 				httpBuf->testDataPoint->qrCode.PiHao, httpBuf->testDataPoint->qrCode.piNum, httpBuf->tempBuf, httpBuf->testDataPoint->testSeries.CMdifyNum, 
-				httpBuf->testDataPoint->testSeries.t_cv, httpBuf->testDataPoint->testSeries.c_cv);
+				httpBuf->testDataPoint->testSeries.t_cv, httpBuf->testDataPoint->testSeries.c_cv, httpBuf->tempBuf+100);
 
 			for(httpBuf->j=0; httpBuf->j<100; httpBuf->j++)
 			{
@@ -286,6 +289,7 @@ static void DownLoadFirmware(HttpBuf * httpBuf)
 		setIsSuccessDownloadFirmware(true);
 }
 
+#if (UserProgramType == UserNormalProgram)
 static void upLoadUserServer(HttpBuf * httpBuf)
 {
 	for(httpBuf->i=0; httpBuf->i<MaxUpLoadTestDataNum; httpBuf->i++)
@@ -362,3 +366,89 @@ static void upLoadUserServer(HttpBuf * httpBuf)
 		for(httpBuf->i=0; httpBuf->i<MaxUpLoadTestDataNum; httpBuf->i++)
 			MyFree(httpBuf->page.content[httpBuf->i]);
 }
+
+#elif (UserProgramType == UserXGProgram)
+
+static void upLoadUserServer(HttpBuf * httpBuf)
+{
+	for(httpBuf->i=0; httpBuf->i<MaxUpLoadTestDataNum; httpBuf->i++)
+	{
+		httpBuf->page.content[httpBuf->i] = MyMalloc(TestDataStructSize);
+		if(httpBuf->page.content[httpBuf->i] == NULL)
+			goto END;
+		httpBuf->testDataPoint = httpBuf->page.content[httpBuf->i];
+		httpBuf->testDataPoint->crc = 0;
+	}
+
+	//读取用户数据
+	if(My_Pass != readTestDataFromFileByUpLoadIndex(false, &httpBuf->deviceRecordHeader, &httpBuf->page))
+		goto END;
+		
+	httpBuf->deviceRecordHeader.userUpLoadIndex = 0;
+	for(httpBuf->i=0; httpBuf->i<MaxUpLoadTestDataNum; httpBuf->i++)
+	{
+		httpBuf->testDataPoint = httpBuf->page.content[httpBuf->i];
+		//如果crc校验正确，则开始上传
+		if(httpBuf->testDataPoint->crc == CalModbusCRC16Fun(httpBuf->testDataPoint, TestDataStructCrcSize, NULL))
+		{
+			if(httpBuf->testDataPoint->testDateTime.month == 0 || httpBuf->testDataPoint->testDateTime.day == 0)
+			{
+				httpBuf->testDataPoint->testDateTime.year = 0;
+				httpBuf->testDataPoint->testDateTime.month = 1;
+				httpBuf->testDataPoint->testDateTime.day = 1;
+				httpBuf->testDataPoint->testDateTime.hour = 0;
+				httpBuf->testDataPoint->testDateTime.min = 0;
+				httpBuf->testDataPoint->testDateTime.sec = 0;
+			}
+						
+			//read device id
+			getSystemDeviceId(httpBuf->tempBuf);
+
+			//STX
+			httpBuf->sendBuf[0] = 0x02;
+			//AA | testtime | sampleid | testtype | pihao | pinum | deviceid | tester | item | danwei | normal 
+			sprintf(httpBuf->sendBuf+1, "H|\\^|||荧光免疫定量分析仪^%s^%s^NCD-A02^%s-%s^1.0|||||||P||20%02d%02d%02d%02d%02d%02d\rP|1||||^^\rO|1|%s|||||||||||||Blood\rR|1|^^^%s",  
+				GB_SoftVersionStr, httpBuf->tempBuf, httpBuf->testDataPoint->qrCode.PiHao,  httpBuf->testDataPoint->qrCode.piNum,
+				httpBuf->testDataPoint->testDateTime.year,  httpBuf->testDataPoint->testDateTime.month, httpBuf->testDataPoint->testDateTime.day, 
+				httpBuf->testDataPoint->testDateTime.hour, httpBuf->testDataPoint->testDateTime.min, httpBuf->testDataPoint->testDateTime.sec,
+				httpBuf->testDataPoint->sampleid, httpBuf->testDataPoint->qrCode.itemConstData.itemName);
+
+						// | value | error | BB
+						if(httpBuf->testDataPoint->testResultDesc != ResultIsOK)
+							sprintf(httpBuf->tempBuf, "|error|");
+						else if(httpBuf->testDataPoint->testSeries.result <= httpBuf->testDataPoint->qrCode.itemConstData.lowstResult)
+							sprintf(httpBuf->tempBuf, "|<%.*f|", httpBuf->testDataPoint->qrCode.itemConstData.pointNum, httpBuf->testDataPoint->qrCode.itemConstData.lowstResult);
+						else
+							sprintf(httpBuf->tempBuf, "|%.*f|", httpBuf->testDataPoint->qrCode.itemConstData.pointNum, httpBuf->testDataPoint->testSeries.result);
+						strcat(httpBuf->sendBuf, httpBuf->tempBuf);
+						
+						sprintf(httpBuf->tempBuf, "%s|%s|||||\rL|1\r", httpBuf->testDataPoint->qrCode.itemConstData.itemMeasure, httpBuf->testDataPoint->qrCode.itemConstData.normalResult);
+						strcat(httpBuf->sendBuf, httpBuf->tempBuf);
+						httpBuf->sendDataLen = strlen(httpBuf->sendBuf);
+						httpBuf->sendBuf[httpBuf->sendDataLen] = 0x03;
+						httpBuf->sendDataLen++;
+						
+						httpBuf->sendBuf[httpBuf->sendDataLen] = CheckSumFun(httpBuf->sendBuf+1, httpBuf->sendDataLen-1, NULL);
+						httpBuf->sendDataLen++;
+						httpBuf->sendBuf[httpBuf->sendDataLen] = 0x0d;
+						httpBuf->sendDataLen++;
+						httpBuf->sendBuf[httpBuf->sendDataLen] = 0x0a;
+						httpBuf->sendDataLen++;
+						httpBuf->sendBuf[httpBuf->sendDataLen] = 0x04;
+						httpBuf->sendDataLen++;
+											
+						readSystemServerSerData(&httpBuf->serverSet);
+						if(My_Pass == CommunicateWithLisByLineNet(httpBuf))
+							httpBuf->deviceRecordHeader.userUpLoadIndex++;
+						else
+							break;
+		}
+	}
+	
+	plusTestDataHeaderUpLoadIndexToFile(httpBuf->deviceRecordHeader.userUpLoadIndex, 0);
+
+	END:	
+		for(httpBuf->i=0; httpBuf->i<MaxUpLoadTestDataNum; httpBuf->i++)
+			MyFree(httpBuf->page.content[httpBuf->i]);
+}
+#endif

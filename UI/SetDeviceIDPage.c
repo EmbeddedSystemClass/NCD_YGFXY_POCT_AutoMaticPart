@@ -115,6 +115,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 			if(My_Pass == SaveDeviceToFile(S_SetDeviceIDPage->device))
 			{
 				setSystemDeviceId(S_SetDeviceIDPage->device->deviceId);
+				setSystemDeviceIsNew(true);
 				
 				SendKeyCode(1);
 			}

@@ -3,6 +3,8 @@
 
 #include	"Define.h"
 
+#define		DeviceNameString						"荧光免疫定量分析仪\0"
+#define		DeviceModelString						"NCD-A02\0"
 #define		DeviceTypeString						"YGFXY_2\0"								//半自动设备
 #define		DefaultDeviceId							DeviceTypeString
 
@@ -60,6 +62,15 @@
 #if(DeviceLanguage == DEVICE_CN)
 	#define	DeviceNameStr 							"荧光免疫定量分析仪\0"
 	#define	CompanyNameStr							"武汉纽康度生物科技股份有限公司\0"
+	
+	#if(DeviceBuildId == DeviceAll)
+		#define	PrintCompanyName						CompanyNameStr
+	#elif(DeviceBuildId == Device_NCD13021801104)
+		#define	PrintCompanyName						"      东至县第二人民医院\0"
+	#else
+		#define	PrintCompanyName						CompanyNameStr
+	#endif
+	
 	#define	TesterNameStr							"测试人\0"
 	#define	SampleIdStr								"样品编号\0"
 	#define	ItemNameStr								"测试项目\0"
@@ -130,6 +141,14 @@
 	#define	NoneString								"---\0"
 	
 	#define	TestDeviceIdString						"Device ID\0"
+	
+	#if(DeviceBuildId == DeviceAll)
+		#define	PrintCompanyName						CompanyNameStr
+	#elif(DeviceBuildId == Device_NCD13021801104)
+		#define	PrintCompanyName						"      东至县第二人民医院\0"
+	#else
+		#define	PrintCompanyName						CompanyNameStr
+	#endif
 	
 #endif
 

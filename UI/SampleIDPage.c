@@ -147,7 +147,7 @@ static void activityFresh(void)
 {
 	S_SampleIDPage->cnt++;
 	
-	if(S_SampleIDPage->cnt % 2 == 0)
+	if(S_SampleIDPage->cnt % 5 == 0)
 	{
 		if(S_SampleIDPage->isMotorStartted == My_Pass)
 		{

@@ -33,6 +33,7 @@ typedef struct HttpBuf_Tag
 	bool isPost;
 	bool isNcdDataToUpload;
 	bool isNewVersionToBeDown;
+	bool systemDeviceIsNew;
 	char * tempP;
 	char * tempP2;
 	unsigned short i;

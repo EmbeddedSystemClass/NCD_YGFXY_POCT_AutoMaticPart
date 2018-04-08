@@ -125,6 +125,7 @@
 ".\obj\mytools.o"
 ".\obj\queueunits.o"
 ".\obj\timer.o"
+".\obj\checksum.o"
 ".\obj\list.o"
 ".\obj\queue.o"
 ".\obj\tasks.o"
