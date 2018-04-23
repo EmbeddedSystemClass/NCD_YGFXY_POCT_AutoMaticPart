@@ -64,7 +64,7 @@ static void vSystemStartTask( void *pvParameters )
 	StartvIwdgTask();
 
 	StartvUniversalTask();
-
+	
 	startActivity(createWelcomeActivity, NULL, NULL);
 
 	StartvSystemUITask();

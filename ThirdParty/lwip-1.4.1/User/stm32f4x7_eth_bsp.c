@@ -124,7 +124,7 @@ void ETH_GPIO_Config(void)
 	int i=0;
 	GPIO_InitTypeDef GPIO_InitStructure;
   
-	RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOD |RCC_AHB1Periph_GPIOG |RCC_AHB1Periph_GPIOC |RCC_AHB1Periph_GPIOB, ENABLE);//使能GPIO时钟 RMII接口
+	RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOB, ENABLE);//使能GPIO时钟 RMII接口
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);   //使能SYSCFG时钟
   
 	SYSCFG_ETH_MediaInterfaceConfig(SYSCFG_ETH_MediaInterface_RMII); //MAC和PHY之间使用RMII接口

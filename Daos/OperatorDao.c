@@ -88,7 +88,7 @@ MyRes ReadAllOperatorFromFile(Operator * operator, unsigned short * operatorVali
 			
 			for(unsigned char i=0; i<MaxOperatorSize; i++)
 			{
-				f_read(&(myfile->file), operator, OneOperatorStructSize, &myfile->br);
+				myfile->res = f_read(&(myfile->file), operator, OneOperatorStructSize, &myfile->br);
 				
 				if(operator->crc == CalModbusCRC16Fun(operator, OneOperatorStructCrcSize, NULL))
 				{

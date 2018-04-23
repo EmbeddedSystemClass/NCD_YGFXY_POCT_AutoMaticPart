@@ -10,17 +10,24 @@
 /**********************************************************************************************************/
 //build by device id
 #define	DeviceAll						0x30
+#define	Device_Debug					0x35
 #define	Device_NCD13021801102			0x31
 #define	Device_NCD13021801104			0x32
 #define	Device_NCD13021801105			0x33				//not use
 #define	Device_NCD13021801106			0x34
-#define	DeviceBuildId					Device_NCD13021801104	
+#define	DeviceBuildId					DeviceAll	
 
 #if (DeviceBuildId == DeviceAll)
 
 	#define	GB_SoftVersion	(unsigned short)1008
 	#define	GB_SoftVersionStr	"V1.0.08\0"
 	#define	GB_SoftVersion_Build	"Build18040801\0"
+	
+#elif (DeviceBuildId == Device_Debug)
+
+	#define	GB_SoftVersion	(unsigned short)1009
+	#define	GB_SoftVersionStr	"V1.0.09\0"
+	#define	GB_SoftVersion_Build	"Build18041901\0"
 	
 #elif (DeviceBuildId == Device_NCD13021801102)
 
