@@ -471,6 +471,31 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 				S_TempCalData->paiduiUnitData->testData.testSeries.result = 512669.0f*S_TempCalData->finalBili*S_TempCalData->finalBili - 
 					671741.0f * S_TempCalData->finalBili + 229288.0f;
 		}
+		#if (DeviceBuildId == Device_NCD13021801105)
+		
+		else if(CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IT1803-01", 9))
+		{
+			S_TempCalData->finalBili = S_TempCalData->paiduiUnitData->testData.testSeries.t_tc;
+			
+			if(S_TempCalData->finalBili <= 0.2054)
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili * 68.189f 
+					- S_TempCalData->finalBili * 2.4836f + 0.0625f;
+			else 
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = 1.0506*exp(4.3132*S_TempCalData->finalBili);
+		}
+		else if(CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IK1804-01", 9))
+		{
+			S_TempCalData->finalBili = S_TempCalData->paiduiUnitData->testData.testSeries.t_tc;
+			
+			if(S_TempCalData->finalBili <= 0.24)
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili * 104.64f 
+					+ S_TempCalData->finalBili * 29.721f - 1.1381f;
+			else 
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = 926.16*S_TempCalData->finalBili*S_TempCalData->finalBili - 
+					374.1f * S_TempCalData->finalBili + 51.193f;
+		}
+		
+		#endif
 		else
 		{
 			/*根据分段，计算原始结果*/
@@ -531,12 +556,37 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		{
 			S_TempCalData->paiduiUnitData->testData.testSeries.result /= 5.0f;
 		}
+        else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IT1805-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result /= 1.3f;
+		}
+        
 		//2018年3月29日 16:39:47 只针对孝感中心医院检验科的两台设备发布程序，其他设备不做修改
 		#if ((DeviceBuildId == Device_NCD13021801102) || (DeviceBuildId == Device_NCD13021801106))
 		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IM1801-01", 9))
 		{
 			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 1.6f;
 		}
+		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IM1803-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 2.5f;
+		}
+		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IM1804-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 2.5f;
+		}
+		
+		#elif (DeviceBuildId == Device_NCD13021801105)
+		
+		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IM1803-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 2.5f;
+		}
+		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IM1804-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 2.5f;
+		}
+		
 		#endif
 		
 		S_TempCalData->resultstatues = ResultIsOK;
