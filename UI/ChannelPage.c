@@ -119,6 +119,7 @@ static void activityInput(unsigned char *pbuf , unsigned short len)
 	//读取通道
 	else if(pageBuf->lcdinput[0] == 0x3603)
 	{
+        pbuf[8] -= 1;
 		pageBuf->paiduiUnitData.cardLocation = 2*pbuf[8]+1;
 	}
 	//读取次数

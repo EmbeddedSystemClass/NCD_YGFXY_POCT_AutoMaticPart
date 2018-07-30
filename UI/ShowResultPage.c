@@ -309,38 +309,39 @@ static void DspLine(void)
 
 static void dspIco(void)
 {
+    #if (DeviceUseType == Device_Final)
 	double tempvalue = 0.0;
-	if(S_ShowPageBuffer)
-	{
-		//在曲线上标记出T,C,基线
-		S_ShowPageBuffer->myico[0].ICO_ID = 22;
-		S_ShowPageBuffer->myico[0].X = 574+S_ShowPageBuffer->testdata.testSeries.T_Point.x-12;
-		tempvalue = S_ShowPageBuffer->testdata.testSeries.T_Point.y;
-		tempvalue /= S_ShowPageBuffer->lineinfo.Y_Scale*2;
-		tempvalue = 1-tempvalue;
-		tempvalue *= 302;										//曲线窗口宽度
-		tempvalue += 139;										//曲线窗口起始y
-		S_ShowPageBuffer->myico[0].Y = (unsigned short)tempvalue - 11;
+
+	//在曲线上标记出T,C,基线
+	S_ShowPageBuffer->myico[0].ICO_ID = 22;
+	S_ShowPageBuffer->myico[0].X = 574+S_ShowPageBuffer->testdata.testSeries.T_Point.x-12;
+	tempvalue = S_ShowPageBuffer->testdata.testSeries.T_Point.y;
+	tempvalue /= S_ShowPageBuffer->lineinfo.Y_Scale*2;
+	tempvalue = 1-tempvalue;
+	tempvalue *= 302;										//曲线窗口宽度
+	tempvalue += 139;										//曲线窗口起始y
+	S_ShowPageBuffer->myico[0].Y = (unsigned short)tempvalue - 11;
 		
-		S_ShowPageBuffer->myico[1].ICO_ID = 22;
-		S_ShowPageBuffer->myico[1].X = 574+S_ShowPageBuffer->testdata.testSeries.C_Point.x-12;
-		tempvalue = S_ShowPageBuffer->testdata.testSeries.C_Point.y;
-		tempvalue /= S_ShowPageBuffer->lineinfo.Y_Scale*2;
-		tempvalue = 1-tempvalue;
-		tempvalue *= 302;										//曲线窗口宽度
-		tempvalue += 139;										//曲线窗口起始y
-		S_ShowPageBuffer->myico[1].Y = (unsigned short)tempvalue - 11;
+	S_ShowPageBuffer->myico[1].ICO_ID = 22;
+	S_ShowPageBuffer->myico[1].X = 574+S_ShowPageBuffer->testdata.testSeries.C_Point.x-12;
+	tempvalue = S_ShowPageBuffer->testdata.testSeries.C_Point.y;
+	tempvalue /= S_ShowPageBuffer->lineinfo.Y_Scale*2;
+	tempvalue = 1-tempvalue;
+	tempvalue *= 302;										//曲线窗口宽度
+	tempvalue += 139;										//曲线窗口起始y
+	S_ShowPageBuffer->myico[1].Y = (unsigned short)tempvalue - 11;
 		
-		S_ShowPageBuffer->myico[2].ICO_ID = 22;
-		S_ShowPageBuffer->myico[2].X = 574+S_ShowPageBuffer->testdata.testSeries.B_Point.x-12;
-		tempvalue = S_ShowPageBuffer->testdata.testSeries.B_Point.y;
-		tempvalue /= S_ShowPageBuffer->lineinfo.Y_Scale*2;
-		tempvalue = 1-tempvalue;
-		tempvalue *= 302;										//曲线窗口宽度
-		tempvalue += 139;										//曲线窗口起始y
-		S_ShowPageBuffer->myico[2].Y = (unsigned short)tempvalue - 11;
+	S_ShowPageBuffer->myico[2].ICO_ID = 22;
+	S_ShowPageBuffer->myico[2].X = 574+S_ShowPageBuffer->testdata.testSeries.B_Point.x-12;
+	tempvalue = S_ShowPageBuffer->testdata.testSeries.B_Point.y;
+	tempvalue /= S_ShowPageBuffer->lineinfo.Y_Scale*2;
+	tempvalue = 1-tempvalue;
+	tempvalue *= 302;										//曲线窗口宽度
+	tempvalue += 139;										//曲线窗口起始y
+	S_ShowPageBuffer->myico[2].Y = (unsigned short)tempvalue - 11;
 		
-		BasicUI(0x2380 ,0x1807 , 3, &(S_ShowPageBuffer->myico[0]) , sizeof(Basic_ICO)*3);
-	}
+	BasicUI(0x2380 ,0x1807 , 3, &(S_ShowPageBuffer->myico[0]) , sizeof(Basic_ICO)*3);
+
+    #endif
 }
 

@@ -338,7 +338,7 @@ static void RefreshCurve(void)
 
 static void RefreshPageText(void)
 {
-	double tempvalue = 0.0;
+	
 	
 	if(S_TestPageBuffer->currenttestdata)
 	{
@@ -356,7 +356,9 @@ static void RefreshPageText(void)
 	
 	if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == ResultIsOK)
 	{
-		//在曲线上标记出T,C,基线
+		#if (DeviceUseType == Device_Final)
+        double tempvalue = 0.0;
+        //在曲线上标记出T,C,基线
 		S_TestPageBuffer->myico[0].ICO_ID = 22;
 		S_TestPageBuffer->myico[0].X = 574+S_TestPageBuffer->currenttestdata->testData.testSeries.T_Point.x-12;
 		tempvalue = S_TestPageBuffer->currenttestdata->testData.testSeries.T_Point.y;
@@ -385,6 +387,7 @@ static void RefreshPageText(void)
 		S_TestPageBuffer->myico[2].Y = (unsigned short)tempvalue - 11;
 		
 		BasicUI(0x1880 ,0x1807 , 3, &(S_TestPageBuffer->myico[0]) , sizeof(Basic_ICO)*3);
+        #endif
 	}
 	else
 	{

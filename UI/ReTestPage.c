@@ -348,7 +348,10 @@ static void activityFresh(void)
 			pageBuffer->currentPaiduiUnitData = NULL;
 			
 			if(Motor1Sensor1Triggered)
-				pageBuffer->motorAction.motorActionEnum = PutCardOutOfDeviceIgnoreMotor1Def;	
+			{
+                pageBuffer->motorAction.motorActionEnum = PutCardOutOfDeviceDef;
+                pageBuffer->motorAction.motorParm = 0;          //0表示转盘不动作
+            }
 			else if(Motor1Sensor2Triggered && readCaedCheckStatus() == ON)
 				pageBuffer->motorAction.motorActionEnum = PutDownCardInPlaceDef;
 			else

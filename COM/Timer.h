@@ -25,5 +25,6 @@ TimerStatus timer_expired(Timer *t);
 unsigned int timer_surplus(Timer *t);
 unsigned int timer_Count(Timer *t);
 bool timerIsStartted(Timer * t);
-	
+unsigned int getClockValue(void);
+
 #endif

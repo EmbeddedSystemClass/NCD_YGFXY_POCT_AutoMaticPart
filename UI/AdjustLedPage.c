@@ -199,21 +199,10 @@ static void activityFresh(void)
 	
 		if(My_Pass == TakeTestResult(&S_AdjustLedPageBuffer->paiduiUnitData.testData.testResultDesc))
 		{
-			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutDownCardInTestPlaceDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
-			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitPutCardInTestPlace;
+            analysisTestData();
+            FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutCardOutOfDeviceAfterTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
+            S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitCardOut;
 		}
-	}
-	else if(statusWaitPutCardInTestPlace == S_AdjustLedPageBuffer->paiduiUnitData.statues)
-	{
-		if(isMotorMoveEnd(FreeRTOSZeroDelay))
-		{
-			analysisTestData();
-		}
-	}
-	else if(statusPutCardOut == S_AdjustLedPageBuffer->paiduiUnitData.statues)
-	{
-		FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutCardOutOfDeviceAfterTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
-		S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitCardOut;
 	}
 	else if(statusWaitCardOut == S_AdjustLedPageBuffer->paiduiUnitData.statues)
 	{

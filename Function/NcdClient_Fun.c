@@ -222,7 +222,7 @@ static void UpLoadTestData(HttpBuf * httpBuf)
 			getSystemDeviceId(httpBuf->tempBuf+10);
 			getSystemDeviceAddr(httpBuf->tempBuf+100);
 
-			sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ncardnum=%s&qrdata.cid=%s&device.did=%s&tester=%s&sampleid=%s&testtime=20%02d-%d-%d %d:%d:%d&overtime=%d&cline=%d&tline=%d&bline=%d&t_c_v=%.4f&t_tc_v=%.4f&testv=%.*f&serialnum=%s-%s&t_isok=%s&cparm=%d&t_cv=%.4f&c_cv=%.4f&testaddr=%s",
+			sprintf(httpBuf->sendBuf, "POST %s HTTP/1.1\nHost: %d.%d.%d.%d:%d\nConnection: keep-alive\nContent-Length:[##]\nContent-Type:application/x-www-form-urlencoded;charset=GBK\nAccept-Language: zh-CN,zh;q=0.8\n\ncardnum=%s&qrdata.cid=%s&device.did=%s&tester=%s&sampleid=%s&testtime=20%02d-%d-%d %d:%d:%d&overtime=%d&cline=%d&tline=%d&bline=%d&t_c_v=%.4f&t_tc_v=%.4f&testv=%.*f&serialnum=%s-%s&t_isok=%s&cparm=%d&t_cv=%.4f&c_cv=%.4f&testaddr=%s&errcode=%d",
 				NcdServerUpTestDataUrlStr, NCD_ServerIp_1, NCD_ServerIp_2, NCD_ServerIp_3, NCD_ServerIp_4, NCD_ServerPort, 
 				httpBuf->testDataPoint->qrCode.piNum, httpBuf->testDataPoint->qrCode.PiHao, httpBuf->tempBuf+10, httpBuf->testDataPoint->operator.name, 
 				httpBuf->testDataPoint->sampleid, httpBuf->testDataPoint->testDateTime.year, httpBuf->testDataPoint->testDateTime.month, 
@@ -231,7 +231,7 @@ static void UpLoadTestData(HttpBuf * httpBuf)
 				httpBuf->testDataPoint->testSeries.T_Point.x, httpBuf->testDataPoint->testSeries.B_Point.x, httpBuf->testDataPoint->testSeries.t_c,
 				httpBuf->testDataPoint->testSeries.t_tc, httpBuf->testDataPoint->qrCode.itemConstData.pointNum, httpBuf->testDataPoint->testSeries.result, 
 				httpBuf->testDataPoint->qrCode.PiHao, httpBuf->testDataPoint->qrCode.piNum, httpBuf->tempBuf, httpBuf->testDataPoint->testSeries.CMdifyNum, 
-				httpBuf->testDataPoint->testSeries.t_cv, httpBuf->testDataPoint->testSeries.c_cv, httpBuf->tempBuf+100);
+				httpBuf->testDataPoint->testSeries.t_cv, httpBuf->testDataPoint->testSeries.c_cv, httpBuf->tempBuf+100, httpBuf->testDataPoint->testResultDesc);
 
 			for(httpBuf->j=0; httpBuf->j<100; httpBuf->j++)
 			{

@@ -30,10 +30,9 @@ static void MotorMoveToWaitCardPutIn(unsigned char num);
 static void MotorMoveToStartTestLocation(unsigned char num);
 static void PutCardOutOfDevice(unsigned char num);
 static void PutCardOutOfDeviceAfterTest(void);
-static void MotorMoveToOriginLocation(unsigned char num);
+static void MotorMoveToOriginLocation(unsigned char num, bool reset);
 static void motorMoveToPutDownCardInPlace(void);
 static void motorMoveToPutDownCardInTestPlace(void);
-static void PutCardOutOfDeviceIgnoreMotor1(void);
 /**************************************************************************************************/
 /**************************************************************************************************/
 /**************************************************************************************************/
@@ -67,9 +66,7 @@ void MotorActionFunction(void)
 			
 			case PutCardOutOfDeviceAfterTestDef :	PutCardOutOfDeviceAfterTest();	break;
 			
-			case PutCardOutOfDeviceIgnoreMotor1Def :	PutCardOutOfDeviceIgnoreMotor1();	break;
-			
-			case OriginLocationDef :		MotorMoveToOriginLocation(S_MotorAction.motorParm);	break;
+			case OriginLocationDef :		MotorMoveToOriginLocation(S_MotorAction.motorParm, true);	break;
 											
 			case PutDownCardInPlaceDef :	motorMoveToPutDownCardInPlace();	break;
 			
@@ -132,14 +129,7 @@ bool isMotorMoveEnd(portTickType waitBlockTime)
 
 static void MotorMoveToWaitCardPutIn(unsigned char num)
 {
-	motor4MoveTo(Motor4_OpenLocation, true);
-	
-	if(num != getMotor1Location())
-	{
-		motor2MoveTo(1, 2, Motor2_MidLocation, true);
-	
-		motor1MoveToNum(num, true);
-	}
+	MotorMoveToOriginLocation(num, true);
 	
 	motor2MoveTo(1, 2, Motor2_WaitCardLocation, true);
 }
@@ -147,15 +137,7 @@ static void MotorMoveToWaitCardPutIn(unsigned char num)
 
 static void MotorMoveToStartTestLocation(unsigned char num)
 {
-	#if(Motor4Type == Motor4UsartMotor)
-		motor4Reset();
-	#endif
-	
-	motor4MoveTo(Motor4_OpenLocation, true);
-	
-	motor2MoveTo(1, 2, Motor2_MidLocation, true);
-	
-	motor1MoveToNum(num, true);
+	MotorMoveToOriginLocation(num, true);
 	
 	motor2MoveTo(1, 2, Motor2_CatchCardLocation, true);
 	
@@ -167,7 +149,7 @@ static void MotorMoveToStartTestLocation(unsigned char num)
 
 static void PutCardOutOfDevice(unsigned char num)
 {
-	MotorMoveToOriginLocation(num);
+	MotorMoveToOriginLocation(num, true);
 	
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
@@ -177,42 +159,40 @@ static void PutCardOutOfDevice(unsigned char num)
 	
 	motor2MoveTo(1, 2, Motor2_PutCardOutLocation, true);
 
-	motor4MoveTo(Motor4_OpenLocation, true);
-	
-	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+	MotorMoveToOriginLocation(0, false);
 }
 
+/*
+*测试完后，夹爪处于夹住卡的状态，直接推出即可
+*/
 static void PutCardOutOfDeviceAfterTest(void)
 {
 	motor2MoveTo(1, 2, Motor2_PutCardOutLocation, true);
 
-	motor4MoveTo(Motor4_OpenLocation, true);
-	
-	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+	MotorMoveToOriginLocation(0, false);
 }
 
-static void PutCardOutOfDeviceIgnoreMotor1(void)
-{
-	motor4MoveTo(Motor4_OpenLocation, true);
-	
-	motor2MoveTo(1, 2, Motor2_StartTestLocation, true);
 
-	motor4MoveTo(Motor4_CardLocation, true);
-	
-	motor2MoveTo(1, 2, Motor2_PutCardOutLocation, true);
-
-	motor4MoveTo(Motor4_OpenLocation, true);
-	
-	motor2MoveTo(1, 2, Motor2_MidLocation, true);
-}
-
-static void MotorMoveToOriginLocation(unsigned char num)
+static void MotorMoveToOriginLocation(unsigned char num, bool reset)
 {
 	motor4MoveTo(Motor4_OpenLocation, true);
 	
 	motor2MoveTo(1, 2, Motor2_MidLocation, true);
 
-	motor1MoveToNum(num, true);
+    //如果为0，则只是将爪子移动到转盘中心，转盘不移动
+    if(num != 0)
+        motor1MoveToNum(num, true);
+    
+    if(reset)
+    {
+        //移动到转盘中心后，爪子需要复位
+        #if(Motor4Type == Motor4UsartMotor)
+            motor4Reset();
+        #endif
+    }
+    
+    
+    motor4MoveTo(Motor4_OpenLocation, true);
 }
 
 
@@ -226,9 +206,7 @@ static void motorMoveToPutDownCardInPlace(void)
 	
 	motor2MoveTo(1, 2, Motor2_PutDownCardLocation, true);
 	
-	motor4MoveTo(Motor4_OpenLocation, true);
-	
-	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+	MotorMoveToOriginLocation(0, false);
 }
 
 static void motorMoveToPutDownCardInTestPlace(void)
@@ -241,9 +219,7 @@ static void motorMoveToPutDownCardInTestPlace(void)
 	
 	motor2MoveTo(1, 2, Motor2_PutDownCardLocation2, true);
 	
-	motor4MoveTo(Motor4_OpenLocation, true);
-	
-	motor2MoveTo(1, 2, Motor2_MidLocation, true);
+	MotorMoveToOriginLocation(0, false);
 }
 
 /****************************************end of file***********************************************/

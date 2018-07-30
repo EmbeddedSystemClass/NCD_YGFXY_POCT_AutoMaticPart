@@ -18,33 +18,33 @@
 
 #if (DeviceBuildId == DeviceAll)
 
-	#define	GB_SoftVersion	(unsigned short)1010
-	#define	GB_SoftVersionStr	"V1.0.10\0"
-	#define	GB_SoftVersion_Build	"Build18051801\0"
+	#define	GB_SoftVersion	(unsigned short)1015
+	#define	GB_SoftVersionStr	"V1.0.15\0"
+	#define	GB_SoftVersion_Build	"Build18070501\0"
 	
 #elif (DeviceBuildId == Device_NCD13021801102)
 
-	#define	GB_SoftVersion	(unsigned short)1011
-	#define	GB_SoftVersionStr	"V1.0.11\0"
-	#define	GB_SoftVersion_Build	"Build18051801\0"
+	#define	GB_SoftVersion	(unsigned short)1016
+	#define	GB_SoftVersionStr	"V1.0.16\0"
+	#define	GB_SoftVersion_Build	"Build18070501\0"
 
 #elif (DeviceBuildId == Device_NCD13021801104)
 	
-	#define	GB_SoftVersion	(unsigned short)1010
-	#define	GB_SoftVersionStr	"V1.0.10\0"
-	#define	GB_SoftVersion_Build	"Build18051801\0"
+	#define	GB_SoftVersion	(unsigned short)1015
+	#define	GB_SoftVersionStr	"V1.0.15\0"
+	#define	GB_SoftVersion_Build	"Build18070501\0"
 	
 #elif (DeviceBuildId == Device_NCD13021801105)
 	
-	#define	GB_SoftVersion	(unsigned short)1010
-	#define	GB_SoftVersionStr	"V1.0.10\0"
-	#define	GB_SoftVersion_Build	"Build18051801\0"
+	#define	GB_SoftVersion	(unsigned short)1015
+	#define	GB_SoftVersionStr	"V1.0.15\0"
+	#define	GB_SoftVersion_Build	"Build18070501\0"
 	
 #elif (DeviceBuildId == Device_NCD13021801106)
 	
-	#define	GB_SoftVersion	(unsigned short)1011
-	#define	GB_SoftVersionStr	"V1.0.11\0"
-	#define	GB_SoftVersion_Build	"Build18051801\0"
+	#define	GB_SoftVersion	(unsigned short)1016
+	#define	GB_SoftVersionStr	"V1.0.16\0"
+	#define	GB_SoftVersion_Build	"Build18070501\0"
 	
 #endif
 
@@ -75,9 +75,10 @@
 #define	UserXGProgram					0x61							//孝感中心医院程序，孝感LIS
 #define	UserProgramType					UserNormalProgram				//程序用户选择定义
 
-#define	Device_Final					0x27
-#define	Device_Demo						0x28
-#define	Device_FastDemo					0x29
+#define	Device_Final					0x27                            //正式程序
+#define	Device_Demo						0x28                            //演示程序
+#define	Device_FastDemo					0x29                            //更快的演示程序
+#define Device_TestCenter               0x2A                            //检验中心程序
 #define	DeviceUseType					Device_Final	
 
 /**********************************************************************************************************/
@@ -317,8 +318,16 @@ typedef enum
 	NoSample = 1,										//未加样
 	PeakError = 2,										//检测卡没有C峰
 	MemError = 3,										//内存错误
+    T_CV_0_05 = 4,                                      //找不到T，但是默认位置的cv>0.05
+    C_CV_ERR_1 = 5,
+    C_CV_ERR_2 = 6,
+    C_L_T_L_1 = 7,                                        //c位置小于T位置
+    C_L_T_L_2 = 9,                                        //c位置 - T位置 (50-100)
+    C_CV_T_CV = 10,                                     //c_cv + t_cv < 0.13
+    CANLIU = 11,                                        //残留
+    B_V_ERR = 12,                                       //基线值错误
 	TestInterrupt = 8,									//测试中断
-	qrError = 9,										//二维码错误
+	qrError = 13,										//二维码错误
 	ResultIsOK = 99,									//测试成功
 }ResultState;
 

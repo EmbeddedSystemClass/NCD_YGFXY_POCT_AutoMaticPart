@@ -308,7 +308,8 @@ static MyRes testMotol(SelfTestBuf * selfTestBuf)
 	//step 3 去掉退卡口，无论有无卡
 	if(Motor1Sensor1Triggered)
 	{
-		FormatParmAndStartMotorAction(&selfTestBuf->motorAction, PutCardOutOfDeviceIgnoreMotor1Def, 0, true);
+        //参数0，表示转盘不动作
+		FormatParmAndStartMotorAction(&selfTestBuf->motorAction, PutCardOutOfDeviceDef, 0, true);
 	}
 	
 	//test code

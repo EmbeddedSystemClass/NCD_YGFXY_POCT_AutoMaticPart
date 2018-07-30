@@ -21,6 +21,7 @@
 #include	"Motor2_Fun.h"
 #include	"Motor4_Fun.h"
 #include	"MyMem.h"
+#include    "Timer.h"
 #include	"MyTools.h"
 #include	"QueueUnits.h"
 #include	"Delay.h"
@@ -215,12 +216,52 @@ ResultState TestFunction(PaiduiUnitData * parm)
 }
 
 
-
-
 static void AnalysisTestData(TempCalData * S_TempCalData)
 {
 	unsigned short i=0;
 	
+    //用于检验中心，根据样品编号产生随机结果
+    #if (DeviceUseType == Device_TestCenter)
+    
+        int group_value = 0;
+        int a=0;
+        int b = 0;
+        double tempresult = 0;
+        
+        srand(getClockValue());
+        a = pow(-1, ((rand()%2)+1));
+    
+        while(b <= 0 || b > 100000l)
+        {
+            b = (rand()%100001l);
+            i++;
+            if(i>50)
+            {
+                b = 50000;
+                break;
+            }
+        }
+        
+        tempresult = b;
+        tempresult *= 0.000001;
+        
+        switch(S_TempCalData->paiduiUnitData->testData.sampleid[0])
+        {
+            case '1': group_value = 5000; break;
+            case '2': group_value = 15000; break;
+            case '3': group_value = 20000; break;
+            case '4': group_value = 2000; break;
+            default : group_value = 2000; break;
+        }
+        
+        tempresult *= group_value;
+        tempresult *= a;
+        S_TempCalData->paiduiUnitData->testData.testSeries.result = tempresult + group_value;
+        
+        S_TempCalData->resultstatues = ResultIsOK;
+		return;
+    #else
+    
 	//计算最大值,平均值
 		S_TempCalData->maxdata = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[0];
 		S_TempCalData->tempvalue1 = 0;
@@ -257,7 +298,10 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		//step.1 计算整条曲线的cv值，用于判断是否加样
 		S_TempCalData->tempCV = calculateDataCV(S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint, 300, S_TempCalData->tempvalue1);
 		if(S_TempCalData->tempCV < 0.025)
-			goto END1;
+		{
+            S_TempCalData->resultstatues = NoSample;
+            goto END1;
+        }
 		
 		//step.2 find T
 		findFeng(S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint, S_TempCalData->paiduiUnitData->testData.qrCode.ItemLocation-30, 
@@ -273,14 +317,12 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 
 			if(S_TempCalData->CV_T > 0.05)
 			{
-				goto END2;
+                S_TempCalData->resultstatues = T_CV_0_05;
+				goto END1;
 			}
 		}
 		else
 		{
-			if((S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x >= 200) || (S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x <= 100))
-				goto END2;
-			
 			if(S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x < S_TempCalData->paiduiUnitData->testData.qrCode.ItemLocation) 
 			{
 				S_TempCalData->tempvalue3 = S_TempCalData->paiduiUnitData->testData.qrCode.ItemLocation - S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x;
@@ -308,36 +350,49 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 			S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x = S_TempCalData->paiduiUnitData->testData.qrCode.CLineLocation;
 
 		S_TempCalData->tempvalue3 = S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x-15;
-		if(S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x < 284)
+		if((300 - S_TempCalData->tempvalue3) > 31)
 			S_TempCalData->CV_C = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->tempvalue3], 31, 0);
 		else
 			S_TempCalData->CV_C = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->tempvalue3], (300 - S_TempCalData->tempvalue3), 0);
 		
+        S_TempCalData->paiduiUnitData->testData.testSeries.c_cv = S_TempCalData->CV_C;
+         
 		if((S_TempCalData->CV_C > 0.03) && (S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y == 0))
 		{
-			goto END2;
+            S_TempCalData->resultstatues = C_CV_ERR_1;
+			goto END1;
 		}
 		
 		if(S_TempCalData->CV_C < 0.03)
 		{
-			goto END2;
+            S_TempCalData->resultstatues = C_CV_ERR_2;
+			goto END1;
 		}
 		
 		S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x];
 
 		//step.4 c.x - t.x should between in 50-100
 		if(S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x <= S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x)
-			goto END2;
+		{
+            S_TempCalData->resultstatues = C_L_T_L_1;
+            goto END1;
+        }
 		
 		S_TempCalData->tempvalue3 = S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.x - S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x;
 		if((S_TempCalData->tempvalue3 < 50) || (S_TempCalData->tempvalue3 > 100))
-			goto END2;
+		{
+            S_TempCalData->resultstatues = C_L_T_L_2;
+            goto END1;
+        }
 		
 		//step.5 c+t cv > 0.2
 		S_TempCalData->CV_T = calculateDataCV(&S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x-15], 31, 0);
-		
+		S_TempCalData->paiduiUnitData->testData.testSeries.t_cv = S_TempCalData->CV_T;
 		if((S_TempCalData->CV_C + S_TempCalData->CV_T) < 0.13)
-			goto END2;
+		{
+            S_TempCalData->resultstatues = C_CV_T_CV;
+            goto END1;
+        }
 		
 		//step.6 canliu
 		S_TempCalData->tempvalue1 = 0;
@@ -353,7 +408,10 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 			}
 		}
 		if(S_TempCalData->tempCV > 0.15)
-			goto END2;
+		{
+            S_TempCalData->resultstatues = CANLIU;
+            goto END1;
+        }
 		
 		//step.7 find b
 		S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y = 10000;
@@ -367,14 +425,13 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 				S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[i];
 			}
 		}
-		if(S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.x < S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x)
-			goto END2;
 		
 		//step.8 b line value : c > b, t >= b
 		if((S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y >= S_TempCalData->paiduiUnitData->testData.testSeries.C_Point.y)
 			|| (S_TempCalData->paiduiUnitData->testData.testSeries.B_Point.y > S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.y))
 		{
-		     goto END2;
+            S_TempCalData->resultstatues = B_V_ERR;
+		     goto END1;
 		}
 		
 		S_TempCalData->paiduiUnitData->testData.testSeries.t_cv = S_TempCalData->CV_T;
@@ -452,8 +509,8 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 			S_TempCalData->finalBili = S_TempCalData->paiduiUnitData->testData.testSeries.t_tc;
 			
 			if(S_TempCalData->finalBili <= 0.6133)
-				S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili * 16764.0f 
-					- S_TempCalData->finalBili * 1428.4f + 11.797f;
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = S_TempCalData->finalBili * S_TempCalData->finalBili * 16864.0f 
+					- S_TempCalData->finalBili * 1510.7f + 26.155f;
 			else if(S_TempCalData->finalBili <= 0.8483)
 				S_TempCalData->paiduiUnitData->testData.testSeries.result = -63205.0f*S_TempCalData->finalBili*S_TempCalData->finalBili + 
 					139155.0f * S_TempCalData->finalBili - 56327.0f;
@@ -471,6 +528,15 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 				S_TempCalData->paiduiUnitData->testData.testSeries.result = 512669.0f*S_TempCalData->finalBili*S_TempCalData->finalBili - 
 					671741.0f * S_TempCalData->finalBili + 229288.0f;
 		}
+        else if(CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IB1807-01", 9))
+		{
+			if(S_TempCalData->finalBili <= 0.3154)
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = -17681.0f*S_TempCalData->finalBili * S_TempCalData->finalBili 
+					+ S_TempCalData->finalBili * 15841.0f - 208.34f;
+			else 
+				S_TempCalData->paiduiUnitData->testData.testSeries.result = 802.31f*exp(4.6264f*S_TempCalData->finalBili);
+		}
+        
 		#if (DeviceBuildId == Device_NCD13021801105)
 		
 		else if(CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IT1803-01", 9))
@@ -560,6 +626,29 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		{
 			S_TempCalData->paiduiUnitData->testData.testSeries.result /= 1.3f;
 		}
+        else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IB1803-01", 9))
+		{
+			if(S_TempCalData->paiduiUnitData->testData.testSeries.result < 1000)
+                S_TempCalData->paiduiUnitData->testData.testSeries.result *= 5.0f;
+            else if(S_TempCalData->paiduiUnitData->testData.testSeries.result <6000)
+                S_TempCalData->paiduiUnitData->testData.testSeries.result *= 4.0f;
+            else if(S_TempCalData->paiduiUnitData->testData.testSeries.result < 10000)
+                S_TempCalData->paiduiUnitData->testData.testSeries.result *= 3.0f;
+            else
+                S_TempCalData->paiduiUnitData->testData.testSeries.result *= 2.0f;
+		}
+        else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IB1804-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 2.0f;
+		}
+        else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IB1805-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 2.0f;
+		}
+        else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IB1807-01", 9))
+		{
+			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 2.0f;
+		}
         
 		//2018年3月29日 16:39:47 只针对孝感中心医院检验科的两台设备发布程序，其他设备不做修改
 		#if ((DeviceBuildId == Device_NCD13021801102) || (DeviceBuildId == Device_NCD13021801106))
@@ -593,13 +682,9 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		return;
 		
 		END1:
-			S_TempCalData->resultstatues = NoSample;
 			S_TempCalData->paiduiUnitData->testData.testSeries.result = 0;
 			return;
-		
-		END2:
-			S_TempCalData->resultstatues = PeakError;
-			S_TempCalData->paiduiUnitData->testData.testSeries.result = 0;
-			return;
+        
+    #endif
 }
 

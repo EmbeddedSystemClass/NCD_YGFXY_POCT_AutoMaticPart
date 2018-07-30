@@ -178,12 +178,12 @@ static void AnalysisCode(ReadQRCodeBuffer * readQRCodeBuffer)
 		default : readQRCodeBuffer->scanResult = CardUnsupported; break;
 	}
 	
-	#if(DeviceUseType == Device_Final)
-		readQRCodeBuffer->cardQR->CardWaitTime *= 60;
-	#elif(DeviceUseType == Device_Demo)
+	#if(DeviceUseType == Device_Demo)
 		readQRCodeBuffer->cardQR->CardWaitTime *= 20;
 	#elif(DeviceUseType == Device_FastDemo)
 		readQRCodeBuffer->cardQR->CardWaitTime *= 3;
+    #else
+        readQRCodeBuffer->cardQR->CardWaitTime *= 60;
 	#endif
 }
 

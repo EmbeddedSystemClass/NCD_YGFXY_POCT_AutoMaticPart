@@ -142,3 +142,8 @@ bool timerIsStartted(Timer * t)
 	
 	return false;
 }
+
+unsigned int getClockValue(void)
+{
+	return GB_ClockTime;
+}
