@@ -48,7 +48,12 @@ void PrintfData(TestData * testd2)
 		//首先复制数据到自己的缓冲器，以防多任务下，其他任务释放原数据区
 		memcpy(&printfBuf->testData, testd2, TestDataStructSize);
 		
-		sprintf(printfBuf->buf, "\n%s\n", PrintCompanyName);
+        #if(DeviceBuildId == Device_NCD13021801104)
+            sprintf(printfBuf->buf, "\n%s\n", PrintCompanyName);
+        #else
+            readPrintInfo(&printfBuf->printInfo);
+            sprintf(printfBuf->buf, "%.30s\n", printfBuf->printInfo.header);
+        #endif
 		SendDataToQueue(GetUsart1TXQueue(), NULL, printfBuf->buf, strlen(printfBuf->buf), 1, 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart1TXInterrupt);
 		
 		sprintf(printfBuf->buf, "%s: %s\n", TesterNameStr, printfBuf->testData.operator.name);

@@ -127,8 +127,8 @@ ScanCodeResult ScanCodeFun(QRCode * cardQR)
 ***************************************************************************************************/
 static void ReadBasicCodeData(ReadQRCodeBuffer * readQRCodeBuffer)
 {
-	ReceiveDataFromQueue(GetUsart3RXQueue(), NULL, readQRCodeBuffer->originalcode , MAX_QR_CODE_LENGHT, &(readQRCodeBuffer->originalCodeLen), 1, FreeRTOSTenDelay
-		, FreeRTOSTenDelay, FreeRTOSTenDelay);
+	ReceiveDataFromQueue(GetUsart3RXQueue(), NULL, readQRCodeBuffer->originalcode , MAX_QR_CODE_LENGHT, &(readQRCodeBuffer->originalCodeLen), 1, FreeRTOSDelay_50
+		, FreeRTOSDelay_50, FreeRTOSDelay_50);
 	
 	if(readQRCodeBuffer->originalCodeLen > 0)
 	{

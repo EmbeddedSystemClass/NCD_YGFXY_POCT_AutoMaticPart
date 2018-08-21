@@ -651,7 +651,7 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		}
         
 		//2018年3月29日 16:39:47 只针对孝感中心医院检验科的两台设备发布程序，其他设备不做修改
-		#if ((DeviceBuildId == Device_NCD13021801102) || (DeviceBuildId == Device_NCD13021801106))
+		#if ((DeviceBuildId == Device_NCD13021806109) || (DeviceBuildId == Device_NCD13021801106))
 		else if(true == CheckStrIsSame(S_TempCalData->paiduiUnitData->testData.qrCode.PiHao, "IM1801-01", 9))
 		{
 			S_TempCalData->paiduiUnitData->testData.testSeries.result *= 1.6f;

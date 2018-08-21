@@ -29,6 +29,7 @@
 #define		ChangeValueShowTypePassWord				"201306\0"								//切换结果显示模式，是否显示真实值
 #define		UnlockLCDPassWord						"201307\0"								//解锁屏幕一次
 #define		ChannelTestPassWord						"201308\0"								//通道差异测试
+#define		PrintHeaderPassWord					    "201309\0"								//修改打印数据头
 
 /*SD卡文件名*/
 #define	TestDataFileName							"0:/TD.ncd\0"

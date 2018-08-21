@@ -10,7 +10,7 @@
 /**********************************************************************************************************/
 //build by device id
 #define	DeviceAll						0x30
-#define	Device_NCD13021801102			0x31
+#define	Device_NCD13021806109			0x31
 #define	Device_NCD13021801104			0x32
 #define	Device_NCD13021801105			0x33
 #define	Device_NCD13021801106			0x34
@@ -18,11 +18,11 @@
 
 #if (DeviceBuildId == DeviceAll)
 
-	#define	GB_SoftVersion	(unsigned short)1015
-	#define	GB_SoftVersionStr	"V1.0.15\0"
-	#define	GB_SoftVersion_Build	"Build18070501\0"
+	#define	GB_SoftVersion	(unsigned short)1016
+	#define	GB_SoftVersionStr	"V1.0.16\0"
+	#define	GB_SoftVersion_Build	"Build18081501\0"
 	
-#elif (DeviceBuildId == Device_NCD13021801102)
+#elif (DeviceBuildId == Device_NCD13021806109)
 
 	#define	GB_SoftVersion	(unsigned short)1016
 	#define	GB_SoftVersionStr	"V1.0.16\0"
@@ -130,6 +130,7 @@ typedef enum
 
 #define	FreeRTOSZeroDelay	0				//0ms
 #define	FreeRTOSTenDelay	10				//10ms
+#define	FreeRTOSDelay_50	50				//10ms
 /**********************************************************************************************************/
 /******************************************fatfs结构体定义*************************************************/
 /**********************************************************************************************************/
@@ -352,6 +353,15 @@ typedef struct TempDataBuffer_tag {
 }TempDataBuffer;
 #pragma pack()
 #define	TempDataBufferStructSize	sizeof(TempDataBuffer)
+
+
+#pragma pack(1)
+typedef struct PrintInfo_Tag
+{
+	char header[30];
+	unsigned short crc;
+}PrintInfo;
+#pragma pack()
 
 #endif
 

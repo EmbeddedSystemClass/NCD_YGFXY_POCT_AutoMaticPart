@@ -15,7 +15,8 @@ typedef struct SystemSetData_Tag
 	unsigned short ledSleepTime;										//休眠时间 s
 	unsigned char ledLightIntensity;									//屏幕亮度 0-100
 	unsigned short testLedLightIntensity;								//测试时采用的led亮度值，mv
-	unsigned char parm[512];											//预留512字节的参数位置
+    PrintInfo printInfo;                                                //打印数据信息设置
+	unsigned char parm[480];											//预留512字节的参数位置
 	unsigned short crc;
 }SystemSetData;
 #pragma pack()
@@ -31,6 +32,7 @@ unsigned short getSystemTestLedLightIntensity(void);
 void setIsShowRealValue(bool isShow);
 bool IsShowRealValue(void);
 void readSystemServerSerData(ServerSet * server);
+void readPrintInfo(PrintInfo * printInfo);
 #endif
 
 /****************************************end of file************************************************/

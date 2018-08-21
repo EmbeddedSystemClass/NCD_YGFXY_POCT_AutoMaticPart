@@ -9,6 +9,7 @@ typedef struct PrintfBuf_Tag
 {
 	TestData testData;
 	DateTime dateTime;
+    PrintInfo printInfo;
 	char buf[100];
 }PrintfBuf;
 

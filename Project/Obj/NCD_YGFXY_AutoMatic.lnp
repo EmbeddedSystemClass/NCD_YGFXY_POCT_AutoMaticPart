@@ -87,6 +87,7 @@
 ".\obj\sleeppage.o"
 ".\obj\adjustledpage.o"
 ".\obj\channelpage.o"
+".\obj\setprintheaderpage.o"
 ".\obj\itemconst_data.o"
 ".\obj\motor_data.o"
 ".\obj\mytest_data.o"

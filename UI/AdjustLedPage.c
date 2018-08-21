@@ -193,17 +193,28 @@ static void activityFresh(void)
 			StartTest(&S_AdjustLedPageBuffer->paiduiUnitData);
 		}
 	}
-	else if(status_testting == S_AdjustLedPageBuffer->paiduiUnitData.statues)
+    else if(status_testting == S_AdjustLedPageBuffer->paiduiUnitData.statues)
 	{
 		while(pdTRUE == TakeTestPointData(&S_AdjustLedPageBuffer->i));
 	
 		if(My_Pass == TakeTestResult(&S_AdjustLedPageBuffer->paiduiUnitData.testData.testResultDesc))
 		{
-            analysisTestData();
-            FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutCardOutOfDeviceAfterTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
-            S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitCardOut;
+			FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutDownCardInTestPlaceDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
+			S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitPutCardInTestPlace;
 		}
 	}
+	else if(statusWaitPutCardInTestPlace == S_AdjustLedPageBuffer->paiduiUnitData.statues)
+	{
+		if(isMotorMoveEnd(FreeRTOSZeroDelay))
+		{
+			analysisTestData();
+		}
+	}
+	else if(statusPutCardOut == S_AdjustLedPageBuffer->paiduiUnitData.statues)
+	{
+		FormatParmAndStartMotorAction(&S_AdjustLedPageBuffer->motorAction, PutCardOutOfDeviceAfterTestDef, S_AdjustLedPageBuffer->paiduiUnitData.testLocation, false);
+		S_AdjustLedPageBuffer->paiduiUnitData.statues = statusWaitCardOut;
+    }
 	else if(statusWaitCardOut == S_AdjustLedPageBuffer->paiduiUnitData.statues)
 	{
 		if(isMotorMoveEnd(FreeRTOSZeroDelay))

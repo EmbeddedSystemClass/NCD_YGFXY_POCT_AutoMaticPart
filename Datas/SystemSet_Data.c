@@ -56,7 +56,11 @@ void setDefaultSystemSetData(SystemSetData * systemSetData)
 		systemSetData->wireNetSet.isStaticIp = false;
 
 		systemSetData->testLedLightIntensity = 200;
-		memset(systemSetData->parm, 0, 512);
+        
+        memcpy(systemSetData->printInfo.header, CompanyNameStr, strlen(CompanyNameStr));
+        systemSetData->printInfo.crc = CalModbusCRC16Fun(&systemSetData->printInfo, sizeof(PrintInfo)-2, NULL);
+        
+		memset(systemSetData->parm, 0, 480);
 		
 		systemSetData->crc = CalModbusCRC16Fun(systemSetData, SystemSetDataStructCrcSize, NULL);
 	}
@@ -109,6 +113,20 @@ void setIsShowRealValue(bool isShow)
 bool IsShowRealValue(void)
 {
 	return isShowRealValue;
+}
+
+void readPrintInfo(PrintInfo * printInfo)
+{
+    if(printInfo)
+    {
+        if(GBSystemSetData.printInfo.crc == CalModbusCRC16Fun(&GBSystemSetData.printInfo, sizeof(PrintInfo)-2, NULL))
+        {
+            memcpy(printInfo, &GBSystemSetData.printInfo, sizeof(PrintInfo));
+            return;
+        }
+        
+        memcpy(printInfo->header, CompanyNameStr, strlen(CompanyNameStr));
+    } 
 }
 
 /****************************************end of file************************************************/
