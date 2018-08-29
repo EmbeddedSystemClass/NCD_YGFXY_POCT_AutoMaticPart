@@ -12,7 +12,7 @@ typedef struct SampleIDPage_tag {
 	unsigned int tempv1;
 	unsigned char sampleIdLen;
 	PaiduiUnitData * currenttestdata;												//当前测试数据
-	unsigned short lcdinput[100];
+	unsigned short lcdinput[50];
 	bool isConfirmed;
 	MyRes isMotorStartted;
 	MotorAction motorAction;

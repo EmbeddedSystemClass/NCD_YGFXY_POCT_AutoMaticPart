@@ -318,6 +318,9 @@ static void ShowRecord(void)
 			else if(S_RecordPageBuffer->tempdata->testSeries.result <= S_RecordPageBuffer->tempdata->qrCode.itemConstData.lowstResult)
 				snprintf(S_RecordPageBuffer->buf, 20, "<%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
 					S_RecordPageBuffer->tempdata->qrCode.itemConstData.lowstResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
+            else if(S_RecordPageBuffer->tempdata->testSeries.result >= S_RecordPageBuffer->tempdata->qrCode.itemConstData.highestResult)
+				snprintf(S_RecordPageBuffer->buf, 20, ">%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
+					S_RecordPageBuffer->tempdata->qrCode.itemConstData.highestResult, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);
 			else
 				snprintf(S_RecordPageBuffer->buf, 20, "%.*f %s", S_RecordPageBuffer->tempdata->qrCode.itemConstData.pointNum, 
 					S_RecordPageBuffer->tempdata->testSeries.result, S_RecordPageBuffer->tempdata->qrCode.itemConstData.itemMeasure);

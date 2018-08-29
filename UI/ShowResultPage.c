@@ -248,6 +248,9 @@ static void RefreshText(void)
 	else if(S_ShowPageBuffer->testdata.testSeries.result <= S_ShowPageBuffer->testdata.qrCode.itemConstData.lowstResult)
 		snprintf(S_ShowPageBuffer->tempbuf, 20, "<%.*f %s", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
 			S_ShowPageBuffer->testdata.qrCode.itemConstData.lowstResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
+    else if(S_ShowPageBuffer->testdata.testSeries.result >= S_ShowPageBuffer->testdata.qrCode.itemConstData.highestResult)
+		snprintf(S_ShowPageBuffer->tempbuf, 20, ">%.*f %s", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum, 
+			S_ShowPageBuffer->testdata.qrCode.itemConstData.highestResult, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);
 	else
 		sprintf(S_ShowPageBuffer->tempbuf, "%.*f %s\0", S_ShowPageBuffer->testdata.qrCode.itemConstData.pointNum,
 			S_ShowPageBuffer->testdata.testSeries.result, S_ShowPageBuffer->testdata.qrCode.itemConstData.itemMeasure);

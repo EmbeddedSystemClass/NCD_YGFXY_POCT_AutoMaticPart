@@ -11,7 +11,7 @@ typedef struct TestPageBuffer_tag {
 	PaiduiUnitData * currenttestdata;
 	Basic_ICO myico[3];
 	LineInfo line;
-	unsigned short lcdinput[100];
+	unsigned short lcdinput[20];
 	unsigned char testisover;
 	char buf[100];
 	TestData testDataForPrintf;							//复制一份测试数据，给打印用

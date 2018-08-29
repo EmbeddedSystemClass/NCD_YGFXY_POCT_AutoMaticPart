@@ -37,7 +37,8 @@ typedef struct TestData_tag {
 	DateTime 		testDateTime;						//测试时间
 	unsigned short 	time;								//超时时间
 	ResultState 	testResultDesc;						//测试结果状态
-	unsigned char 	noUse[512];							//预留
+    unsigned char   testcnt;                            //重测次数
+	unsigned char 	noUse[511];							//预留
 	unsigned short 	crc;
 }TestData;
 #pragma pack()

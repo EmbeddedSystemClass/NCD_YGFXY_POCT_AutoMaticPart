@@ -69,7 +69,10 @@ void PrintfData(TestData * testd2)
 			sprintf(printfBuf->buf, "%s: ERROR\n", ResultStr);
 		else if(printfBuf->testData.testSeries.result <= printfBuf->testData.qrCode.itemConstData.lowstResult)
 			sprintf(printfBuf->buf, "%s: <%.*f %-8.8s\n", ResultStr, printfBuf->testData.qrCode.itemConstData.pointNum, printfBuf->testData.qrCode.itemConstData.lowstResult, printfBuf->testData.qrCode.itemConstData.itemMeasure);
-		else
+		else if(printfBuf->testData.testSeries.result >= printfBuf->testData.qrCode.itemConstData.highestResult)
+			sprintf(printfBuf->buf, "%s: >%.*f %-8.8s", ResultStr, printfBuf->testData.qrCode.itemConstData.pointNum, 
+				printfBuf->testData.qrCode.itemConstData.highestResult, printfBuf->testData.qrCode.itemConstData.itemMeasure);
+        else
 			sprintf(printfBuf->buf, "%s: %.*f %-8.8s\n", ResultStr, printfBuf->testData.qrCode.itemConstData.pointNum, printfBuf->testData.testSeries.result, printfBuf->testData.qrCode.itemConstData.itemMeasure);
 		SendDataToQueue(GetUsart1TXQueue(), NULL, printfBuf->buf, strlen(printfBuf->buf), 1, 50 / portTICK_RATE_MS, 50 / portTICK_RATE_MS, EnableUsart1TXInterrupt);
 		

@@ -9,7 +9,7 @@
 typedef struct WaitPage_tag {
 	Timer timer2;				//¼ä¸ôÌáÊ¾²å¿¨
 	PaiduiUnitData * currenttestdata;
-	unsigned short lcdinput[100];
+	unsigned short lcdinput[20];
 	MyRes isMotorStartted;
 	bool isBack;
 	bool isBackButtonPressed;

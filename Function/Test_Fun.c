@@ -154,6 +154,8 @@ ResultState TestFunction(PaiduiUnitData * parm)
 		repeat:
 
 			S_TempCalData->resultstatues = NoResult;
+            S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[0] = 0xffff;
+			SendTestPointData(&(S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[0]));
 
 			motor2MoveTo(2, 3, Motor2_StartTestLocation, true);
 			
@@ -321,7 +323,8 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 				goto END1;
 			}
 		}
-		else
+        //2018-8-21 09:46:17 去掉，如果峰比较低，导致找的峰与二维码写的位置直接的cv比较小，这段代码会重置已找的峰为二维码写的峰
+/*		else
 		{
 			if(S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x < S_TempCalData->paiduiUnitData->testData.qrCode.ItemLocation) 
 			{
@@ -338,7 +341,7 @@ static void AnalysisTestData(TempCalData * S_TempCalData)
 		        }
 			}
 		}
-		
+	*/	
 		S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.y = S_TempCalData->paiduiUnitData->testData.testSeries.TestPoint[S_TempCalData->paiduiUnitData->testData.testSeries.T_Point.x];
 
 		

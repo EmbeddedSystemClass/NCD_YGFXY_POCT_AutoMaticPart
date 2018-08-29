@@ -18,33 +18,33 @@
 
 #if (DeviceBuildId == DeviceAll)
 
-	#define	GB_SoftVersion	(unsigned short)1016
-	#define	GB_SoftVersionStr	"V1.0.16\0"
-	#define	GB_SoftVersion_Build	"Build18081501\0"
+	#define	GB_SoftVersion	(unsigned short)1017
+	#define	GB_SoftVersionStr	"V1.0.17\0"
+	#define	GB_SoftVersion_Build	"Build18082701\0"
 	
 #elif (DeviceBuildId == Device_NCD13021806109)
 
-	#define	GB_SoftVersion	(unsigned short)1016
-	#define	GB_SoftVersionStr	"V1.0.16\0"
-	#define	GB_SoftVersion_Build	"Build18070501\0"
+	#define	GB_SoftVersion	(unsigned short)1017
+	#define	GB_SoftVersionStr	"V1.0.17\0"
+	#define	GB_SoftVersion_Build	"Build18082701\0"
 
 #elif (DeviceBuildId == Device_NCD13021801104)
 	
-	#define	GB_SoftVersion	(unsigned short)1015
-	#define	GB_SoftVersionStr	"V1.0.15\0"
-	#define	GB_SoftVersion_Build	"Build18070501\0"
+	#define	GB_SoftVersion	(unsigned short)1016
+	#define	GB_SoftVersionStr	"V1.0.16\0"
+	#define	GB_SoftVersion_Build	"Build18082701\0"
 	
 #elif (DeviceBuildId == Device_NCD13021801105)
 	
-	#define	GB_SoftVersion	(unsigned short)1015
-	#define	GB_SoftVersionStr	"V1.0.15\0"
-	#define	GB_SoftVersion_Build	"Build18070501\0"
+	#define	GB_SoftVersion	(unsigned short)1016
+	#define	GB_SoftVersionStr	"V1.0.16\0"
+	#define	GB_SoftVersion_Build	"Build18082701\0"
 	
 #elif (DeviceBuildId == Device_NCD13021801106)
 	
-	#define	GB_SoftVersion	(unsigned short)1016
-	#define	GB_SoftVersionStr	"V1.0.16\0"
-	#define	GB_SoftVersion_Build	"Build18070501\0"
+	#define	GB_SoftVersion	(unsigned short)1017
+	#define	GB_SoftVersionStr	"V1.0.17\0"
+	#define	GB_SoftVersion_Build	"Build18082701\0"
 	
 #endif
 
@@ -90,6 +90,7 @@
 #define	MaxQualityCount					PaiDuiWeiNum
 
 #define	MaxUpLoadTestDataNum			1							//测试数据一次上传数目，must less than PageContentItemNum
+#define MAX_TEST_CNT                    1                           //重测次数
 /**********************************************************************************************************/
 /******************************************操作结果变量*************************************************/
 /**********************************************************************************************************/
@@ -329,6 +330,7 @@ typedef enum
     B_V_ERR = 12,                                       //基线值错误
 	TestInterrupt = 8,									//测试中断
 	qrError = 13,										//二维码错误
+    RE_TEST = 14,                                       //重测
 	ResultIsOK = 99,									//测试成功
 }ResultState;
 

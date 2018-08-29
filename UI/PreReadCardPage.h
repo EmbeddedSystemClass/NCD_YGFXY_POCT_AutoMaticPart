@@ -15,7 +15,7 @@ typedef struct PreReadPageBuffer_tag {
 	TestData temptestdata;							//临时测试数据缓冲区
 	QRCode temperweima;						//临时二维码数据缓冲区
 	char buf[100];
-	unsigned short lcdinput[100];
+	unsigned short lcdinput[20];
 	bool isStartted;								//是否开启扫描二维码任务
 	MotorAction motorAction;
 }PreReadPageBuffer;

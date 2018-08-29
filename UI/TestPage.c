@@ -150,8 +150,15 @@ static void activityFresh(void)
 		RefreshCurve();
 	else if(isMotorMoveEnd(0 / portTICK_RATE_MS))
 	{
-		S_TestPageBuffer->canExit = true;
-		DeleteCurrentTest();
+        if(S_TestPageBuffer->currenttestdata->testData.testResultDesc == RE_TEST)
+        {
+            S_TestPageBuffer->currenttestdata->statues = status_timedown;
+            S_TestPageBuffer->currenttestdata->testData.testResultDesc = NoResult;
+        }
+        else
+            DeleteCurrentTest();
+        
+        S_TestPageBuffer->canExit = true;
 		S_TestPageBuffer->currenttestdata = NULL;
 	}
 	
@@ -306,6 +313,19 @@ static void RefreshCurve(void)
 	 
 	if(My_Pass == TakeTestResult(&(S_TestPageBuffer->currenttestdata->testData.testResultDesc)))
 	{
+        if(S_TestPageBuffer->currenttestdata->testData.testResultDesc != ResultIsOK 
+            && S_TestPageBuffer->currenttestdata->testData.testResultDesc != NoSample
+            && S_TestPageBuffer->currenttestdata->testData.testcnt < MAX_TEST_CNT)
+        {
+            S_TestPageBuffer->currenttestdata->testData.testcnt++;
+            S_TestPageBuffer->currenttestdata->testData.testResultDesc = RE_TEST;
+            timer_SetAndStart(&S_TestPageBuffer->currenttestdata->timeDown_timer, 600);
+            S_TestPageBuffer->currenttestdata->timeUp_timer.start = 0;
+
+            FormatParmAndStartMotorAction(&S_TestPageBuffer->motorAction, PutDownCardInTestPlaceDef, S_TestPageBuffer->currenttestdata->testLocation, false);
+            return;
+        }
+        
 		S_TestPageBuffer->currenttestdata->statues = status_end;
 		S_TestPageBuffer->motorAction.motorActionEnum = PutCardOutOfDeviceAfterTestDef;
 		S_TestPageBuffer->motorAction.motorParm = S_TestPageBuffer->currenttestdata->testLocation;
@@ -343,12 +363,15 @@ static void RefreshPageText(void)
 	if(S_TestPageBuffer->currenttestdata)
 	{
 		if(S_TestPageBuffer->currenttestdata->testData.testResultDesc != ResultIsOK)
-			sprintf(S_TestPageBuffer->buf, "Error\0");
+			sprintf(S_TestPageBuffer->buf, "Error");
 		else if(S_TestPageBuffer->currenttestdata->testData.testSeries.result <= S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.lowstResult)
-			sprintf(S_TestPageBuffer->buf, "<%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum, 
+			sprintf(S_TestPageBuffer->buf, "<%.*f %s", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum, 
 				S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.lowstResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
+        else if(S_TestPageBuffer->currenttestdata->testData.testSeries.result >= S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.highestResult)
+			sprintf(S_TestPageBuffer->buf, ">%.*f %s", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum, 
+				S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.highestResult, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
 		else
-			sprintf(S_TestPageBuffer->buf, "%.*f %s\0", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum,
+			sprintf(S_TestPageBuffer->buf, "%.*f %s", S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.pointNum,
 				S_TestPageBuffer->currenttestdata->testData.testSeries.result, S_TestPageBuffer->currenttestdata->testData.qrCode.itemConstData.itemMeasure);
 		
 		DisText(0x1838, S_TestPageBuffer->buf, strlen(S_TestPageBuffer->buf)+1);

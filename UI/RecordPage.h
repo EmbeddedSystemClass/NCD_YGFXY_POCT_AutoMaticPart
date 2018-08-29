@@ -16,7 +16,7 @@ typedef struct Record_tag {
 	char buf[300];										//¡Ÿ ±ª∫≥Â«¯
 	unsigned int tempvalue1;
 	TestData *tempdata;
-	unsigned short lcdinput[100];
+	unsigned short lcdinput[20];
 }RecordPageBuffer;
 
 MyRes createRecordActivity(Activity * thizActivity, Intent * pram);
